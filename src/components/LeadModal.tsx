@@ -106,8 +106,8 @@ export default function LeadModal({ onClose }: LeadModalProps) {
           <div className="flex items-center justify-between mb-3">
             <span
               style={{
-                background: "rgba(99,102,241,0.15)",
-                color: "#818CF8",
+                background: "rgba(3,251,131,0.15)",
+                color: "#02d970",
                 fontSize: "11px",
                 fontWeight: 600,
                 letterSpacing: "0.08em",
@@ -202,7 +202,7 @@ export default function LeadModal({ onClose }: LeadModalProps) {
             style={{
               width: "100%",
               padding: "13px",
-              background: loading ? "#4B5563" : "linear-gradient(135deg, #6366F1, #4F46E5)",
+              background: loading ? "#4B5563" : "linear-gradient(135deg, #03fb83, #03fb83)",
               color: "#fff",
               border: "none",
               borderRadius: "10px",

@@ -101,7 +101,7 @@ export default function Home() {
       <nav style={{ borderBottom: "1px solid #111927", padding: "0 24px" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: "linear-gradient(135deg, #6366F1, #4F46E5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: "linear-gradient(135deg, #03fb83, #03fb83)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M7 1L13 4V10L7 13L1 10V4L7 1Z" stroke="white" strokeWidth="1.5" fill="none" />
                 <circle cx="7" cy="7" r="2" fill="white" />
@@ -111,7 +111,7 @@ export default function Home() {
           </div>
           <button
             onClick={() => setShowModal(true)}
-            style={{ padding: "8px 18px", background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)", borderRadius: "8px", color: "#818CF8", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}
+            style={{ padding: "8px 18px", background: "rgba(3,251,131,0.12)", border: "1px solid rgba(3,251,131,0.3)", borderRadius: "8px", color: "#02d970", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}
           >
             Analyse My Deck
           </button>
@@ -124,9 +124,9 @@ export default function Home() {
 
           {/* Left */}
           <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", borderRadius: "20px", padding: "5px 12px", marginBottom: "24px" }}>
-              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#6366F1", display: "inline-block" }} />
-              <span style={{ fontSize: "12px", color: "#818CF8", fontWeight: 500 }}>AI-Powered Pitch Analysis</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(3,251,131,0.1)", border: "1px solid rgba(3,251,131,0.25)", borderRadius: "20px", padding: "5px 12px", marginBottom: "24px" }}>
+              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#03fb83", display: "inline-block" }} />
+              <span style={{ fontSize: "12px", color: "#02d970", fontWeight: 500 }}>AI-Powered Pitch Analysis</span>
             </div>
 
             <h1 style={{ fontSize: "48px", fontWeight: 800, lineHeight: 1.1, marginBottom: "20px" }}>
@@ -151,7 +151,7 @@ export default function Home() {
               onClick={() => setShowModal(true)}
               style={{
                 padding: "14px 28px",
-                background: "linear-gradient(135deg, #6366F1, #4F46E5)",
+                background: "linear-gradient(135deg, #03fb83, #03fb83)",
                 border: "none",
                 borderRadius: "10px",
                 color: "#fff",
@@ -161,11 +161,11 @@ export default function Home() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                boxShadow: "0 0 30px rgba(99,102,241,0.35)",
+                boxShadow: "0 0 30px rgba(3,251,131,0.35)",
                 transition: "transform 0.15s, box-shadow 0.15s",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 0 40px rgba(99,102,241,0.5)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 0 30px rgba(99,102,241,0.35)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 0 40px rgba(3,251,131,0.5)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 0 30px rgba(3,251,131,0.35)"; }}
             >
               Analyse My Deck — Free
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -211,7 +211,7 @@ export default function Home() {
       <section style={{ padding: "60px 24px", borderTop: "1px solid #111927" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "48px" }}>
-            <p style={{ fontSize: "12px", color: "#6366F1", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "12px" }}>How It Works</p>
+            <p style={{ fontSize: "12px", color: "#03fb83", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "12px" }}>How It Works</p>
             <h2 style={{ fontSize: "34px", fontWeight: 700 }}>Three steps to your score</h2>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
@@ -230,7 +230,7 @@ export default function Home() {
       <section style={{ padding: "60px 24px", borderTop: "1px solid #111927" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "48px" }}>
-            <p style={{ fontSize: "12px", color: "#6366F1", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "12px" }}>Analysis Framework</p>
+            <p style={{ fontSize: "12px", color: "#03fb83", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "12px" }}>Analysis Framework</p>
             <h2 style={{ fontSize: "34px", fontWeight: 700 }}>8 dimensions. Weighted like a VC would.</h2>
             <p style={{ fontSize: "16px", color: "#64748B", marginTop: "12px" }}>Each dimension is scored 0–10 with a weighted contribution to your overall score.</p>
           </div>
@@ -254,7 +254,7 @@ export default function Home() {
       {/* ── BOTTOM CTA ── */}
       <section style={{ padding: "80px 24px", borderTop: "1px solid #111927" }}>
         <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
-          <div style={{ width: "56px", height: "56px", margin: "0 auto 24px", borderRadius: "14px", background: "linear-gradient(135deg, #6366F1, #4F46E5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: "56px", height: "56px", margin: "0 auto 24px", borderRadius: "14px", background: "linear-gradient(135deg, #03fb83, #03fb83)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </div>
           <h2 style={{ fontSize: "36px", fontWeight: 800, marginBottom: "16px", lineHeight: 1.15 }}>
@@ -267,7 +267,7 @@ export default function Home() {
             onClick={() => setShowModal(true)}
             style={{
               padding: "16px 36px",
-              background: "linear-gradient(135deg, #6366F1, #4F46E5)",
+              background: "linear-gradient(135deg, #03fb83, #03fb83)",
               border: "none",
               borderRadius: "12px",
               color: "#fff",
@@ -277,7 +277,7 @@ export default function Home() {
               display: "inline-flex",
               alignItems: "center",
               gap: "8px",
-              boxShadow: "0 0 40px rgba(99,102,241,0.35)",
+              boxShadow: "0 0 40px rgba(3,251,131,0.35)",
             }}
           >
             Analyse My Deck — Free

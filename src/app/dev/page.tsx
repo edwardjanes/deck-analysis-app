@@ -88,7 +88,7 @@ export default function DevPage() {
                 onClick={() => clone(id, label)}
                 disabled={cloning === label}
                 style={{
-                  background: cloning === label ? "#374151" : "#6366F1",
+                  background: cloning === label ? "#374151" : "#03fb83",
                   color: "#fff", border: "none", borderRadius: "8px",
                   padding: "8px 16px", fontSize: "13px", fontWeight: 600,
                   cursor: cloning === label ? "not-allowed" : "pointer",
@@ -120,7 +120,7 @@ export default function DevPage() {
               <div style={{ marginTop: "10px" }}>
                 <a
                   href={`/results/${id}`}
-                  style={{ fontSize: "12px", color: "#6366F1", textDecoration: "none" }}
+                  style={{ fontSize: "12px", color: "#03fb83", textDecoration: "none" }}
                 >
                   → View unlocked results page
                 </a>

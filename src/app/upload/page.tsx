@@ -105,7 +105,7 @@ export default function UploadPage() {
       {/* Logo */}
       <div style={{ marginBottom: "36px", textAlign: "center" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-          <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: "linear-gradient(135deg, #6366F1, #4F46E5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: "linear-gradient(135deg, #03fb83, #03fb83)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4V10L7 13L1 10V4L7 1Z" stroke="white" strokeWidth="1.5" fill="none" /><circle cx="7" cy="7" r="2" fill="white" /></svg>
           </div>
           <span style={{ fontSize: "15px", fontWeight: 700 }}>DeckScore</span>
@@ -115,10 +115,10 @@ export default function UploadPage() {
           {["Details", "Upload", "Analysing", "Results"].map((step, i) => (
             <div key={step} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: i === 1 ? "#6366F1" : i === 0 ? "#10B981" : "#1A2438", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 700, color: i <= 1 ? "#fff" : "#374151" }}>
+                <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: i === 1 ? "#03fb83" : i === 0 ? "#10B981" : "#1A2438", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 700, color: i <= 1 ? "#fff" : "#374151" }}>
                   {i === 0 ? "✓" : i + 1}
                 </div>
-                <span style={{ fontSize: "12px", color: i === 1 ? "#818CF8" : i === 0 ? "#10B981" : "#374151", fontWeight: i === 1 ? 600 : 400 }}>{step}</span>
+                <span style={{ fontSize: "12px", color: i === 1 ? "#02d970" : i === 0 ? "#10B981" : "#374151", fontWeight: i === 1 ? 600 : 400 }}>{step}</span>
               </div>
               {i < 3 && <div style={{ width: "20px", height: "1px", background: "#1A2438" }} />}
             </div>
@@ -186,12 +186,12 @@ export default function UploadPage() {
               onDragLeave={() => setDragOver(false)}
               onDrop={handleFileDrop}
               style={{
-                border: `2px dashed ${dragOver ? "#6366F1" : file ? "#10B981" : "#1A2438"}`,
+                border: `2px dashed ${dragOver ? "#03fb83" : file ? "#10B981" : "#1A2438"}`,
                 borderRadius: "10px",
                 padding: "28px",
                 textAlign: "center",
                 cursor: "pointer",
-                background: dragOver ? "rgba(99,102,241,0.05)" : file ? "rgba(16,185,129,0.05)" : "transparent",
+                background: dragOver ? "rgba(3,251,131,0.05)" : file ? "rgba(16,185,129,0.05)" : "transparent",
                 transition: "all 0.2s",
               }}
             >
@@ -207,7 +207,7 @@ export default function UploadPage() {
                 <div>
                   <div style={{ fontSize: "32px", marginBottom: "8px" }}>☁️</div>
                   <p style={{ fontSize: "14px", color: "#CBD5E1", marginBottom: "4px" }}>
-                    <span style={{ color: "#818CF8", fontWeight: 600 }}>Click to upload</span> or drag and drop
+                    <span style={{ color: "#02d970", fontWeight: 600 }}>Click to upload</span> or drag and drop
                   </p>
                   <p style={{ fontSize: "12px", color: "#475569" }}>PDF only · Max 20MB</p>
                 </div>
@@ -234,7 +234,7 @@ export default function UploadPage() {
             style={{
               width: "100%",
               padding: "14px",
-              background: submitting ? "#374151" : "linear-gradient(135deg, #6366F1, #4F46E5)",
+              background: submitting ? "#374151" : "linear-gradient(135deg, #03fb83, #03fb83)",
               border: "none",
               borderRadius: "10px",
               color: "#fff",

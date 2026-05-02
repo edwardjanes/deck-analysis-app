@@ -72,15 +72,15 @@ function RecoveryPanel({ recovery, id }: { recovery: RecoveryState; id: string }
   if (recovery.action === "ESCALATE_TO_SUPPORT") {
     return (
       <div style={panelStyle}>
-        <div style={iconStyle("rgba(99,102,241,0.15)", "#818CF8")}>
+        <div style={iconStyle("rgba(3,251,131,0.15)", "#02d970")}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 01-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 011-.97l7-2a1 1 0 01.55 0l7 2A1 1 0 0120 6v7z" stroke="#818CF8" strokeWidth="2"/>
+            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 01-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 011-.97l7-2a1 1 0 01.55 0l7 2A1 1 0 0120 6v7z" stroke="#02d970" strokeWidth="2"/>
           </svg>
         </div>
         <h2 style={headingStyle}>Our team is on it</h2>
         <p style={bodyStyle}>{recovery.message}</p>
         <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
-          <button onClick={retry} disabled={retrying} style={btnStyle("#818CF8")}>
+          <button onClick={retry} disabled={retrying} style={btnStyle("#02d970")}>
             {retrying ? "Retrying..." : "Try again"}
           </button>
           <a href="/upload" style={btnStyle("transparent", "#6B7280", "1px solid #374151")}>
