@@ -104,11 +104,8 @@ export default function UploadPage() {
 
       {/* Logo */}
       <div style={{ marginBottom: "36px", textAlign: "center" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-          <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: "linear-gradient(135deg, #03fb83, #03fb83)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4V10L7 13L1 10V4L7 1Z" stroke="white" strokeWidth="1.5" fill="none" /><circle cx="7" cy="7" r="2" fill="white" /></svg>
-          </div>
-          <span style={{ fontSize: "15px", fontWeight: 700 }}>DeckScore</span>
+        <div style={{ display: "inline-flex", alignItems: "center", marginBottom: "8px" }}>
+          <img src="https://raw.githubusercontent.com/edwardjanes/source-capital/0147b27fad891686f67559992e43319411f07ba4/logo.png" alt="Source Capital" style={{ height: "32px", width: "auto" }} />
         </div>
         {/* Progress steps */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "center" }}>

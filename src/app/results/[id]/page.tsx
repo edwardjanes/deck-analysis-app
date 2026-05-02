@@ -369,11 +369,8 @@ function ResultsPageInner() {
       <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
 
         {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "28px" }}>
-          <div style={{ width: "26px", height: "26px", borderRadius: "6px", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4V10L7 13L1 10V4L7 1Z" stroke="white" strokeWidth="1.5" fill="none"/><circle cx="7" cy="7" r="2" fill="white"/></svg>
-          </div>
-          <span style={{ fontSize: "14px", fontWeight: 700 }}>DeckScore</span>
+        <div style={{ marginBottom: "28px" }}>
+          <img src="https://raw.githubusercontent.com/edwardjanes/source-capital/0147b27fad891686f67559992e43319411f07ba4/logo.png" alt="Source Capital" style={{ height: "32px", width: "auto" }} />
         </div>
 
         {/* ── TOP CARD — always visible ── */}
