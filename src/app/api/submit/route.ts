@@ -1,0 +1,93 @@
+import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { classifyUploadError } from "@/lib/errorHandler";
+
+export const maxDuration = 60;
+
+export async function POST(req: NextRequest) {
+  let submissionId: string | undefined;
+
+  try {
+    const formData = await req.formData();
+
+    const firstName    = (formData.get("firstName") as string)?.trim();
+    const lastName     = (formData.get("lastName") as string)?.trim();
+    const email        = (formData.get("email") as string)?.trim().toLowerCase();
+    const businessName = (formData.get("businessName") as string)?.trim();
+    const website      = (formData.get("website") as string)?.trim();
+    const country      = (formData.get("country") as string)?.trim();
+    const file         = formData.get("deck") as File | null;
+
+    if (!firstName || !lastName || !email || !businessName || !country) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Classify file errors before touching the DB
+    if (!file || file.type !== "application/pdf" || file.size === 0 || file.size > 25 * 1024 * 1024) {
+      const result = classifyUploadError(file);
+      return NextResponse.json({ error: result.user_facing_message, action: result.action }, { status: 400 });
+    }
+
+    // 1. Create submission record
+    const { data: submission, error: dbError } = await supabaseAdmin
+      .from("deck_submissions")
+      .insert({
+        first_name:    firstName,
+        last_name:     lastName,
+        email,
+        business_name: businessName,
+        website:       website || null,
+        country,
+        status:        "pending",
+      })
+      .select("id")
+      .single();
+
+    if (dbError || !submission) {
+      console.error("DB insert error:", dbError);
+      return NextResponse.json({ error: "Failed to create submission" }, { status: 500 });
+    }
+
+    submissionId = submission.id;
+
+    // 2. Upload PDF to Supabase Storage
+    const fileBuffer = await file.arrayBuffer();
+    const filePath   = `${submissionId}/${file.name}`;
+
+    const { error: storageError } = await supabaseAdmin.storage
+      .from("decks")
+      .upload(filePath, fileBuffer, {
+        contentType: "application/pdf",
+        upsert: false,
+      });
+
+    if (storageError) {
+      console.error("Storage upload error:", storageError);
+      const result = classifyUploadError(file, storageError.message);
+      Sentry.captureException(new Error(storageError.message), {
+        tags: { recovery_action: result.action, submission_id: submissionId },
+        extra: { business_name: businessName, file_name: file.name, file_size: file.size },
+      });
+      await supabaseAdmin.from("deck_submissions").delete().eq("id", submissionId);
+      return NextResponse.json({ error: result.user_facing_message, action: result.action }, { status: 500 });
+    }
+
+    // 3. Update record with file path
+    await supabaseAdmin
+      .from("deck_submissions")
+      .update({ deck_file_path: filePath })
+      .eq("id", submissionId);
+
+    return NextResponse.json({ id: submissionId });
+  } catch (err) {
+    console.error("Submit error:", err);
+    if (submissionId) {
+      await supabaseAdmin
+        .from("deck_submissions")
+        .update({ status: "error", error_message: "Upload failed" })
+        .eq("id", submissionId);
+    }
+    return NextResponse.json({ error: "Something went wrong uploading your deck. Please try again!" }, { status: 500 });
+  }
+}
