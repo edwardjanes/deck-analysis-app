@@ -18,8 +18,10 @@ export async function POST(req: NextRequest) {
     const website      = (formData.get("website") as string)?.trim();
     const country      = (formData.get("country") as string)?.trim();
     const file         = formData.get("deck") as File | null;
+    const userId       = (formData.get("userId") as string | null) || null;
 
-    if (!firstName || !lastName || !email || !businessName || !country) {
+    // Email is optional for logged-in users (userId present)
+    if (!firstName || !businessName || !country || (!userId && !email)) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -35,11 +37,12 @@ export async function POST(req: NextRequest) {
       .insert({
         first_name:    firstName,
         last_name:     lastName,
-        email,
+        email:         email || null,
         business_name: businessName,
         website:       website || null,
         country,
         status:        "pending",
+        ...(userId ? { user_id: userId } : {}),
       })
       .select("id")
       .single();
@@ -78,6 +81,11 @@ export async function POST(req: NextRequest) {
       .from("deck_submissions")
       .update({ deck_file_path: filePath })
       .eq("id", submissionId);
+
+    // 4. Increment analyses_used for logged-in users
+    if (userId) {
+      await supabaseAdmin.rpc("increment_analyses_used", { user_id_input: userId });
+    }
 
     return NextResponse.json({ id: submissionId });
   } catch (err) {
