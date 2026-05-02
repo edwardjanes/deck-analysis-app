@@ -17,7 +17,7 @@ export async function GET(
   const { data, error } = await supabaseAdmin
     .from("deck_submissions")
     .select(
-      "id, status, business_name, score, verdict, verdict_type, most_damaging_issue, best_asset, analysis_summary, analysis_json, error_message, paid"
+      "id, status, business_name, deck_file_path, score, verdict, verdict_type, most_damaging_issue, best_asset, analysis_summary, analysis_json, error_message, paid"
     )
     .eq("id", id)
     .single();
