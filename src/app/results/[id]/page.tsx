@@ -185,7 +185,7 @@ function BreakdownTab({ a, animated, paid, buyHref }: { a: DeckAnalysis; animate
 
 // ── SUMMARY TAB — LOCKED ──────────────────────────────────────
 function SummaryTab({ a, paid, buyHref }: { a: DeckAnalysis; paid: boolean; buyHref: string }) {
-  const firstSentence = a.executiveSummary?.split(". ")[0] + "." ?? "";
+  const firstSentence = (a.executiveSummary?.split(". ")[0] ?? "") + ".";
 
   const fullContent = (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
