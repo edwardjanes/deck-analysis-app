@@ -17,7 +17,7 @@ const MESSAGES = [
   "Finalising your analysis...",
 ];
 
-const ORANGE = "#F97316";
+const ORANGE = "#03fb83";
 
 interface RecoveryState {
   action: RecoveryAction;
