@@ -50,9 +50,10 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [limitReached, setLimitReached] = useState<{ existingId: string } | null>(null);
 
   const isPro = plan === "pro";
-  const FREE_LIMIT = 2;
+  const FREE_LIMIT = 1;
   const canAnalyse = isPro || analysesUsed < FREE_LIMIT;
 
   async function handleLogout() {
@@ -94,6 +95,12 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
     try {
       const res = await fetch("/api/submit", { method: "POST", body: fd });
       const data = await res.json();
+      if (res.status === 403 && data.error === "free_limit_reached") {
+        setLimitReached({ existingId: data.existingSubmissionId });
+        setShowUploadForm(false);
+        setSubmitting(false);
+        return;
+      }
       if (!res.ok) throw new Error(data.error || "Submission failed");
       router.push(`/analysing/${data.id}`);
     } catch (err) {
@@ -171,8 +178,34 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
         </div>
 
         {/* Upload area */}
-        <div style={{ background: "#161616", border: "1px solid #242424", borderRadius: "16px", padding: "32px", marginBottom: "32px" }}>
-          {!showUploadForm ? (
+        <div style={{ background: "#161616", border: `1px solid ${limitReached ? "rgba(3,251,131,0.2)" : "#242424"}`, borderRadius: "16px", padding: "32px", marginBottom: "32px" }}>
+          {limitReached ? (
+            <div style={{ textAlign: "center", padding: "16px 0" }}>
+              <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "rgba(3,251,131,0.1)", border: "1px solid rgba(3,251,131,0.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                  <rect x="3" y="10" width="16" height="11" rx="2" stroke={GREEN} strokeWidth="1.6"/>
+                  <path d="M7 10V7a4 4 0 018 0v3" stroke={GREEN} strokeWidth="1.6" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <h3 style={{ fontSize: "17px", fontWeight: 700, marginBottom: "8px" }}>Free submission used</h3>
+              <p style={{ fontSize: "14px", color: "#6B7280", marginBottom: "6px", maxWidth: "380px", margin: "0 auto 6px" }}>
+                You have already submitted a pitch deck. Free accounts are limited to one submission.
+              </p>
+              <p style={{ fontSize: "14px", color: "#6B7280", marginBottom: "24px", maxWidth: "380px", margin: "0 auto 24px" }}>
+                Upgrade to Pro for unlimited analyses.
+              </p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+                <a href={limitReached.existingId ? `/results/${limitReached.existingId}` : "/dashboard"}
+                  style={{ padding: "10px 20px", borderRadius: "8px", border: "1px solid #2A2A2A", background: "transparent", color: "#9CA3AF", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}>
+                  View existing analysis
+                </a>
+                <a href={whopUrl} target="_blank" rel="noopener noreferrer"
+                  style={{ padding: "10px 22px", borderRadius: "8px", background: GREEN, color: "#000", fontSize: "13px", fontWeight: 700, textDecoration: "none" }}>
+                  Upgrade to Pro — unlimited analyses
+                </a>
+              </div>
+            </div>
+          ) : !showUploadForm ? (
             <div
               onClick={() => canAnalyse && setShowUploadForm(true)}
               onDragOver={(e) => { e.preventDefault(); if (canAnalyse) setDragOver(true); }}

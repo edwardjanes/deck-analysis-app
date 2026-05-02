@@ -138,7 +138,7 @@ function LockedSection({ children, label = "Unlock to reveal", href }: { childre
 }
 
 // ── OVERVIEW TAB ───────────────────────────────────────────────
-function OverviewTab({ a, paid, buyHref }: { a: DeckAnalysis; paid: boolean; buyHref: string }) {
+function OverviewTab({ a, paid, buyHref, createdAt, slideCount }: { a: DeckAnalysis; paid: boolean; buyHref: string; createdAt: string; slideCount: number }) {
   const firstPara = a.executiveSummary?.split("\n\n")[0] ?? a.executiveSummary ?? "";
   const fixes = (a as unknown as { highestLeverageFixes?: { fix: string; action: string; effort?: string }[] }).highestLeverageFixes ?? [];
 
@@ -194,6 +194,9 @@ function OverviewTab({ a, paid, buyHref }: { a: DeckAnalysis; paid: boolean; buy
           <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.85 }}>{firstPara}</p>
         </Card>
       )}
+
+      {/* Upsell banner — shown immediately after the free preview */}
+      {!paid && createdAt && <UpsellBanner createdAt={createdAt} buyHref={buyHref} slideCount={slideCount} />}
 
       {/* Full content — locked or free */}
       {paid ? fullContent : (
@@ -532,12 +535,10 @@ function ResultsPageInner() {
       </div>
 
       {/* ── TAB CONTENT ── */}
-      {activeTab === "Overview" && <OverviewTab a={a} paid={paid} buyHref={buyHref} />}
+      {activeTab === "Overview" && <OverviewTab a={a} paid={paid} buyHref={buyHref} createdAt={createdAt} slideCount={slideCount} />}
       {activeTab === "Breakdown" && <BreakdownTab a={a} animated={animated} paid={paid} buyHref={buyHref} />}
       {activeTab === "Slide by Slide" && <SlideBySlideTab a={a} paid={paid} buyHref={buyHref} />}
 
-      {/* ── UPSELL BANNER ── */}
-      {!paid && createdAt && <UpsellBanner createdAt={createdAt} buyHref={buyHref} slideCount={slideCount} />}
     </div>
   );
 }

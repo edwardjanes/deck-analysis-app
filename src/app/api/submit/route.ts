@@ -25,6 +25,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    // Check free submission limit (1 free submission per user/email)
+    {
+      let existingQuery = supabaseAdmin
+        .from("deck_submissions")
+        .select("id, status, score")
+        .limit(1);
+
+      if (userId) {
+        existingQuery = existingQuery.eq("user_id", userId);
+      } else if (email) {
+        existingQuery = existingQuery.eq("email", email);
+      }
+
+      const { data: existing } = await existingQuery.maybeSingle();
+
+      if (existing) {
+        // Check if user is on pro plan
+        let isPro = false;
+        if (userId) {
+          const { data: profile } = await supabaseAdmin
+            .from("profiles")
+            .select("plan")
+            .eq("id", userId)
+            .single();
+          isPro = profile?.plan === "pro";
+        }
+
+        if (!isPro) {
+          return NextResponse.json({
+            error: "free_limit_reached",
+            existingSubmissionId: existing.id,
+          }, { status: 403 });
+        }
+      }
+    }
+
     // Classify file errors before touching the DB
     if (!file || file.type !== "application/pdf" || file.size === 0 || file.size > 25 * 1024 * 1024) {
       const result = classifyUploadError(file);
