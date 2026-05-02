@@ -12,6 +12,7 @@ body {
   background-color: #080C14;
   color: #F8FAFC;
   font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
