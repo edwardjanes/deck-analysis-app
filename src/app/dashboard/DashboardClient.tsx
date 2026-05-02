@@ -102,7 +102,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
     }
   }
 
-  const whopUrl = `https://whop.com/checkout/${process.env.NEXT_PUBLIC_WHOP_PRODUCT_ID ?? ""}`;
+  const whopUrl = `https://whop.com/checkout/${process.env.NEXT_PUBLIC_WHOP_PLAN_ID ?? "plan_AUP8u87FOYnEZ"}`;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0A", color: "#fff", fontFamily: "inherit" }}>
