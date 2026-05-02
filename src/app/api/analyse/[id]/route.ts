@@ -7,6 +7,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { DECK_ANALYSIS_SYSTEM_PROMPT, DeckAnalysis } from "@/lib/deckPrompt";
 import { classifyAnalysisError, serializeError } from "@/lib/errorHandler";
 import { compressPdf } from "@/lib/compressPdf";
+import { sendAnalysisResultEmail } from "@/lib/loops";
 
 export const maxDuration = 300; // 5 minutes — allows time for large deck analysis
 
@@ -174,6 +175,19 @@ export async function POST(
       }
 
       console.log(`[analyse] Complete for ${id} — score ${analysis.meetingConversionScore} (attempt ${attempt})`);
+
+      // Send results email (non-blocking — don't fail the analysis if email fails)
+      if (submission.email) {
+        sendAnalysisResultEmail({
+          email: submission.email,
+          firstName: submission.first_name ?? "there",
+          businessName: submission.business_name,
+          score: analysis.meetingConversionScore,
+          verdict: analysis.verdict,
+          resultsUrl: `${process.env.NEXT_PUBLIC_APP_URL}/results/${id}`,
+        }).catch((err) => console.error("[loops] Email error:", err));
+      }
+
       return NextResponse.json({
         success: true,
         score: analysis.meetingConversionScore,
