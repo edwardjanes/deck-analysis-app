@@ -10,6 +10,7 @@ interface SubmissionResult {
   id: string;
   business_name: string;
   deck_file_path: string | null;
+  created_at: string;
   status: string;
   score: number;
   verdict: string;
@@ -307,6 +308,99 @@ function SlideBySlideTab({ a, paid, buyHref }: { a: DeckAnalysis; paid: boolean;
   );
 }
 
+// ── Countdown timer ────────────────────────────────────────────
+const OFFER_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
+const EARLY_PRICE = "$7";
+const FULL_PRICE = "$97";
+
+function useCountdown(createdAt: string) {
+  const expiry = new Date(createdAt).getTime() + OFFER_WINDOW_MS;
+  const [remaining, setRemaining] = useState(() => Math.max(0, expiry - Date.now()));
+
+  useEffect(() => {
+    if (remaining <= 0) return;
+    const interval = setInterval(() => {
+      const left = Math.max(0, expiry - Date.now());
+      setRemaining(left);
+      if (left === 0) clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [expiry, remaining]);
+
+  const expired = remaining <= 0;
+  const h = Math.floor(remaining / 3600000);
+  const m = Math.floor((remaining % 3600000) / 60000);
+  const s = Math.floor((remaining % 60000) / 1000);
+  const formatted = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return { expired, formatted, price: expired ? FULL_PRICE : EARLY_PRICE };
+}
+
+function CountdownBanner({ createdAt, href }: { createdAt: string; href: string }) {
+  const { expired, formatted, price } = useCountdown(createdAt);
+  return (
+    <div style={{
+      background: expired ? "rgba(239,68,68,0.08)" : "rgba(3,251,131,0.06)",
+      border: `1px solid ${expired ? "rgba(239,68,68,0.25)" : "rgba(3,251,131,0.2)"}`,
+      borderRadius: "12px", padding: "14px 20px", marginBottom: "16px",
+      display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="6.5" stroke={expired ? "#EF4444" : GREEN} strokeWidth="1.4"/>
+          <path d="M8 5v3.5l2 1.5" stroke={expired ? "#EF4444" : GREEN} strokeWidth="1.4" strokeLinecap="round"/>
+        </svg>
+        <div>
+          {expired ? (
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "#EF4444" }}>Early access offer expired</p>
+          ) : (
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>
+              Early access price expires in{" "}
+              <span style={{ fontFamily: "monospace", color: GREEN, fontWeight: 800 }}>{formatted}</span>
+            </p>
+          )}
+          <p style={{ fontSize: "12px", color: MUTED, marginTop: "2px" }}>
+            {expired ? `Full price now applies — ${FULL_PRICE}` : `Unlock now for ${EARLY_PRICE} — goes up to ${FULL_PRICE} after`}
+          </p>
+        </div>
+      </div>
+      <a href={href} style={{
+        padding: "8px 18px", borderRadius: "8px", background: expired ? "#EF4444" : GREEN,
+        color: "#000", fontSize: "13px", fontWeight: 700, textDecoration: "none", flexShrink: 0,
+      }}>
+        Unlock for {price}
+      </a>
+    </div>
+  );
+}
+
+// ── Upsell banner ──────────────────────────────────────────────
+function UpsellBanner({ createdAt, buyHref, slideCount }: { createdAt: string; buyHref: string; slideCount: number }) {
+  const { expired, formatted, price } = useCountdown(createdAt);
+  return (
+    <div style={{ background: CARD_BG, border: `1px solid rgba(3,251,131,0.2)`, borderRadius: "16px", padding: "32px", textAlign: "center", marginTop: "20px" }}>
+      <p style={{ fontSize: "11px", color: GREEN, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>Full Implementation Plan</p>
+      <h3 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "10px" }}>
+        {slideCount > 0 ? `${slideCount} slides reviewed.` : "Analysis complete."} Now fix them.
+      </h3>
+      <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.8, maxWidth: "480px", margin: "0 auto 16px" }}>
+        Unlock the full report: slide-by-slide feedback, your most damaging issue, highest-leverage fixes, and the bottom-line truth investors will see.
+      </p>
+      {!expired && (
+        <p style={{ fontSize: "13px", color: MUTED, marginBottom: "20px" }}>
+          Early price of <span style={{ color: GREEN, fontWeight: 700 }}>{EARLY_PRICE}</span> expires in{" "}
+          <span style={{ fontFamily: "monospace", color: "#fff", fontWeight: 700 }}>{formatted}</span>
+          {" "}— then {FULL_PRICE}
+        </p>
+      )}
+      <a href={buyHref} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "14px 28px", background: GREEN, borderRadius: "10px", color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none" }}>
+        Unlock Full Report — {price}
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </a>
+      <p style={{ fontSize: "11px", color: MUTED, marginTop: "12px" }}>One-time payment · Delivered within minutes</p>
+    </div>
+  );
+}
+
 // ── Nav ────────────────────────────────────────────────────────
 function Nav() {
   const router = useRouter();
@@ -355,6 +449,7 @@ function ResultsPageInner() {
   const [animated, setAnimated] = useState(false);
   const [activeTab, setActiveTab] = useState("Overview");
   const [buyHref, setBuyHref] = useState("");
+  const [createdAt, setCreatedAt] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -364,6 +459,7 @@ function ResultsPageInner() {
         setData(d);
         setLoading(false);
         setBuyHref(checkoutUrl(d.id));
+        setCreatedAt(d.created_at);
         setTimeout(() => setAnimated(true), 100);
       })
       .catch(() => setLoading(false));
@@ -402,6 +498,9 @@ function ResultsPageInner() {
   return (
     <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 20px 80px" }}>
 
+      {/* ── COUNTDOWN BANNER ── */}
+      {!paid && createdAt && <CountdownBanner createdAt={createdAt} href={buyHref} />}
+
       {/* ── HERO SCORE CARD ── */}
       <Card style={{ marginBottom: "16px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "32px", flexWrap: "wrap" }}>
@@ -438,23 +537,7 @@ function ResultsPageInner() {
       {activeTab === "Slide by Slide" && <SlideBySlideTab a={a} paid={paid} buyHref={buyHref} />}
 
       {/* ── UPSELL BANNER ── */}
-      {!paid && (
-        <div style={{ background: CARD_BG, border: `1px solid rgba(3,251,131,0.2)`, borderRadius: "16px", padding: "32px", textAlign: "center", marginTop: "20px",
-          boxShadow: "0 0 40px rgba(3,251,131,0.04)" }}>
-          <p style={{ fontSize: "11px", color: GREEN, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>Full Implementation Plan</p>
-          <h3 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "10px" }}>
-            {slideCount > 0 ? `${slideCount} slides reviewed.` : "Analysis complete."} Now fix them.
-          </h3>
-          <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.8, maxWidth: "480px", margin: "0 auto 24px" }}>
-            Unlock the full report: slide-by-slide feedback, your most damaging issue, highest-leverage fixes, and the bottom-line truth investors will see.
-          </p>
-          <a href={buyHref} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "14px 28px", background: GREEN, borderRadius: "10px", color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none" }}>
-            Unlock Full Report — $7
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </a>
-          <p style={{ fontSize: "11px", color: MUTED, marginTop: "12px" }}>One-time payment · Delivered within minutes</p>
-        </div>
-      )}
+      {!paid && createdAt && <UpsellBanner createdAt={createdAt} buyHref={buyHref} slideCount={slideCount} />}
     </div>
   );
 }
