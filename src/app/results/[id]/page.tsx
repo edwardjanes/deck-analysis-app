@@ -609,20 +609,53 @@ function ResultsPageInner() {
 
       {/* ── HERO SCORE CARD ── */}
       <Card style={{ marginBottom: "16px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "32px", flexWrap: "wrap" }}>
-          <ScoreCircle score={data.score} animated={animated} />
-          <div style={{ flex: 1, minWidth: "200px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px", flexWrap: "wrap" }}>
-              <h1 style={{ fontSize: "22px", fontWeight: 800, color: "#fff" }}>Investor Readiness Score</h1>
-              <span style={{ padding: "3px 10px", borderRadius: "99px", fontSize: "11px", fontWeight: 700,
+        <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
+
+          {/* Left: score circle + title */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "24px", flexWrap: "wrap", flex: "0 0 auto" }}>
+            <ScoreCircle score={data.score} animated={animated} />
+            <div style={{ minWidth: "180px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
+                <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#fff" }}>Investor Readiness Score</h1>
+              </div>
+              <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: "99px", fontSize: "11px", fontWeight: 700, marginBottom: "10px",
                 background: `${verdictColor}18`, color: verdictColor, border: `1px solid ${verdictColor}40` }}>
                 {verdictLabel}
               </span>
+              {filename && <p style={{ fontSize: "13px", color: MUTED, marginBottom: "3px" }}>{filename}</p>}
+              {slideCount > 0 && <p style={{ fontSize: "13px", color: MUTED }}>{slideCount} slides analysed</p>}
             </div>
-            {filename && <p style={{ fontSize: "15px", color: MUTED, marginBottom: "4px" }}>{filename}</p>}
-            {slideCount > 0 && <p style={{ fontSize: "15px", color: MUTED }}>{slideCount} slides analysed</p>}
           </div>
+
+          {/* Divider */}
+          <div style={{ width: "1px", background: CARD_BORDER, alignSelf: "stretch", flexShrink: 0 }} />
+
+          {/* Right: dimension bars */}
+          {a.dimensions && a.dimensions.length > 0 && (
+            <div style={{ flex: 1, minWidth: "280px" }}>
+              <p style={{ fontSize: "11px", fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>Dimension Breakdown</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 24px" }}>
+                {a.dimensions.map(d => {
+                  const pct = (d.score / 10) * 100;
+                  const color = d.score >= 7 ? GREEN : d.score >= 5 ? "#FBBF24" : "#EF4444";
+                  return (
+                    <div key={d.name}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                        <span style={{ fontSize: "12px", color: "#9CA3AF" }}>{d.name}</span>
+                        <span style={{ fontSize: "12px", fontWeight: 700, color }}>{d.score}/10</span>
+                      </div>
+                      <div style={{ height: "4px", background: "#242424", borderRadius: "99px", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: "99px",
+                          transition: animated ? "width 1.2s cubic-bezier(0.4,0,0.2,1) 0.3s" : "none" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
+
         {data.verdict && (
           <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: `1px solid ${CARD_BORDER}` }}>
             <p style={{ fontSize: "16px", color: "#9CA3AF", lineHeight: 1.75 }}>{data.verdict}</p>
