@@ -604,9 +604,6 @@ function ResultsPageInner() {
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 32px 80px" }}>
 
-      {/* ── COUNTDOWN BANNER ── */}
-      {!paid && createdAt && <CountdownBanner createdAt={createdAt} href={buyHref} />}
-
       {/* ── HERO SCORE CARD ── */}
       <Card style={{ marginBottom: "16px" }}>
         <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
@@ -710,9 +707,12 @@ function ResultsPageInner() {
       )}
 
       {/* ── TRUST LINE ── */}
-      <p style={{ textAlign: "center", fontSize: "12px", color: MUTED, opacity: 0.6, marginBottom: "20px" }}>
+      <p style={{ textAlign: "center", fontSize: "12px", color: MUTED, opacity: 0.6, marginBottom: "12px" }}>
         Built on 500+ investor-reviewed decks — across pre-seed to Series A
       </p>
+
+      {/* ── COUNTDOWN BANNER ── */}
+      {!paid && createdAt && <CountdownBanner createdAt={createdAt} href={buyHref} />}
 
       {/* ── TABS ── */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
