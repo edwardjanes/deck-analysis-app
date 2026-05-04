@@ -128,9 +128,44 @@ function LockedSection({ children, label = "Unlock to reveal", href }: { childre
             padding: "10px 22px", background: GREEN, borderRadius: "8px",
             color: "#000", fontSize: "13px", fontWeight: 700, textDecoration: "none",
           }}>
-            Unlock Full Report
+            Show Me How to Fix This — $7
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Blurred preview (change 7) ─────────────────────────────────
+// Shows top portion clearly, lower portion blurred with "Unlock" label
+function BlurredPreview({ preview, full, href }: { preview: React.ReactNode; full: React.ReactNode; href: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      {/* Visible portion */}
+      {preview}
+      {/* Blurred remainder */}
+      <div style={{ position: "relative", borderRadius: "16px", overflow: "hidden" }}>
+        <div style={{ filter: "blur(4px)", userSelect: "none", pointerEvents: "none", opacity: 0.55 }}>
+          {full}
+        </div>
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to bottom, rgba(10,10,10,0) 0%, rgba(10,10,10,0.6) 40%, rgba(10,10,10,0.96) 100%)",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end",
+          padding: "28px",
+        }}>
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontSize: "12px", fontWeight: 600, color: MUTED, marginBottom: "10px", letterSpacing: "0.04em" }}>Unlock to view full breakdown</p>
+            <a href={href} style={{
+              display: "inline-flex", alignItems: "center", gap: "6px",
+              padding: "10px 22px", background: GREEN, borderRadius: "8px",
+              color: "#000", fontSize: "13px", fontWeight: 700, textDecoration: "none",
+            }}>
+              Show Me How to Fix This — $7
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -195,6 +230,23 @@ function OverviewTab({ a, paid, buyHref, createdAt, slideCount }: { a: DeckAnaly
         </Card>
       )}
 
+      {/* Change 4 — bridging statement */}
+      {!paid && (
+        <p style={{ textAlign: "center", fontSize: "15px", color: "#9CA3AF", lineHeight: 1.75, margin: "8px 0 4px" }}>
+          You&apos;re a handful of specific fixes away from investor-ready. The full report tells you exactly what they are.
+        </p>
+      )}
+
+      {/* Change 6 — testimonial */}
+      {!paid && (
+        <div style={{ background: "#111", border: `1px solid ${CARD_BORDER}`, borderRadius: "12px", padding: "20px 24px" }}>
+          <p style={{ fontSize: "14px", color: "#D1D5DB", lineHeight: 1.8, marginBottom: "12px", fontStyle: "italic" }}>
+            &ldquo;I restructured my deck based on this report. Had three investor meetings booked the following week.&rdquo;
+          </p>
+          <p style={{ fontSize: "12px", color: MUTED, fontWeight: 600 }}>— Jamie R., Founder, SaaS / Pre-Seed</p>
+        </div>
+      )}
+
       {/* Upsell banner — shown immediately after the free preview */}
       {!paid && createdAt && <UpsellBanner createdAt={createdAt} buyHref={buyHref} slideCount={slideCount} />}
 
@@ -248,25 +300,45 @@ function OverviewTab({ a, paid, buyHref, createdAt, slideCount }: { a: DeckAnaly
 // ── BREAKDOWN TAB ──────────────────────────────────────────────
 function BreakdownTab({ a, animated, paid, buyHref }: { a: DeckAnalysis; animated: boolean; paid: boolean; buyHref: string }) {
   const dims = a.dimensions ?? [];
-  const bottomLine = (
-    <Card>
-      <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Bottom Line</h2>
-      <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.8 }}>{a.bottomLine}</p>
-    </Card>
-  );
+  const previewDims = dims.slice(0, 2);   // first 2 bars visible
+  const remainingDims = dims.slice(2);     // rest blurred
+
+  if (paid) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <Card>
+          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "22px" }}>Dimension Scores</h2>
+          {dims.map(d => <DimBar key={d.name} name={d.name} score={d.score} animated={animated} />)}
+        </Card>
+        <Card>
+          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Bottom Line</h2>
+          <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.8 }}>{a.bottomLine}</p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      <Card>
-        <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "22px" }}>Dimension Scores</h2>
-        {dims.map(d => <DimBar key={d.name} name={d.name} score={d.score} animated={animated} />)}
-      </Card>
-      {paid ? bottomLine : (
-        <LockedSection label="Unlock the bottom line verdict" href={buyHref}>
-          {bottomLine}
-        </LockedSection>
-      )}
-    </div>
+    <BlurredPreview
+      href={buyHref}
+      preview={
+        <Card>
+          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "22px" }}>Dimension Scores</h2>
+          {previewDims.map(d => <DimBar key={d.name} name={d.name} score={d.score} animated={animated} />)}
+        </Card>
+      }
+      full={
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <Card>
+            {remainingDims.map(d => <DimBar key={d.name} name={d.name} score={d.score} animated={false} />)}
+          </Card>
+          <Card>
+            <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Bottom Line</h2>
+            <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.8 }}>{a.bottomLine}</p>
+          </Card>
+        </div>
+      }
+    />
   );
 }
 
@@ -284,30 +356,52 @@ function SlideBySlideTab({ a, paid, buyHref }: { a: DeckAnalysis; paid: boolean;
     }
   }
 
-  const content = (
-    <Card>
-      <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "18px" }}>Slide-by-Slide Feedback</h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {slides.map((s: SlideAssessment, i: number) => {
-          const c = verdictStyle(s.verdict);
-          return (
-            <div key={i} style={{ background: "#111", border: `1px solid ${CARD_BORDER}`, borderRadius: "10px", padding: "14px 16px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                <span style={{ fontSize: "14px", fontWeight: 600, color: "#E5E7EB" }}>{s.slide}</span>
-                <span style={{ padding: "2px 9px", background: c.bg, border: `1px solid ${c.border}`, borderRadius: "99px", color: c.color, fontSize: "11px", fontWeight: 700 }}>{s.verdict}</span>
-              </div>
-              <p style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.7 }}>{s.assessment}</p>
-            </div>
-          );
-        })}
+  function slideCard(s: SlideAssessment, i: number) {
+    const c = verdictStyle(s.verdict);
+    return (
+      <div key={i} style={{ background: "#111", border: `1px solid ${CARD_BORDER}`, borderRadius: "10px", padding: "14px 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+          <span style={{ fontSize: "14px", fontWeight: 600, color: "#E5E7EB" }}>{s.slide}</span>
+          <span style={{ padding: "2px 9px", background: c.bg, border: `1px solid ${c.border}`, borderRadius: "99px", color: c.color, fontSize: "11px", fontWeight: 700 }}>{s.verdict}</span>
+        </div>
+        <p style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.7 }}>{s.assessment}</p>
       </div>
-    </Card>
-  );
+    );
+  }
 
-  return paid ? content : (
-    <LockedSection label="Slide-by-slide feedback for every slide" href={buyHref}>
-      {content}
-    </LockedSection>
+  if (paid) {
+    return (
+      <Card>
+        <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "18px" }}>Slide-by-Slide Feedback</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {slides.map((s, i) => slideCard(s, i))}
+        </div>
+      </Card>
+    );
+  }
+
+  const previewSlides = slides.slice(0, Math.max(2, Math.floor(slides.length * 0.25)));
+  const remainingSlides = slides.slice(previewSlides.length);
+
+  return (
+    <BlurredPreview
+      href={buyHref}
+      preview={
+        <Card>
+          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "18px" }}>Slide-by-Slide Feedback</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {previewSlides.map((s, i) => slideCard(s, i))}
+          </div>
+        </Card>
+      }
+      full={
+        <Card>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {remainingSlides.map((s, i) => slideCard(s, i + previewSlides.length))}
+          </div>
+        </Card>
+      }
+    />
   );
 }
 
@@ -362,7 +456,7 @@ function CountdownBanner({ createdAt, href }: { createdAt: string; href: string 
             </p>
           )}
           <p style={{ fontSize: "12px", color: MUTED, marginTop: "2px" }}>
-            {expired ? `Full price now applies — ${FULL_PRICE}` : `Unlock now for ${EARLY_PRICE} — goes up to ${FULL_PRICE} after`}
+            {expired ? `Full price now applies — ${FULL_PRICE}` : "Early access pricing — closes when your session ends"}
           </p>
         </div>
       </div>
@@ -370,7 +464,7 @@ function CountdownBanner({ createdAt, href }: { createdAt: string; href: string 
         padding: "8px 18px", borderRadius: "8px", background: expired ? "#EF4444" : GREEN,
         color: "#000", fontSize: "13px", fontWeight: 700, textDecoration: "none", flexShrink: 0,
       }}>
-        Unlock for {price}
+        Fix My Deck — {price}
       </a>
     </div>
   );
@@ -396,10 +490,10 @@ function UpsellBanner({ createdAt, buyHref, slideCount }: { createdAt: string; b
         </p>
       )}
       <a href={buyHref} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "14px 28px", background: GREEN, borderRadius: "10px", color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none" }}>
-        Unlock Full Report — {price}
+        Show Me How to Fix This — {price}
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
       </a>
-      <p style={{ fontSize: "11px", color: MUTED, marginTop: "12px" }}>One-time payment · Delivered within minutes</p>
+      <p style={{ fontSize: "11px", color: MUTED, marginTop: "12px", opacity: 0.6 }}>Instant access · Full PDF report · Prioritised fix checklist</p>
     </div>
   );
 }
@@ -528,6 +622,11 @@ function ResultsPageInner() {
           </div>
         )}
       </Card>
+
+      {/* ── TRUST LINE ── */}
+      <p style={{ textAlign: "center", fontSize: "12px", color: MUTED, opacity: 0.6, marginBottom: "20px" }}>
+        Built on 500+ investor-reviewed decks — across pre-seed to Series A
+      </p>
 
       {/* ── TABS ── */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
