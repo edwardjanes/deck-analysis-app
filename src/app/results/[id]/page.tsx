@@ -40,7 +40,7 @@ function ScoreCircle({ score, animated }: { score: number; animated: boolean }) 
   const circ = 2 * Math.PI * r;
   const pct = Math.min(score, 100) / 100;
   const offset = animated ? circ - pct * circ : circ;
-  const color = score >= 75 ? GREEN : score >= 50 ? "#FBBF24" : "#EF4444";
+  const color = score >= 85 ? GREEN : score >= 50 ? "#FBBF24" : "#EF4444";
   return (
     <div style={{ position: "relative", width: "136px", height: "136px", flexShrink: 0 }}>
       <svg width="136" height="136" style={{ transform: "rotate(-90deg)" }}>
@@ -594,6 +594,13 @@ function ResultsPageInner() {
   const verdictColor = data.verdict_type === "pass" ? GREEN : data.verdict_type === "review" ? "#FBBF24" : "#EF4444";
   const verdictLabel = data.verdict_type === "pass" ? "Investor Ready" : data.verdict_type === "review" ? "Needs Work" : "Not Ready";
 
+  // Investor sentiment band
+  const sentiment = data.score >= 85
+    ? { label: "Likely to get an investor reply", detail: "Provided the targeting and messaging is good", color: GREEN, bg: "rgba(3,251,131,0.08)", border: "rgba(3,251,131,0.25)" }
+    : data.score >= 50
+    ? { label: "Possibility to get a response", detail: "Based on messaging and investor targeting", color: "#FBBF24", bg: "rgba(251,191,36,0.08)", border: "rgba(251,191,36,0.25)" }
+    : { label: "Unlikely to get a response", detail: "Significant improvements required before approaching investors", color: "#EF4444", bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.25)" };
+
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 32px 80px" }}>
 
@@ -622,6 +629,49 @@ function ResultsPageInner() {
           </div>
         )}
       </Card>
+
+      {/* ── INVESTOR SENTIMENT BAND ── */}
+      <div style={{ background: sentiment.bg, border: `1px solid ${sentiment.border}`, borderRadius: "12px", padding: "16px 20px", marginBottom: "12px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "14px", flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: "200px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: sentiment.color, flexShrink: 0 }} />
+              <p style={{ fontSize: "14px", fontWeight: 700, color: sentiment.color }}>{sentiment.label}</p>
+            </div>
+            <p style={{ fontSize: "13px", color: MUTED, paddingLeft: "16px" }}>{sentiment.detail}</p>
+          </div>
+          <div style={{ display: "flex", gap: "4px", alignItems: "center", flexShrink: 0 }}>
+            {[49, 84, 100].map((threshold, i) => {
+              const bands = [
+                { label: "<50%", active: data.score < 50, color: "#EF4444" },
+                { label: "50–84%", active: data.score >= 50 && data.score <= 84, color: "#FBBF24" },
+                { label: ">84%", active: data.score > 84, color: GREEN },
+              ];
+              const band = bands[i];
+              return (
+                <div key={threshold} style={{
+                  padding: "4px 10px", borderRadius: "99px", fontSize: "11px", fontWeight: 600,
+                  background: band.active ? `${band.color}20` : "rgba(255,255,255,0.04)",
+                  color: band.active ? band.color : "#4B5563",
+                  border: `1px solid ${band.active ? `${band.color}40` : "transparent"}`,
+                }}>{band.label}</div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── RAISE READINESS MESSAGE ── */}
+      {!paid && (
+        <div style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: "12px", padding: "16px 20px", marginBottom: "12px" }}>
+          <p style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.75 }}>
+            <span style={{ color: "#fff", fontWeight: 600 }}>To run a successful raise you need a score above 90%.</span>
+            {data.score >= 90
+              ? " Your deck is in strong shape — focus on investor targeting and messaging to maximise response rates."
+              : ` Your current score is ${data.score}%. Make the improvements identified in the full report to close the gap and significantly increase your chances of getting investor meetings.`}
+          </p>
+        </div>
+      )}
 
       {/* ── TRUST LINE ── */}
       <p style={{ textAlign: "center", fontSize: "12px", color: MUTED, opacity: 0.6, marginBottom: "20px" }}>
