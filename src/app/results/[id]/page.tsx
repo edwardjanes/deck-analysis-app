@@ -663,6 +663,9 @@ function ResultsPageInner() {
         )}
       </Card>
 
+      {/* ── INVESTOR RESPONSE RATING HEADLINE ── */}
+      <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Investor Response Rating</h2>
+
       {/* ── INVESTOR SENTIMENT BAND ── */}
       <div style={{ background: sentiment.bg, border: `1px solid ${sentiment.border}`, borderRadius: "12px", padding: "16px 20px", marginBottom: "12px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: "14px", flexWrap: "wrap" }}>
