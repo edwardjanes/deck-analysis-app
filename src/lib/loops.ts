@@ -1,3 +1,15 @@
+async function sendTransactional(apiKey: string, transactionalId: string, email: string, dataVariables: Record<string, string>): Promise<void> {
+  const res = await fetch("https://app.loops.so/api/v1/transactional", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({ transactionalId, email, dataVariables }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`[loops] Failed to send email (${transactionalId}): ${res.status} ${body}`);
+  }
+}
+
 interface AnalysisEmailData {
   email: string;
   firstName: string;
@@ -10,35 +22,40 @@ interface AnalysisEmailData {
 export async function sendAnalysisResultEmail(data: AnalysisEmailData): Promise<void> {
   const apiKey = process.env.LOOPS_API_KEY;
   const transactionalId = process.env.LOOPS_TRANSACTIONAL_ID;
-
   if (!apiKey || !transactionalId) {
     console.warn("[loops] LOOPS_API_KEY or LOOPS_TRANSACTIONAL_ID not set — skipping email");
     return;
   }
-
-  const res = await fetch("https://app.loops.so/api/v1/transactional", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      transactionalId,
-      email: data.email,
-      dataVariables: {
-        firstName: data.firstName,
-        businessName: data.businessName,
-        score: String(data.score),
-        verdict: data.verdict,
-        resultsUrl: data.resultsUrl,
-      },
-    }),
+  await sendTransactional(apiKey, transactionalId, data.email, {
+    firstName: data.firstName,
+    businessName: data.businessName,
+    score: String(data.score),
+    verdict: data.verdict,
+    resultsUrl: data.resultsUrl,
   });
+  console.log(`[loops] Results email sent to ${data.email}`);
+}
 
-  if (!res.ok) {
-    const body = await res.text();
-    console.error(`[loops] Failed to send email: ${res.status} ${body}`);
-  } else {
-    console.log(`[loops] Results email sent to ${data.email}`);
+interface PaymentConfirmationData {
+  email: string;
+  firstName: string;
+  businessName: string;
+  resultsUrl: string;
+  orderId: string;
+}
+
+export async function sendPaymentConfirmationEmail(data: PaymentConfirmationData): Promise<void> {
+  const apiKey = process.env.LOOPS_API_KEY;
+  const transactionalId = process.env.LOOPS_PAYMENT_TRANSACTIONAL_ID;
+  if (!apiKey || !transactionalId) {
+    console.warn("[loops] LOOPS_PAYMENT_TRANSACTIONAL_ID not set — skipping payment email");
+    return;
   }
+  await sendTransactional(apiKey, transactionalId, data.email, {
+    firstName: data.firstName,
+    businessName: data.businessName,
+    resultsUrl: data.resultsUrl,
+    orderId: data.orderId,
+  });
+  console.log(`[loops] Payment confirmation sent to ${data.email}`);
 }

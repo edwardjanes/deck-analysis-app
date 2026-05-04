@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { sendPaymentConfirmationEmail } from "@/lib/loops";
 
 // Whop sends webhook events when a payment completes.
 // We verify the signature, extract the submission_id from metadata,
@@ -63,10 +64,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    const { error } = await supabaseAdmin
+    const { data: submission, error } = await supabaseAdmin
       .from("deck_submissions")
       .update({ paid: true, whop_order_id: orderId })
-      .eq("id", submissionId);
+      .eq("id", submissionId)
+      .select("email, first_name, business_name")
+      .single();
 
     if (error) {
       Sentry.captureException(new Error(error.message), {
@@ -78,6 +81,18 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`[whop/webhook] Marked submission ${submissionId} as paid (order: ${orderId})`);
+
+    // Send payment confirmation email
+    if (submission?.email) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk";
+      sendPaymentConfirmationEmail({
+        email: submission.email,
+        firstName: submission.first_name ?? "there",
+        businessName: submission.business_name,
+        resultsUrl: `${appUrl}/results/${submissionId}`,
+        orderId: orderId || "—",
+      }).catch(err => console.error("[loops] Payment email error:", err));
+    }
   }
 
   return NextResponse.json({ received: true });

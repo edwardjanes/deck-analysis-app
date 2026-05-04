@@ -415,7 +415,8 @@ function Nav() {
   }, [supabase]);
 
   return (
-    <nav style={{ borderBottom: "1px solid #1A1A1A", padding: "0 32px", height: "56px", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }}>
+    <nav style={{ borderBottom: "1px solid #1A1A1A", height: "56px", marginBottom: "32px" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 32px", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <img src={LOGO} alt="Source Capital" style={{ height: "26px", width: "auto" }} />
       <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
         {loggedIn && (
@@ -437,6 +438,7 @@ function Nav() {
             Logout
           </button>
         )}
+      </div>
       </div>
     </nav>
   );
@@ -499,7 +501,7 @@ function ResultsPageInner() {
   const verdictLabel = data.verdict_type === "pass" ? "Investor Ready" : data.verdict_type === "review" ? "Needs Work" : "Not Ready";
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 20px 80px" }}>
+    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 32px 80px" }}>
 
       {/* ── COUNTDOWN BANNER ── */}
       {!paid && createdAt && <CountdownBanner createdAt={createdAt} href={buyHref} />}
