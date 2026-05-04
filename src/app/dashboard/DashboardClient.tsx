@@ -129,7 +129,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
             { label: "About", href: "https://sourcecapital.co.uk/about" },
             { label: "Contact", href: "https://sourcecapital.co.uk/contact" },
           ].map(({ label, href }) => (
-            <a key={label} href={href} style={{ fontSize: "14px", color: "#9CA3AF", fontWeight: 500 }}
+            <a key={label} href={href} style={{ fontSize: "16px", color: "#9CA3AF", fontWeight: 500 }}
               onMouseOver={e => (e.currentTarget.style.color = "#fff")}
               onMouseOut={e => (e.currentTarget.style.color = "#9CA3AF")}>
               {label}
@@ -137,7 +137,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
           ))}
           <button
             onClick={handleLogout}
-            style={{ fontSize: "14px", color: "#9CA3AF", background: "none", border: "none", cursor: "pointer", fontWeight: 500, padding: 0 }}
+            style={{ fontSize: "16px", color: "#9CA3AF", background: "none", border: "none", cursor: "pointer", fontWeight: 500, padding: 0 }}
             onMouseOver={e => (e.currentTarget.style.color = "#fff")}
             onMouseOut={e => (e.currentTarget.style.color = "#9CA3AF")}
           >
@@ -155,7 +155,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
             <h1 style={{ fontSize: "28px", fontWeight: 800, marginBottom: "6px" }}>
               Welcome back, {firstName}
             </h1>
-            <p style={{ fontSize: "14px", color: "#6B7280" }}>
+            <p style={{ fontSize: "16px", color: "#6B7280" }}>
               {isPro ? "You have unlimited analyses." : `${Math.max(0, FREE_LIMIT - analysesUsed)} free ${FREE_LIMIT - analysesUsed === 1 ? "analysis" : "analyses"} remaining.`}
             </p>
           </div>
@@ -170,7 +170,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
             </div>
             {!isPro && (
               <a href={whopUrl} target="_blank" rel="noopener noreferrer"
-                style={{ padding: "8px 18px", borderRadius: "8px", background: GREEN, color: "#000", fontSize: "13px", fontWeight: 700 }}>
+                style={{ padding: "8px 18px", borderRadius: "8px", background: GREEN, color: "#000", fontSize: "15px", fontWeight: 700 }}>
                 Upgrade to Pro
               </a>
             )}
@@ -188,19 +188,19 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
                 </svg>
               </div>
               <h3 style={{ fontSize: "17px", fontWeight: 700, marginBottom: "8px" }}>Free submission used</h3>
-              <p style={{ fontSize: "14px", color: "#6B7280", marginBottom: "6px", maxWidth: "380px", margin: "0 auto 6px" }}>
+              <p style={{ fontSize: "16px", color: "#6B7280", marginBottom: "6px", maxWidth: "380px", margin: "0 auto 6px" }}>
                 You have already submitted a pitch deck. Free accounts are limited to one submission.
               </p>
-              <p style={{ fontSize: "14px", color: "#6B7280", marginBottom: "24px", maxWidth: "380px", margin: "0 auto 24px" }}>
+              <p style={{ fontSize: "16px", color: "#6B7280", marginBottom: "24px", maxWidth: "380px", margin: "0 auto 24px" }}>
                 Upgrade to Pro for unlimited analyses.
               </p>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
                 <a href={limitReached.existingId ? `/results/${limitReached.existingId}` : "/dashboard"}
-                  style={{ padding: "10px 20px", borderRadius: "8px", border: "1px solid #2A2A2A", background: "transparent", color: "#9CA3AF", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}>
+                  style={{ padding: "10px 20px", borderRadius: "8px", border: "1px solid #2A2A2A", background: "transparent", color: "#9CA3AF", fontSize: "15px", fontWeight: 600, textDecoration: "none" }}>
                   View existing analysis
                 </a>
                 <a href={whopUrl} target="_blank" rel="noopener noreferrer"
-                  style={{ padding: "10px 22px", borderRadius: "8px", background: GREEN, color: "#000", fontSize: "13px", fontWeight: 700, textDecoration: "none" }}>
+                  style={{ padding: "10px 22px", borderRadius: "8px", background: GREEN, color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none" }}>
                   Upgrade to Pro — unlimited analyses
                 </a>
               </div>
@@ -238,14 +238,14 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
                   <p style={{ fontSize: "16px", fontWeight: 600, marginBottom: "6px" }}>
                     <span style={{ color: GREEN }}>Click to upload</span> or drag and drop
                   </p>
-                  <p style={{ fontSize: "13px", color: "#6B7280" }}>Drop your pitch deck here · PDF only · Max 20MB</p>
+                  <p style={{ fontSize: "15px", color: "#6B7280" }}>Drop your pitch deck here · PDF only · Max 20MB</p>
                 </>
               ) : (
                 <>
                   <p style={{ fontSize: "16px", fontWeight: 600, marginBottom: "8px" }}>Free analyses used</p>
-                  <p style={{ fontSize: "13px", color: "#6B7280", marginBottom: "16px" }}>Upgrade to Pro for unlimited analyses</p>
+                  <p style={{ fontSize: "15px", color: "#6B7280", marginBottom: "16px" }}>Upgrade to Pro for unlimited analyses</p>
                   <a href={whopUrl} target="_blank" rel="noopener noreferrer"
-                    style={{ display: "inline-block", padding: "10px 24px", borderRadius: "8px", background: GREEN, color: "#000", fontSize: "13px", fontWeight: 700 }}>
+                    style={{ display: "inline-block", padding: "10px 24px", borderRadius: "8px", background: GREEN, color: "#000", fontSize: "15px", fontWeight: 700 }}>
                     Upgrade to Pro
                   </a>
                 </>
@@ -297,13 +297,13 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
                   {file ? (
                     <>
                       <div style={{ fontSize: "20px", marginBottom: "6px" }}>📄</div>
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: GREEN }}>{file.name}</p>
+                      <p style={{ fontSize: "16px", fontWeight: 600, color: GREEN }}>{file.name}</p>
                       <p style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px" }}>{(file.size / 1024 / 1024).toFixed(1)} MB · click to replace</p>
                     </>
                   ) : (
                     <>
                       <div style={{ fontSize: "24px", marginBottom: "8px" }}>☁️</div>
-                      <p style={{ fontSize: "13px", color: "#9CA3AF" }}><span style={{ color: GREEN, fontWeight: 600 }}>Click to upload</span> or drag and drop</p>
+                      <p style={{ fontSize: "15px", color: "#9CA3AF" }}><span style={{ color: GREEN, fontWeight: 600 }}>Click to upload</span> or drag and drop</p>
                     </>
                   )}
                 </div>
@@ -311,7 +311,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
               </div>
 
               {error && (
-                <p style={{ fontSize: "13px", color: "#EF4444", marginBottom: "16px", padding: "10px 12px", background: "rgba(239,68,68,0.08)", borderRadius: "8px", border: "1px solid rgba(239,68,68,0.2)" }}>
+                <p style={{ fontSize: "15px", color: "#EF4444", marginBottom: "16px", padding: "10px 12px", background: "rgba(239,68,68,0.08)", borderRadius: "8px", border: "1px solid rgba(239,68,68,0.2)" }}>
                   {error}
                 </p>
               )}
@@ -319,7 +319,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
               <button type="submit" disabled={submitting} style={{
                 width: "100%", padding: "13px", background: submitting ? "#2A2A2A" : GREEN,
                 border: "none", borderRadius: "10px", color: submitting ? "#6B7280" : "#000",
-                fontSize: "14px", fontWeight: 700, cursor: submitting ? "not-allowed" : "pointer",
+                fontSize: "16px", fontWeight: 700, cursor: submitting ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
               }}>
                 {submitting ? (
@@ -335,7 +335,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
           <h2 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "16px" }}>Analysis History</h2>
           {analyses.length === 0 ? (
             <div style={{ background: "#161616", border: "1px solid #242424", borderRadius: "12px", padding: "40px", textAlign: "center" }}>
-              <p style={{ fontSize: "14px", color: "#6B7280" }}>No analyses yet. Upload your first deck to get started.</p>
+              <p style={{ fontSize: "16px", color: "#6B7280" }}>No analyses yet. Upload your first deck to get started.</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -399,5 +399,5 @@ const labelStyle: React.CSSProperties = {
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px", background: "#111", border: "1px solid #2A2A2A",
-  borderRadius: "8px", color: "#fff", fontSize: "14px", outline: "none", appearance: "none",
+  borderRadius: "8px", color: "#fff", fontSize: "16px", outline: "none", appearance: "none",
 };

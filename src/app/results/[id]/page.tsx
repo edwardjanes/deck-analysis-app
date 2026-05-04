@@ -66,7 +66,7 @@ function Tab({ label, active, onClick }: { label: string; active: boolean; onCli
       border: active ? "none" : `1px solid ${CARD_BORDER}`,
       background: active ? GREEN : "transparent",
       color: active ? "#000" : MUTED,
-      fontSize: "14px", fontWeight: active ? 700 : 500,
+      fontSize: "16px", fontWeight: active ? 700 : 500,
       cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.15s", flexShrink: 0,
     }}>
       {label}
@@ -90,8 +90,8 @@ function DimBar({ name, score, animated }: { name: string; score: number; animat
   return (
     <div style={{ marginBottom: "18px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-        <span style={{ fontSize: "14px", color: "#E5E7EB" }}>{name}</span>
-        <span style={{ fontSize: "14px", fontWeight: 700, color }}>{score}/10</span>
+        <span style={{ fontSize: "16px", color: "#E5E7EB" }}>{name}</span>
+        <span style={{ fontSize: "16px", fontWeight: 700, color }}>{score}/10</span>
       </div>
       <div style={{ height: "6px", background: "#242424", borderRadius: "99px", overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: "99px",
@@ -121,12 +121,12 @@ function LockedSection({ children, label = "Unlock to reveal", href }: { childre
               <path d="M5 7V5a3 3 0 016 0v2" stroke={GREEN} strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </div>
-          <p style={{ fontSize: "14px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>{label}</p>
-          <p style={{ fontSize: "13px", color: MUTED, marginBottom: "16px" }}>Unlock the full report for $7</p>
+          <p style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>{label}</p>
+          <p style={{ fontSize: "15px", color: MUTED, marginBottom: "16px" }}>Unlock the full report for $7</p>
           <a href={href} style={{
             display: "inline-flex", alignItems: "center", gap: "6px",
             padding: "10px 22px", background: GREEN, borderRadius: "8px",
-            color: "#000", fontSize: "13px", fontWeight: 700, textDecoration: "none",
+            color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none",
           }}>
             Show Me How to Fix This — $7
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -160,7 +160,7 @@ function BlurredPreview({ preview, full, href }: { preview: React.ReactNode; ful
             <a href={href} style={{
               display: "inline-flex", alignItems: "center", gap: "6px",
               padding: "10px 22px", background: GREEN, borderRadius: "8px",
-              color: "#000", fontSize: "13px", fontWeight: 700, textDecoration: "none",
+              color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none",
             }}>
               Show Me How to Fix This — $7
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -182,17 +182,17 @@ function OverviewTab({ a, paid, buyHref, createdAt, slideCount }: { a: DeckAnaly
       <Card>
         <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "16px" }}>Overall Assessment</h2>
         {a.executiveSummary?.split("\n\n").map((p, i) => (
-          <p key={i} style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.85, marginBottom: "14px" }}>{p}</p>
+          <p key={i} style={{ fontSize: "16px", color: "#9CA3AF", lineHeight: 1.85, marginBottom: "14px" }}>{p}</p>
         ))}
       </Card>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
         <Card>
           <p style={{ fontSize: "10px", color: "#EF4444", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Most Damaging Issue</p>
-          <p style={{ fontSize: "13px", color: "#D1D5DB", lineHeight: 1.7 }}>{a.mostDamagingIssue}</p>
+          <p style={{ fontSize: "15px", color: "#D1D5DB", lineHeight: 1.7 }}>{a.mostDamagingIssue}</p>
         </Card>
         <Card>
           <p style={{ fontSize: "10px", color: GREEN, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Best Asset</p>
-          <p style={{ fontSize: "13px", color: "#D1D5DB", lineHeight: 1.7 }}>{a.bestAsset}</p>
+          <p style={{ fontSize: "15px", color: "#D1D5DB", lineHeight: 1.7 }}>{a.bestAsset}</p>
         </Card>
       </div>
       <Card>
@@ -201,7 +201,7 @@ function OverviewTab({ a, paid, buyHref, createdAt, slideCount }: { a: DeckAnaly
           {a.drivingLowScore?.map((item, i) => (
             <div key={i} style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
               <span style={{ width: "18px", height: "18px", borderRadius: "50%", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "9px", color: "#EF4444", marginTop: "1px" }}>✕</span>
-              <p style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.7 }}>{item}</p>
+              <p style={{ fontSize: "15px", color: "#9CA3AF", lineHeight: 1.7 }}>{item}</p>
             </div>
           ))}
         </div>
@@ -212,7 +212,7 @@ function OverviewTab({ a, paid, buyHref, createdAt, slideCount }: { a: DeckAnaly
           {a.genuinelyWorking?.map((item, i) => (
             <div key={i} style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
               <span style={{ width: "18px", height: "18px", borderRadius: "50%", background: "rgba(3,251,131,0.12)", border: "1px solid rgba(3,251,131,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "9px", color: GREEN, marginTop: "1px" }}>✓</span>
-              <p style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.7 }}>{item}</p>
+              <p style={{ fontSize: "15px", color: "#9CA3AF", lineHeight: 1.7 }}>{item}</p>
             </div>
           ))}
         </div>
@@ -226,7 +226,7 @@ function OverviewTab({ a, paid, buyHref, createdAt, slideCount }: { a: DeckAnaly
       {!paid && (
         <Card>
           <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "14px" }}>Overall Assessment</h2>
-          <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.85 }}>{firstPara}</p>
+          <p style={{ fontSize: "16px", color: "#9CA3AF", lineHeight: 1.85 }}>{firstPara}</p>
         </Card>
       )}
 
@@ -240,7 +240,7 @@ function OverviewTab({ a, paid, buyHref, createdAt, slideCount }: { a: DeckAnaly
       {/* Change 6 — testimonial */}
       {!paid && (
         <div style={{ background: "#111", border: `1px solid ${CARD_BORDER}`, borderRadius: "12px", padding: "20px 24px" }}>
-          <p style={{ fontSize: "14px", color: "#D1D5DB", lineHeight: 1.8, marginBottom: "12px", fontStyle: "italic" }}>
+          <p style={{ fontSize: "16px", color: "#D1D5DB", lineHeight: 1.8, marginBottom: "12px", fontStyle: "italic" }}>
             &ldquo;I restructured my deck based on this report. Had three investor meetings booked the following week.&rdquo;
           </p>
           <p style={{ fontSize: "12px", color: MUTED, fontWeight: 600 }}>— Jamie R., Founder, SaaS / Pre-Seed</p>
@@ -265,26 +265,26 @@ function OverviewTab({ a, paid, buyHref, createdAt, slideCount }: { a: DeckAnaly
             {fixes.slice(0, 3).map((f, i) => (
               paid ? (
                 <Card key={i} style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
-                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(3,251,131,0.12)", border: `1px solid rgba(3,251,131,0.25)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "14px", fontWeight: 800, color: GREEN }}>{i + 1}</div>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(3,251,131,0.12)", border: `1px solid rgba(3,251,131,0.25)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "16px", fontWeight: 800, color: GREEN }}>{i + 1}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px", gap: "12px", flexWrap: "wrap" }}>
-                      <p style={{ fontSize: "14px", fontWeight: 700, color: "#fff" }}>{f.fix}</p>
+                      <p style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>{f.fix}</p>
                       {f.effort && (
                         <span style={{ fontSize: "11px", fontWeight: 600, padding: "3px 10px", borderRadius: "99px", background: "rgba(251,191,36,0.1)", color: "#FBBF24", border: "1px solid rgba(251,191,36,0.25)", flexShrink: 0 }}>
                           {f.effort} effort
                         </span>
                       )}
                     </div>
-                    <p style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.7 }}>{f.action}</p>
+                    <p style={{ fontSize: "15px", color: "#9CA3AF", lineHeight: 1.7 }}>{f.action}</p>
                   </div>
                 </Card>
               ) : (
                 <LockedSection key={i} label="Unlock to see action steps" href={buyHref}>
                   <Card style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
-                    <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(3,251,131,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "14px", fontWeight: 800, color: GREEN }}>{i + 1}</div>
+                    <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(3,251,131,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "16px", fontWeight: 800, color: GREEN }}>{i + 1}</div>
                     <div>
-                      <p style={{ fontSize: "14px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{f.fix}</p>
-                      <p style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.7 }}>{f.action}</p>
+                      <p style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{f.fix}</p>
+                      <p style={{ fontSize: "15px", color: "#9CA3AF", lineHeight: 1.7 }}>{f.action}</p>
                     </div>
                   </Card>
                 </LockedSection>
@@ -312,7 +312,7 @@ function BreakdownTab({ a, animated, paid, buyHref }: { a: DeckAnalysis; animate
         </Card>
         <Card>
           <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Bottom Line</h2>
-          <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.8 }}>{a.bottomLine}</p>
+          <p style={{ fontSize: "16px", color: "#9CA3AF", lineHeight: 1.8 }}>{a.bottomLine}</p>
         </Card>
       </div>
     );
@@ -334,7 +334,7 @@ function BreakdownTab({ a, animated, paid, buyHref }: { a: DeckAnalysis; animate
           </Card>
           <Card>
             <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Bottom Line</h2>
-            <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.8 }}>{a.bottomLine}</p>
+            <p style={{ fontSize: "16px", color: "#9CA3AF", lineHeight: 1.8 }}>{a.bottomLine}</p>
           </Card>
         </div>
       }
@@ -361,10 +361,10 @@ function SlideBySlideTab({ a, paid, buyHref }: { a: DeckAnalysis; paid: boolean;
     return (
       <div key={i} style={{ background: "#111", border: `1px solid ${CARD_BORDER}`, borderRadius: "10px", padding: "14px 16px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-          <span style={{ fontSize: "14px", fontWeight: 600, color: "#E5E7EB" }}>{s.slide}</span>
+          <span style={{ fontSize: "16px", fontWeight: 600, color: "#E5E7EB" }}>{s.slide}</span>
           <span style={{ padding: "2px 9px", background: c.bg, border: `1px solid ${c.border}`, borderRadius: "99px", color: c.color, fontSize: "11px", fontWeight: 700 }}>{s.verdict}</span>
         </div>
-        <p style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.7 }}>{s.assessment}</p>
+        <p style={{ fontSize: "15px", color: "#9CA3AF", lineHeight: 1.7 }}>{s.assessment}</p>
       </div>
     );
   }
@@ -448,9 +448,9 @@ function CountdownBanner({ createdAt, href }: { createdAt: string; href: string 
         </svg>
         <div>
           {expired ? (
-            <p style={{ fontSize: "13px", fontWeight: 600, color: "#EF4444" }}>Early access offer expired</p>
+            <p style={{ fontSize: "15px", fontWeight: 600, color: "#EF4444" }}>Early access offer expired</p>
           ) : (
-            <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>
+            <p style={{ fontSize: "15px", fontWeight: 600, color: "#fff" }}>
               Early access price expires in{" "}
               <span style={{ fontFamily: "monospace", color: GREEN, fontWeight: 800 }}>{formatted}</span>
             </p>
@@ -462,7 +462,7 @@ function CountdownBanner({ createdAt, href }: { createdAt: string; href: string 
       </div>
       <a href={href} style={{
         padding: "8px 18px", borderRadius: "8px", background: expired ? "#EF4444" : GREEN,
-        color: "#000", fontSize: "13px", fontWeight: 700, textDecoration: "none", flexShrink: 0,
+        color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none", flexShrink: 0,
       }}>
         Fix My Deck — {price}
       </a>
@@ -479,11 +479,11 @@ function UpsellBanner({ createdAt, buyHref, slideCount }: { createdAt: string; b
       <h3 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "10px" }}>
         {slideCount > 0 ? `${slideCount} slides reviewed.` : "Analysis complete."} Now fix them.
       </h3>
-      <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.8, maxWidth: "480px", margin: "0 auto 16px" }}>
+      <p style={{ fontSize: "16px", color: "#9CA3AF", lineHeight: 1.8, maxWidth: "480px", margin: "0 auto 16px" }}>
         Unlock the full report: slide-by-slide feedback, your most damaging issue, highest-leverage fixes, and the bottom-line truth investors will see.
       </p>
       {!expired && (
-        <p style={{ fontSize: "13px", color: MUTED, marginBottom: "20px" }}>
+        <p style={{ fontSize: "15px", color: MUTED, marginBottom: "20px" }}>
           Early price of <span style={{ color: GREEN, fontWeight: 700 }}>{EARLY_PRICE}</span> expires in{" "}
           <span style={{ fontFamily: "monospace", color: "#fff", fontWeight: 700 }}>{formatted}</span>
           {" "}— then {FULL_PRICE}
@@ -514,19 +514,19 @@ function Nav() {
       <img src={LOGO} alt="Source Capital" style={{ height: "26px", width: "auto" }} />
       <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
         {loggedIn && (
-          <a href="/dashboard" style={{ fontSize: "14px", color: MUTED, textDecoration: "none", fontWeight: 500 }}>Dashboard</a>
+          <a href="/dashboard" style={{ fontSize: "16px", color: MUTED, textDecoration: "none", fontWeight: 500 }}>Dashboard</a>
         )}
         {[
           { label: "Pricing", href: "https://sourcecapital.co.uk/pricing" },
           { label: "About", href: "https://sourcecapital.co.uk/about" },
           { label: "Contact", href: "https://sourcecapital.co.uk/contact" },
         ].map(({ label, href }) => (
-          <a key={label} href={href} style={{ fontSize: "14px", color: MUTED, textDecoration: "none", fontWeight: 500 }}>{label}</a>
+          <a key={label} href={href} style={{ fontSize: "16px", color: MUTED, textDecoration: "none", fontWeight: 500 }}>{label}</a>
         ))}
         {loggedIn && (
           <button
             onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
-            style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 16px", borderRadius: "99px", border: `1px solid ${CARD_BORDER}`, background: "transparent", color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+            style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 16px", borderRadius: "99px", border: `1px solid ${CARD_BORDER}`, background: "transparent", color: "#fff", fontSize: "15px", fontWeight: 600, cursor: "pointer" }}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 12H3a1 1 0 01-1-1V3a1 1 0 011-1h2M9 10l3-3-3-3M12 7H5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
             Logout
@@ -568,7 +568,7 @@ function ResultsPageInner() {
     <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center" }}>
         <div style={{ width: "36px", height: "36px", border: "3px solid #242424", borderTopColor: GREEN, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 14px" }} />
-        <p style={{ color: MUTED, fontSize: "14px" }}>Loading your results...</p>
+        <p style={{ color: MUTED, fontSize: "16px" }}>Loading your results...</p>
       </div>
     </div>
   );
@@ -578,8 +578,8 @@ function ResultsPageInner() {
       <div style={{ maxWidth: "440px", textAlign: "center" }}>
         <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
         <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Analysis Failed</h1>
-        <p style={{ fontSize: "14px", color: MUTED, marginBottom: "24px" }}>{data?.error_message || "Something went wrong. Please try again."}</p>
-        <a href="/dashboard" style={{ display: "inline-block", padding: "11px 24px", background: GREEN, borderRadius: "8px", color: "#000", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>Back to Dashboard</a>
+        <p style={{ fontSize: "16px", color: MUTED, marginBottom: "24px" }}>{data?.error_message || "Something went wrong. Please try again."}</p>
+        <a href="/dashboard" style={{ display: "inline-block", padding: "11px 24px", background: GREEN, borderRadius: "8px", color: "#000", fontSize: "16px", fontWeight: 700, textDecoration: "none" }}>Back to Dashboard</a>
       </div>
     </div>
   );
@@ -619,13 +619,13 @@ function ResultsPageInner() {
                 {verdictLabel}
               </span>
             </div>
-            {filename && <p style={{ fontSize: "13px", color: MUTED, marginBottom: "4px" }}>{filename}</p>}
-            {slideCount > 0 && <p style={{ fontSize: "13px", color: MUTED }}>{slideCount} slides analysed</p>}
+            {filename && <p style={{ fontSize: "15px", color: MUTED, marginBottom: "4px" }}>{filename}</p>}
+            {slideCount > 0 && <p style={{ fontSize: "15px", color: MUTED }}>{slideCount} slides analysed</p>}
           </div>
         </div>
         {data.verdict && (
           <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: `1px solid ${CARD_BORDER}` }}>
-            <p style={{ fontSize: "14px", color: "#9CA3AF", lineHeight: 1.75 }}>{data.verdict}</p>
+            <p style={{ fontSize: "16px", color: "#9CA3AF", lineHeight: 1.75 }}>{data.verdict}</p>
           </div>
         )}
       </Card>
@@ -636,9 +636,9 @@ function ResultsPageInner() {
           <div style={{ flex: 1, minWidth: "200px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
               <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: sentiment.color, flexShrink: 0 }} />
-              <p style={{ fontSize: "14px", fontWeight: 700, color: sentiment.color }}>{sentiment.label}</p>
+              <p style={{ fontSize: "16px", fontWeight: 700, color: sentiment.color }}>{sentiment.label}</p>
             </div>
-            <p style={{ fontSize: "13px", color: MUTED, paddingLeft: "16px" }}>{sentiment.detail}</p>
+            <p style={{ fontSize: "15px", color: MUTED, paddingLeft: "16px" }}>{sentiment.detail}</p>
           </div>
           <div style={{ display: "flex", gap: "4px", alignItems: "center", flexShrink: 0 }}>
             {[49, 84, 100].map((threshold, i) => {
@@ -664,7 +664,7 @@ function ResultsPageInner() {
       {/* ── RAISE READINESS MESSAGE ── */}
       {!paid && (
         <div style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: "12px", padding: "16px 20px", marginBottom: "12px" }}>
-          <p style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.75 }}>
+          <p style={{ fontSize: "15px", color: "#9CA3AF", lineHeight: 1.75 }}>
             <span style={{ color: "#fff", fontWeight: 600 }}>To run a successful raise you need a score above 90%.</span>
             {data.score >= 90
               ? " Your deck is in strong shape — focus on investor targeting and messaging to maximise response rates."

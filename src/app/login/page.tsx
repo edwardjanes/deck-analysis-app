@@ -13,7 +13,7 @@ const LOGO = "https://raw.githubusercontent.com/edwardjanes/source-capital/0147b
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "11px 14px",
   background: "#111", border: "1px solid #2A2A2A",
-  borderRadius: "8px", color: "#fff", fontSize: "14px",
+  borderRadius: "8px", color: "#fff", fontSize: "16px",
   outline: "none",
 };
 
@@ -98,18 +98,18 @@ export default function LoginPage() {
           <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "6px", textAlign: "center" }}>
             {mode === "login" ? "Welcome back" : "Create your account"}
           </h1>
-          <p style={{ fontSize: "13px", color: MUTED, textAlign: "center", marginBottom: "28px" }}>
+          <p style={{ fontSize: "15px", color: MUTED, textAlign: "center", marginBottom: "28px" }}>
             {mode === "login" ? "Sign in to access your analyses" : "Start analysing your pitch deck"}
           </p>
 
           {success && (
-            <div style={{ background: "rgba(3,251,131,0.08)", border: "1px solid rgba(3,251,131,0.25)", borderRadius: "8px", padding: "12px", marginBottom: "20px", fontSize: "13px", color: GREEN }}>
+            <div style={{ background: "rgba(3,251,131,0.08)", border: "1px solid rgba(3,251,131,0.25)", borderRadius: "8px", padding: "12px", marginBottom: "20px", fontSize: "15px", color: GREEN }}>
               {success}
             </div>
           )}
 
           {error && (
-            <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: "8px", padding: "12px", marginBottom: "20px", fontSize: "13px", color: "#EF4444" }}>
+            <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: "8px", padding: "12px", marginBottom: "20px", fontSize: "15px", color: "#EF4444" }}>
               {error}
             </div>
           )}
@@ -122,7 +122,7 @@ export default function LoginPage() {
             style={{
               width: "100%", padding: "12px", borderRadius: "10px",
               border: "1px solid #2A2A2A", background: "#111",
-              color: "#fff", fontSize: "14px", fontWeight: 600,
+              color: "#fff", fontSize: "16px", fontWeight: 600,
               cursor: loading ? "not-allowed" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
               marginBottom: "20px",
@@ -174,7 +174,7 @@ export default function LoginPage() {
                 width: "100%", padding: "13px", borderRadius: "10px", border: "none",
                 background: loading ? "#2A2A2A" : GREEN,
                 color: loading ? MUTED : "#000",
-                fontSize: "14px", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
+                fontSize: "16px", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
               }}
             >
@@ -184,11 +184,11 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p style={{ textAlign: "center", fontSize: "13px", color: MUTED, marginTop: "20px" }}>
+          <p style={{ textAlign: "center", fontSize: "15px", color: MUTED, marginTop: "20px" }}>
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}
             <button
               onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setSuccess(""); }}
-              style={{ background: "none", border: "none", color: GREEN, fontWeight: 600, cursor: "pointer", fontSize: "13px" }}
+              style={{ background: "none", border: "none", color: GREEN, fontWeight: 600, cursor: "pointer", fontSize: "15px" }}
             >
               {mode === "login" ? "Sign up" : "Sign in"}
             </button>
