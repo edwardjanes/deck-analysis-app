@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser";
 import { useRouter } from "next/navigation";
 import { DeckAnalysis, SlideAssessment } from "@/lib/deckPrompt";
+import posthog from "posthog-js";
 
 interface SubmissionResult {
   id: string;
@@ -32,6 +33,10 @@ const LOGO = "https://raw.githubusercontent.com/edwardjanes/source-capital/0147b
 function checkoutUrl(submissionId: string): string {
   const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID ?? "plan_AUP8u87FOYnEZ";
   return `https://whop.com/checkout/${planId}/?${new URLSearchParams({ "metadata[submission_id]": submissionId }).toString()}`;
+}
+
+function captureCheckout(score?: number) {
+  posthog.capture("checkout_initiated", { score });
 }
 
 // ── Score circle ──────────────────────────────────────────────
@@ -123,7 +128,7 @@ function LockedSection({ children, label = "Unlock to reveal", href }: { childre
           </div>
           <p style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>{label}</p>
           <p style={{ fontSize: "15px", color: MUTED, marginBottom: "16px" }}>Unlock the full report for $7</p>
-          <a href={href} style={{
+          <a href={href} onClick={() => captureCheckout()} style={{
             display: "inline-flex", alignItems: "center", gap: "6px",
             padding: "10px 22px", background: GREEN, borderRadius: "8px",
             color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none",
@@ -157,7 +162,7 @@ function BlurredPreview({ preview, full, href }: { preview: React.ReactNode; ful
         }}>
           <div style={{ textAlign: "center" }}>
             <p style={{ fontSize: "12px", fontWeight: 600, color: MUTED, marginBottom: "10px", letterSpacing: "0.04em" }}>Unlock to view full breakdown</p>
-            <a href={href} style={{
+            <a href={href} onClick={() => captureCheckout()} style={{
               display: "inline-flex", alignItems: "center", gap: "6px",
               padding: "10px 22px", background: GREEN, borderRadius: "8px",
               color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none",
@@ -460,7 +465,7 @@ function CountdownBanner({ createdAt, href }: { createdAt: string; href: string 
           </p>
         </div>
       </div>
-      <a href={href} style={{
+      <a href={href} onClick={() => captureCheckout()} style={{
         padding: "8px 18px", borderRadius: "8px", background: expired ? "#EF4444" : GREEN,
         color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none", flexShrink: 0,
       }}>
@@ -489,7 +494,7 @@ function UpsellBanner({ createdAt, buyHref, slideCount }: { createdAt: string; b
           {" "}— then {FULL_PRICE}
         </p>
       )}
-      <a href={buyHref} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "14px 28px", background: GREEN, borderRadius: "10px", color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none" }}>
+      <a href={buyHref} onClick={() => captureCheckout()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "14px 28px", background: GREEN, borderRadius: "10px", color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none" }}>
         Show Me How to Fix This — {price}
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
       </a>
@@ -560,6 +565,7 @@ function ResultsPageInner() {
         setBuyHref(checkoutUrl(d.id));
         setCreatedAt(d.created_at);
         setTimeout(() => setAnimated(true), 100);
+        posthog.capture("results_viewed", { score: d.score, verdict_type: d.verdict_type, paid: d.paid });
       })
       .catch(() => setLoading(false));
   }, [id]);

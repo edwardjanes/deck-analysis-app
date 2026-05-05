@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 
 const COUNTRIES = [
   "Australia", "Austria", "Belgium", "Brazil", "Canada", "Chile", "China",
@@ -90,6 +91,7 @@ export default function UploadPage() {
       if (!res.ok) throw new Error(data.error || "Submission failed");
 
       sessionStorage.removeItem("deckscore-lead");
+      posthog.capture("deck_uploaded", { business_name: businessName, country });
       router.push(`/investment-score/analysing/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import posthog from "posthog-js";
 import LeadModal from "@/components/LeadModal";
 
 // Mock data for the hero score card preview
@@ -104,7 +105,7 @@ export default function InvestmentScorePage() {
             <img src="https://raw.githubusercontent.com/edwardjanes/source-capital/0147b27fad891686f67559992e43319411f07ba4/logo.png" alt="Source Capital" style={{ height: "32px", width: "auto" }} />
           </div>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => { posthog.capture("cta_clicked", { location: "investment_score" }); setShowModal(true); }}
             style={{ padding: "8px 18px", background: "rgba(3,251,131,0.12)", border: "1px solid rgba(3,251,131,0.3)", borderRadius: "8px", color: "#02d970", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}
           >
             Analyse My Deck
@@ -142,7 +143,7 @@ export default function InvestmentScorePage() {
             </div>
 
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => { posthog.capture("cta_clicked", { location: "investment_score" }); setShowModal(true); }}
               style={{
                 padding: "14px 28px",
                 background: "linear-gradient(135deg, #03fb83, #03fb83)",
@@ -258,7 +259,7 @@ export default function InvestmentScorePage() {
             Stop guessing why investors aren't responding. Get an objective, data-driven analysis of your deck — for free.
           </p>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => { posthog.capture("cta_clicked", { location: "investment_score" }); setShowModal(true); }}
             style={{
               padding: "16px 36px",
               background: "linear-gradient(135deg, #03fb83, #03fb83)",

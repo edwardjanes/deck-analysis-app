@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 
 interface LeadModalProps {
   onClose: () => void;
@@ -67,6 +68,9 @@ export default function LeadModal({ onClose }: LeadModalProps) {
         "deckscore-lead",
         JSON.stringify({ firstName, lastName, email })
       );
+
+      posthog.capture("lead_captured");
+      posthog.identify(email, { firstName, lastName, email });
 
       router.push("/investment-score/upload");
     } catch (err) {
