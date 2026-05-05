@@ -68,7 +68,7 @@ export default function LeadModal({ onClose }: LeadModalProps) {
         JSON.stringify({ firstName, lastName, email })
       );
 
-      router.push("/upload");
+      router.push("/investment-score/upload");
     } catch (err) {
       if (err instanceof Error && err.message === "Failed to fetch") {
         // Cloudflare/network error — treat as rate limit

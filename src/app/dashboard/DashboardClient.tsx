@@ -102,7 +102,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
         return;
       }
       if (!res.ok) throw new Error(data.error || "Submission failed");
-      router.push(`/analysing/${data.id}`);
+      router.push(`/investment-score/analysing/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setSubmitting(false);
@@ -195,7 +195,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
                 Upgrade to Pro for unlimited analyses.
               </p>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
-                <a href={limitReached.existingId ? `/results/${limitReached.existingId}` : "/dashboard"}
+                <a href={limitReached.existingId ? `/investment-score/results/${limitReached.existingId}` : "/dashboard"}
                   style={{ padding: "10px 20px", borderRadius: "8px", border: "1px solid #2A2A2A", background: "transparent", color: "#9CA3AF", fontSize: "15px", fontWeight: 600, textDecoration: "none" }}>
                   View existing analysis
                 </a>
@@ -344,7 +344,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
                 const slideCount = a.analysis_json?.slideCount;
                 const isComplete = a.status === "complete";
                 return (
-                  <a key={a.id} href={isComplete ? `/results/${a.id}` : `/analysing/${a.id}`}
+                  <a key={a.id} href={isComplete ? `/investment-score/results/${a.id}` : `/investment-score/analysing/${a.id}`}
                     style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#161616", border: "1px solid #242424", borderRadius: "12px", padding: "18px 20px", textDecoration: "none", color: "inherit", transition: "border-color 0.15s" }}
                     onMouseOver={e => (e.currentTarget.style.borderColor = "#333")}
                     onMouseOut={e => (e.currentTarget.style.borderColor = "#242424")}

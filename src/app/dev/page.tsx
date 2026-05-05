@@ -36,7 +36,7 @@ export default function DevPage() {
       const res = await fetch("/api/submit", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Submit failed");
-      router.push(`/analysing/${data.id}`);
+      router.push(`/investment-score/analysing/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setQuickSubmitting(false);
@@ -54,7 +54,7 @@ export default function DevPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Clone failed");
-      router.push(`/analysing/${data.id}`);
+      router.push(`/investment-score/analysing/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -177,7 +177,7 @@ export default function DevPage() {
             {paid[label] && (
               <div style={{ marginTop: "10px" }}>
                 <a
-                  href={`/results/${id}`}
+                  href={`/investment-score/results/${id}`}
                   style={{ fontSize: "12px", color: "#03fb83", textDecoration: "none" }}
                 >
                   → View unlocked results page
