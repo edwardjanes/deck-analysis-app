@@ -17,8 +17,8 @@ const STEPS = [
 ];
 
 const FACTS = [
-  { stat: "1%",    body: "Of pitches actually receive VC funding" },
-  { stat: "4 min", body: "Average time a VC spends reviewing a deck" },
+  { stat: "<1%",   body: "Of pitches actually receive investment" },
+  { stat: "1:31",  body: "Average time a VC spends reviewing a deck" },
   { stat: "1,000+",body: "Decks reviewed by a typical VC per year" },
   { stat: "93%",   body: "Of VCs say team quality is the #1 factor" },
   { stat: "$4.2M", body: "Average seed round size in 2024" },
