@@ -26,8 +26,8 @@ interface DailyPoint {
 }
 
 interface AnalyticsData {
-  funnel: { result: FunnelStep[] };
-  pageviews: { result: [{ data: number[]; labels: string[] }] };
+  funnel: { results: FunnelStep[] };
+  pageviews: { results: [{ data: number[]; labels: string[] }] };
 }
 
 function fmt(n: number) {
