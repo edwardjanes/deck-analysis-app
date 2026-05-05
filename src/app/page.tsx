@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function Home() {
-  redirect("/investment-score");
+  redirect("/dashboard");
 }
