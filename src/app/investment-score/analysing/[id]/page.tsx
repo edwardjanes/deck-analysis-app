@@ -239,15 +239,24 @@ export default function AnalysingPage() {
   return (
     <main style={{
       minHeight: "100vh", background: "#0A0A0A", color: "#F8FAFC",
-      display: "flex", flexDirection: "column", alignItems: "center",
-      justifyContent: "center", padding: "48px 24px", fontFamily: "Inter, sans-serif",
+      display: "flex", flexDirection: "column", fontFamily: "Inter, sans-serif",
     }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
       `}</style>
 
+      {/* Nav */}
+      <nav style={{ borderBottom: "1px solid #111927", padding: "0 24px", flexShrink: 0 }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", height: "64px", display: "flex", alignItems: "center" }}>
+          <a href="/investment-score" style={{ display: "flex" }}>
+            <img src="https://raw.githubusercontent.com/edwardjanes/source-capital/0147b27fad891686f67559992e43319411f07ba4/logo.png" alt="Source Capital" style={{ height: "32px", width: "auto" }} />
+          </a>
+        </div>
+      </nav>
+
+      {/* Content */}
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 24px" }}>
       {recovery ? (
         <RecoveryPanel recovery={recovery} id={id ?? ""} />
       ) : (
@@ -343,6 +352,7 @@ export default function AnalysingPage() {
 
         </div>
       )}
+      </div>
     </main>
   );
 }
