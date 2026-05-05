@@ -29,23 +29,15 @@ const CARD_BG = "#161616";
 const CARD_BORDER = "#242424";
 const MUTED = "#6B7280";
 const LOGO = "https://raw.githubusercontent.com/edwardjanes/source-capital/0147b27fad891686f67559992e43319411f07ba4/logo.png";
+const PRICE = "$97";
 
 function checkoutUrl(submissionId: string): string {
-  const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID ?? "plan_AUP8u87FOYnEZ";
-  return `https://whop.com/checkout/${planId}/?${new URLSearchParams({ "metadata[submission_id]": submissionId }).toString()}`;
-}
-
-function fullCheckoutUrl(submissionId: string): string {
   const planId = process.env.NEXT_PUBLIC_WHOP_PLAN_ID_PRO ?? "plan_7LlelIvBnFah9";
   return `https://whop.com/checkout/${planId}/?${new URLSearchParams({ "metadata[submission_id]": submissionId }).toString()}`;
 }
 
-function isExpired(createdAt: string): boolean {
-  return Date.now() > new Date(createdAt).getTime() + 24 * 60 * 60 * 1000;
-}
-
 function captureCheckout(score?: number) {
-  posthog.capture("checkout_initiated", { score });
+  posthog.capture("checkout_initiated", { score, funnel: "investability-score" });
 }
 
 // ── Score circle ──────────────────────────────────────────────
@@ -72,7 +64,6 @@ function ScoreCircle({ score, animated }: { score: number; animated: boolean }) 
   );
 }
 
-// ── Tab button ─────────────────────────────────────────────────
 function Tab({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick} style={{
@@ -88,7 +79,6 @@ function Tab({ label, active, onClick }: { label: string; active: boolean; onCli
   );
 }
 
-// ── Content card ───────────────────────────────────────────────
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: "16px", padding: "28px", ...style }}>
@@ -97,7 +87,6 @@ function Card({ children, style }: { children: React.ReactNode; style?: React.CS
   );
 }
 
-// ── Dim bar ────────────────────────────────────────────────────
 function DimBar({ name, score, animated }: { name: string; score: number; animated: boolean }) {
   const pct = (score / 10) * 100;
   const color = score >= 7 ? GREEN : score >= 5 ? "#FBBF24" : "#EF4444";
@@ -115,7 +104,6 @@ function DimBar({ name, score, animated }: { name: string; score: number; animat
   );
 }
 
-// ── Locked overlay ─────────────────────────────────────────────
 function LockedSection({ children, label = "Unlock to reveal", href }: { children: React.ReactNode; label?: string; href: string }) {
   return (
     <div style={{ position: "relative", borderRadius: "16px", overflow: "hidden" }}>
@@ -136,13 +124,13 @@ function LockedSection({ children, label = "Unlock to reveal", href }: { childre
             </svg>
           </div>
           <p style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>{label}</p>
-          <p style={{ fontSize: "15px", color: MUTED, marginBottom: "16px" }}>Unlock the full report for $7</p>
+          <p style={{ fontSize: "15px", color: MUTED, marginBottom: "16px" }}>Unlock the full report for {PRICE}</p>
           <a href={href} onClick={() => captureCheckout()} style={{
             display: "inline-flex", alignItems: "center", gap: "6px",
             padding: "10px 22px", background: GREEN, borderRadius: "8px",
             color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none",
           }}>
-            Show Me How to Fix This — $7
+            Show Me How to Fix This — {PRICE}
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </a>
         </div>
@@ -151,14 +139,10 @@ function LockedSection({ children, label = "Unlock to reveal", href }: { childre
   );
 }
 
-// ── Blurred preview (change 7) ─────────────────────────────────
-// Shows top portion clearly, lower portion blurred with "Unlock" label
 function BlurredPreview({ preview, full, href }: { preview: React.ReactNode; full: React.ReactNode; href: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      {/* Visible portion */}
       {preview}
-      {/* Blurred remainder */}
       <div style={{ position: "relative", borderRadius: "16px", overflow: "hidden" }}>
         <div style={{ filter: "blur(4px)", userSelect: "none", pointerEvents: "none", opacity: 0.55 }}>
           {full}
@@ -176,7 +160,7 @@ function BlurredPreview({ preview, full, href }: { preview: React.ReactNode; ful
               padding: "10px 22px", background: GREEN, borderRadius: "8px",
               color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none",
             }}>
-              Show Me How to Fix This — $7
+              Show Me How to Fix This — {PRICE}
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </a>
           </div>
@@ -186,8 +170,67 @@ function BlurredPreview({ preview, full, href }: { preview: React.ReactNode; ful
   );
 }
 
-// ── OVERVIEW TAB ───────────────────────────────────────────────
-function OverviewTab({ a, paid, buyHref, fullBuyHref, createdAt, slideCount }: { a: DeckAnalysis; paid: boolean; buyHref: string; fullBuyHref: string; createdAt: string; slideCount: number }) {
+// ── Upsell banner (no countdown) ───────────────────────────────
+function UpsellBanner({ buyHref, slideCount }: { buyHref: string; slideCount: number }) {
+  return (
+    <div style={{ background: CARD_BG, border: `1px solid rgba(3,251,131,0.2)`, borderRadius: "16px", padding: "32px", textAlign: "center", marginTop: "20px" }}>
+      <p style={{ fontSize: "11px", color: GREEN, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>Full Implementation Plan</p>
+      <h3 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "10px" }}>
+        {slideCount > 0 ? `${slideCount} slides reviewed.` : "Analysis complete."} Now fix them.
+      </h3>
+      <p style={{ fontSize: "16px", color: "#9CA3AF", lineHeight: 1.8, maxWidth: "480px", margin: "0 auto 24px" }}>
+        Unlock the full report: slide-by-slide feedback, your most damaging issue, highest-leverage fixes, and the bottom-line truth investors will see.
+      </p>
+      <a href={buyHref} onClick={() => captureCheckout()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "14px 28px", background: GREEN, borderRadius: "10px", color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none" }}>
+        Show Me How to Fix This — {PRICE}
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </a>
+    </div>
+  );
+}
+
+// ── Nav ────────────────────────────────────────────────────────
+function Nav() {
+  const router = useRouter();
+  const supabase = createSupabaseBrowserClient();
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setLoggedIn(!!data.session));
+  }, [supabase]);
+
+  return (
+    <nav style={{ borderBottom: "1px solid #1A1A1A", height: "56px", marginBottom: "32px" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 32px", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <img src={LOGO} alt="Source Capital" style={{ height: "26px", width: "auto" }} />
+      <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+        {loggedIn && (
+          <a href="/dashboard" style={{ fontSize: "16px", color: MUTED, textDecoration: "none", fontWeight: 500 }}>Dashboard</a>
+        )}
+        {[
+          { label: "Pricing", href: "https://sourcecapital.co.uk/pricing" },
+          { label: "About", href: "https://sourcecapital.co.uk/about" },
+          { label: "Contact", href: "https://sourcecapital.co.uk/contact" },
+        ].map(({ label, href }) => (
+          <a key={label} href={href} style={{ fontSize: "16px", color: MUTED, textDecoration: "none", fontWeight: 500 }}>{label}</a>
+        ))}
+        {loggedIn && (
+          <button
+            onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
+            style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 16px", borderRadius: "99px", border: `1px solid ${CARD_BORDER}`, background: "transparent", color: "#fff", fontSize: "15px", fontWeight: 600, cursor: "pointer" }}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 12H3a1 1 0 01-1-1V3a1 1 0 011-1h2M9 10l3-3-3-3M12 7H5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Logout
+          </button>
+        )}
+      </div>
+      </div>
+    </nav>
+  );
+}
+
+// ── Overview Tab ───────────────────────────────────────────────
+function OverviewTab({ a, paid, buyHref, slideCount }: { a: DeckAnalysis; paid: boolean; buyHref: string; slideCount: number }) {
   const firstPara = a.executiveSummary?.split("\n\n")[0] ?? a.executiveSummary ?? "";
   const fixes = (a as unknown as { highestLeverageFixes?: { fix: string; action: string; effort?: string }[] }).highestLeverageFixes ?? [];
 
@@ -236,7 +279,6 @@ function OverviewTab({ a, paid, buyHref, fullBuyHref, createdAt, slideCount }: {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      {/* Free preview */}
       {!paid && (
         <Card>
           <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "14px" }}>Overall Assessment</h2>
@@ -244,14 +286,12 @@ function OverviewTab({ a, paid, buyHref, fullBuyHref, createdAt, slideCount }: {
         </Card>
       )}
 
-      {/* Change 4 — bridging statement */}
       {!paid && (
         <p style={{ textAlign: "center", fontSize: "15px", color: "#9CA3AF", lineHeight: 1.75, margin: "8px 0 4px" }}>
           You&apos;re a handful of specific fixes away from investor-ready. The full report tells you exactly what they are.
         </p>
       )}
 
-      {/* Change 6 — testimonial */}
       {!paid && (
         <div style={{ background: "#111", border: `1px solid ${CARD_BORDER}`, borderRadius: "12px", padding: "20px 24px" }}>
           <p style={{ fontSize: "16px", color: "#D1D5DB", lineHeight: 1.8, marginBottom: "12px", fontStyle: "italic" }}>
@@ -261,17 +301,14 @@ function OverviewTab({ a, paid, buyHref, fullBuyHref, createdAt, slideCount }: {
         </div>
       )}
 
-      {/* Upsell banner — shown immediately after the free preview */}
-      {!paid && createdAt && <UpsellBanner createdAt={createdAt} buyHref={buyHref} fullBuyHref={fullBuyHref} slideCount={slideCount} />}
+      {!paid && <UpsellBanner buyHref={buyHref} slideCount={slideCount} />}
 
-      {/* Full content — locked or free */}
       {paid ? fullContent : (
         <LockedSection label="Full assessment, score drivers & strengths" href={buyHref}>
           {fullContent}
         </LockedSection>
       )}
 
-      {/* Next 3 Actions */}
       {fixes.length > 0 && (
         <div>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff", margin: "8px 0 14px" }}>Next {Math.min(fixes.length, 3)} Actions</h2>
@@ -284,9 +321,7 @@ function OverviewTab({ a, paid, buyHref, fullBuyHref, createdAt, slideCount }: {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px", gap: "12px", flexWrap: "wrap" }}>
                       <p style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>{f.fix}</p>
                       {f.effort && (
-                        <span style={{ fontSize: "11px", fontWeight: 600, padding: "3px 10px", borderRadius: "99px", background: "rgba(251,191,36,0.1)", color: "#FBBF24", border: "1px solid rgba(251,191,36,0.25)", flexShrink: 0 }}>
-                          {f.effort} effort
-                        </span>
+                        <span style={{ fontSize: "11px", fontWeight: 600, padding: "3px 10px", borderRadius: "99px", background: "rgba(251,191,36,0.1)", color: "#FBBF24", border: "1px solid rgba(251,191,36,0.25)", flexShrink: 0 }}>{f.effort} effort</span>
                       )}
                     </div>
                     <p style={{ fontSize: "15px", color: "#9CA3AF", lineHeight: 1.7 }}>{f.action}</p>
@@ -311,11 +346,11 @@ function OverviewTab({ a, paid, buyHref, fullBuyHref, createdAt, slideCount }: {
   );
 }
 
-// ── BREAKDOWN TAB ──────────────────────────────────────────────
+// ── Breakdown Tab ──────────────────────────────────────────────
 function BreakdownTab({ a, animated, paid, buyHref }: { a: DeckAnalysis; animated: boolean; paid: boolean; buyHref: string }) {
   const dims = a.dimensions ?? [];
-  const previewDims = dims.slice(0, 2);   // first 2 bars visible
-  const remainingDims = dims.slice(2);     // rest blurred
+  const previewDims = dims.slice(0, 2);
+  const remainingDims = dims.slice(2);
 
   if (paid) {
     return (
@@ -343,9 +378,7 @@ function BreakdownTab({ a, animated, paid, buyHref }: { a: DeckAnalysis; animate
       }
       full={
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <Card>
-            {remainingDims.map(d => <DimBar key={d.name} name={d.name} score={d.score} animated={false} />)}
-          </Card>
+          <Card>{remainingDims.map(d => <DimBar key={d.name} name={d.name} score={d.score} animated={false} />)}</Card>
           <Card>
             <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Bottom Line</h2>
             <p style={{ fontSize: "16px", color: "#9CA3AF", lineHeight: 1.8 }}>{a.bottomLine}</p>
@@ -356,7 +389,7 @@ function BreakdownTab({ a, animated, paid, buyHref }: { a: DeckAnalysis; animate
   );
 }
 
-// ── SLIDE BY SLIDE TAB ─────────────────────────────────────────
+// ── Slide by Slide Tab ─────────────────────────────────────────
 function SlideBySlideTab({ a, paid, buyHref }: { a: DeckAnalysis; paid: boolean; buyHref: string }) {
   const slides = a.slideAssessments ?? [];
 
@@ -419,141 +452,6 @@ function SlideBySlideTab({ a, paid, buyHref }: { a: DeckAnalysis; paid: boolean;
   );
 }
 
-// ── Countdown timer ────────────────────────────────────────────
-const OFFER_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
-const EARLY_PRICE = "$7";
-const FULL_PRICE = "$97";
-
-function useCountdown(createdAt: string) {
-  const expiry = new Date(createdAt).getTime() + OFFER_WINDOW_MS;
-  const [remaining, setRemaining] = useState(() => Math.max(0, expiry - Date.now()));
-
-  useEffect(() => {
-    if (remaining <= 0) return;
-    const interval = setInterval(() => {
-      const left = Math.max(0, expiry - Date.now());
-      setRemaining(left);
-      if (left === 0) clearInterval(interval);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [expiry, remaining]);
-
-  const expired = remaining <= 0;
-  const h = Math.floor(remaining / 3600000);
-  const m = Math.floor((remaining % 3600000) / 60000);
-  const s = Math.floor((remaining % 60000) / 1000);
-  const formatted = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  return { expired, formatted, price: expired ? FULL_PRICE : EARLY_PRICE };
-}
-
-function CountdownBanner({ createdAt, href, fullHref }: { createdAt: string; href: string; fullHref: string }) {
-  const { expired, formatted, price } = useCountdown(createdAt);
-  const activeHref = expired ? fullHref : href;
-  return (
-    <div style={{
-      background: expired ? "rgba(239,68,68,0.08)" : "rgba(3,251,131,0.06)",
-      border: `1px solid ${expired ? "rgba(239,68,68,0.25)" : "rgba(3,251,131,0.2)"}`,
-      borderRadius: "12px", padding: "14px 20px", marginBottom: "16px",
-      display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6.5" stroke={expired ? "#EF4444" : GREEN} strokeWidth="1.4"/>
-          <path d="M8 5v3.5l2 1.5" stroke={expired ? "#EF4444" : GREEN} strokeWidth="1.4" strokeLinecap="round"/>
-        </svg>
-        <div>
-          {expired ? (
-            <p style={{ fontSize: "15px", fontWeight: 600, color: "#EF4444" }}>Early access offer expired</p>
-          ) : (
-            <p style={{ fontSize: "15px", fontWeight: 600, color: "#fff" }}>
-              Early access price expires in{" "}
-              <span style={{ fontFamily: "monospace", color: GREEN, fontWeight: 800 }}>{formatted}</span>
-            </p>
-          )}
-          <p style={{ fontSize: "12px", color: MUTED, marginTop: "2px" }}>
-            {expired ? `Full price now applies — ${FULL_PRICE}` : "Early access pricing — closes when your session ends"}
-          </p>
-        </div>
-      </div>
-      <a href={activeHref} onClick={() => captureCheckout()} style={{
-        padding: "8px 18px", borderRadius: "8px", background: expired ? "#EF4444" : GREEN,
-        color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none", flexShrink: 0,
-      }}>
-        Fix My Deck — {price}
-      </a>
-    </div>
-  );
-}
-
-// ── Upsell banner ──────────────────────────────────────────────
-function UpsellBanner({ createdAt, buyHref, fullBuyHref, slideCount }: { createdAt: string; buyHref: string; fullBuyHref: string; slideCount: number }) {
-  const { expired, formatted, price } = useCountdown(createdAt);
-  const activeHref = expired ? fullBuyHref : buyHref;
-  return (
-    <div style={{ background: CARD_BG, border: `1px solid rgba(3,251,131,0.2)`, borderRadius: "16px", padding: "32px", textAlign: "center", marginTop: "20px" }}>
-      <p style={{ fontSize: "11px", color: GREEN, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>Full Implementation Plan</p>
-      <h3 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "10px" }}>
-        {slideCount > 0 ? `${slideCount} slides reviewed.` : "Analysis complete."} Now fix them.
-      </h3>
-      <p style={{ fontSize: "16px", color: "#9CA3AF", lineHeight: 1.8, maxWidth: "480px", margin: "0 auto 16px" }}>
-        Unlock the full report: slide-by-slide feedback, your most damaging issue, highest-leverage fixes, and the bottom-line truth investors will see.
-      </p>
-      {!expired && (
-        <p style={{ fontSize: "15px", color: MUTED, marginBottom: "20px" }}>
-          Early price of <span style={{ color: GREEN, fontWeight: 700 }}>{EARLY_PRICE}</span> expires in{" "}
-          <span style={{ fontFamily: "monospace", color: "#fff", fontWeight: 700 }}>{formatted}</span>
-          {" "}— then {FULL_PRICE}
-        </p>
-      )}
-      <a href={activeHref} onClick={() => captureCheckout()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "14px 28px", background: GREEN, borderRadius: "10px", color: "#000", fontSize: "15px", fontWeight: 700, textDecoration: "none" }}>
-        Show Me How to Fix This — {price}
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7h9M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-      </a>
-      <p style={{ fontSize: "11px", color: MUTED, marginTop: "12px", opacity: 0.6 }}>Instant access · Full PDF report · Prioritised fix checklist</p>
-    </div>
-  );
-}
-
-// ── Nav ────────────────────────────────────────────────────────
-function Nav() {
-  const router = useRouter();
-  const supabase = createSupabaseBrowserClient();
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setLoggedIn(!!data.session));
-  }, [supabase]);
-
-  return (
-    <nav style={{ borderBottom: "1px solid #1A1A1A", height: "56px", marginBottom: "32px" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 32px", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-      <img src={LOGO} alt="Source Capital" style={{ height: "26px", width: "auto" }} />
-      <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
-        {loggedIn && (
-          <a href="/dashboard" style={{ fontSize: "16px", color: MUTED, textDecoration: "none", fontWeight: 500 }}>Dashboard</a>
-        )}
-        {[
-          { label: "Pricing", href: "https://sourcecapital.co.uk/pricing" },
-          { label: "About", href: "https://sourcecapital.co.uk/about" },
-          { label: "Contact", href: "https://sourcecapital.co.uk/contact" },
-        ].map(({ label, href }) => (
-          <a key={label} href={href} style={{ fontSize: "16px", color: MUTED, textDecoration: "none", fontWeight: 500 }}>{label}</a>
-        ))}
-        {loggedIn && (
-          <button
-            onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }}
-            style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 16px", borderRadius: "99px", border: `1px solid ${CARD_BORDER}`, background: "transparent", color: "#fff", fontSize: "15px", fontWeight: 600, cursor: "pointer" }}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 12H3a1 1 0 01-1-1V3a1 1 0 011-1h2M9 10l3-3-3-3M12 7H5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            Logout
-          </button>
-        )}
-      </div>
-      </div>
-    </nav>
-  );
-}
-
 // ── Page inner ─────────────────────────────────────────────────
 function ResultsPageInner() {
   const { id } = useParams<{ id: string }>();
@@ -564,7 +462,6 @@ function ResultsPageInner() {
   const [animated, setAnimated] = useState(false);
   const [activeTab, setActiveTab] = useState("Overview");
   const [buyHref, setBuyHref] = useState("");
-  const [fullBuyHref, setFullBuyHref] = useState("");
   const [createdAt, setCreatedAt] = useState("");
 
   useEffect(() => {
@@ -575,16 +472,12 @@ function ResultsPageInner() {
         setData(d);
         setLoading(false);
         setBuyHref(checkoutUrl(d.id));
-        setFullBuyHref(fullCheckoutUrl(d.id));
         setCreatedAt(d.created_at);
         setTimeout(() => setAnimated(true), 100);
-        posthog.capture("results_viewed", { score: d.score, verdict_type: d.verdict_type, paid: d.paid });
+        posthog.capture("results_viewed", { score: d.score, verdict_type: d.verdict_type, paid: d.paid, funnel: "investability-score" });
       })
       .catch(() => setLoading(false));
   }, [id]);
-
-  // Derive the active href — switches to $97 plan once 24hr window expires
-  const activeHref = createdAt && isExpired(createdAt) ? fullBuyHref : buyHref;
 
   if (loading) return (
     <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -616,7 +509,6 @@ function ResultsPageInner() {
   const verdictColor = data.verdict_type === "pass" ? GREEN : data.verdict_type === "review" ? "#FBBF24" : "#EF4444";
   const verdictLabel = data.verdict_type === "pass" ? "Investor Ready" : data.verdict_type === "review" ? "Needs Work" : "Not Ready";
 
-  // Investor sentiment band
   const sentiment = data.score >= 85
     ? { label: "Likely to get an investor reply", detail: "Provided the targeting and messaging is good", color: GREEN, bg: "rgba(3,251,131,0.08)", border: "rgba(3,251,131,0.25)" }
     : data.score >= 50
@@ -629,8 +521,6 @@ function ResultsPageInner() {
       {/* ── HERO SCORE CARD ── */}
       <Card style={{ marginBottom: "16px" }}>
         <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
-
-          {/* Left: score circle + title */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: "24px", flexWrap: "wrap", flex: "0 0 auto" }}>
             <ScoreCircle score={data.score} animated={animated} />
             <div style={{ minWidth: "180px" }}>
@@ -646,10 +536,8 @@ function ResultsPageInner() {
             </div>
           </div>
 
-          {/* Divider */}
           <div style={{ width: "1px", background: CARD_BORDER, alignSelf: "stretch", flexShrink: 0 }} />
 
-          {/* Right: dimension bars */}
           {a.dimensions && a.dimensions.length > 0 && (
             <div style={{ flex: 1, minWidth: "280px" }}>
               <p style={{ fontSize: "11px", fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>Dimension Breakdown</p>
@@ -682,17 +570,12 @@ function ResultsPageInner() {
         )}
       </Card>
 
-      {/* ── INVESTOR RESPONSE RATING HEADLINE ── */}
-      <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Investor Response Rating</h2>
-
-      {/* ── INVESTOR SENTIMENT BAND ── */}
-      <div style={{ background: sentiment.bg, border: `1px solid ${sentiment.border}`, borderRadius: "12px", padding: "16px 20px", marginBottom: "12px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: "14px", flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: "200px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: sentiment.color, flexShrink: 0 }} />
-              <p style={{ fontSize: "16px", fontWeight: 700, color: sentiment.color }}>{sentiment.label}</p>
-            </div>
+      {/* ── INVESTOR RESPONSE RATING ── */}
+      <div style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: "12px", padding: "16px 20px", marginBottom: "12px" }}>
+        <p style={{ fontSize: "11px", color: MUTED, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Investor Response Rating</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+          <div>
+            <p style={{ fontSize: "16px", fontWeight: 700, color: sentiment.color, marginBottom: "3px" }}>{sentiment.label}</p>
             <p style={{ fontSize: "15px", color: MUTED, paddingLeft: "16px" }}>{sentiment.detail}</p>
           </div>
           <div style={{ display: "flex", gap: "4px", alignItems: "center", flexShrink: 0 }}>
@@ -729,12 +612,9 @@ function ResultsPageInner() {
       )}
 
       {/* ── TRUST LINE ── */}
-      <p style={{ textAlign: "center", fontSize: "12px", color: MUTED, opacity: 0.6, marginBottom: "12px" }}>
+      <p style={{ textAlign: "center", fontSize: "12px", color: MUTED, opacity: 0.6, marginBottom: "16px" }}>
         Built on 500+ investor-reviewed decks — across pre-seed to Series A
       </p>
-
-      {/* ── COUNTDOWN BANNER ── */}
-      {!paid && createdAt && <CountdownBanner createdAt={createdAt} href={buyHref} fullHref={fullBuyHref} />}
 
       {/* ── TABS ── */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
@@ -744,9 +624,9 @@ function ResultsPageInner() {
       </div>
 
       {/* ── TAB CONTENT ── */}
-      {activeTab === "Overview" && <OverviewTab a={a} paid={paid} buyHref={activeHref} fullBuyHref={fullBuyHref} createdAt={createdAt} slideCount={slideCount} />}
-      {activeTab === "Breakdown" && <BreakdownTab a={a} animated={animated} paid={paid} buyHref={activeHref} />}
-      {activeTab === "Slide by Slide" && <SlideBySlideTab a={a} paid={paid} buyHref={activeHref} />}
+      {activeTab === "Overview" && <OverviewTab a={a} paid={paid} buyHref={buyHref} slideCount={slideCount} />}
+      {activeTab === "Breakdown" && <BreakdownTab a={a} animated={animated} paid={paid} buyHref={buyHref} />}
+      {activeTab === "Slide by Slide" && <SlideBySlideTab a={a} paid={paid} buyHref={buyHref} />}
 
     </div>
   );

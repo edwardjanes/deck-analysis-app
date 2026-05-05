@@ -89,7 +89,12 @@ export default function DevPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "#080C14", color: "#F8FAFC", padding: "60px 32px", fontFamily: "monospace" }}>
-      <h1 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "8px" }}>Dev Tools</h1>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+        <h1 style={{ fontSize: "20px", fontWeight: 700 }}>Dev Tools</h1>
+        <a href="/dev/analytics" style={{ fontSize: "13px", color: "#03fb83", textDecoration: "none", fontWeight: 600 }}>
+          → Analytics Dashboard
+        </a>
+      </div>
       <p style={{ color: "#6B7280", fontSize: "13px", marginBottom: "40px" }}>
         One-click test submissions — clone a deck, simulate payment, view results.
       </p>
