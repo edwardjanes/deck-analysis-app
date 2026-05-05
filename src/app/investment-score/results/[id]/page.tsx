@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser";
 import { useRouter } from "next/navigation";
 import { DeckAnalysis, SlideAssessment } from "@/lib/deckPrompt";
 import posthog from "posthog-js";
+import { pixel } from "@/lib/fpixel";
 
 interface SubmissionResult {
   id: string;
@@ -46,6 +47,7 @@ function isExpired(createdAt: string): boolean {
 
 function captureCheckout(score?: number) {
   posthog.capture("checkout_initiated", { score });
+  pixel.initiateCheckout();
 }
 
 // ── Score circle ──────────────────────────────────────────────

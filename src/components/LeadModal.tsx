@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
+import { pixel } from "@/lib/fpixel";
 
 interface LeadModalProps {
   onClose: () => void;
@@ -71,6 +72,7 @@ export default function LeadModal({ onClose }: LeadModalProps) {
 
       posthog.capture("lead_captured");
       posthog.identify(email, { firstName, lastName, email });
+      pixel.lead(email);
 
       router.push("/investment-score/upload");
     } catch (err) {
