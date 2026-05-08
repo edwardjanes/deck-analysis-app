@@ -3,6 +3,8 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
+const TEST_SUBMISSION_ID = "b8a652a9-3b16-4f82-a796-d68ef92fee74";
+
 const SAVED_SUBMISSIONS = [
   {
     label: "Wellvyl",
@@ -19,6 +21,9 @@ export default function DevPage() {
   const [error, setError] = useState<string | null>(null);
   const [quickFile, setQuickFile] = useState<File | null>(null);
   const [quickSubmitting, setQuickSubmitting] = useState(false);
+  const [testEmail, setTestEmail] = useState("edward@edwardjanes.co.uk");
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailResult, setEmailResult] = useState<{ ok?: boolean; sentTo?: string; error?: string } | null>(null);
 
   const quickSubmit = async () => {
     if (!quickFile) { setError("Drop a PDF first"); return; }
@@ -59,6 +64,24 @@ export default function DevPage() {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setCloning(null);
+    }
+  };
+
+  const sendTestEmail = async () => {
+    setEmailSending(true);
+    setEmailResult(null);
+    try {
+      const res = await fetch("/api/dev/test-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId: TEST_SUBMISSION_ID, overrideEmail: testEmail }),
+      });
+      const data = await res.json();
+      setEmailResult(data);
+    } catch (err) {
+      setEmailResult({ error: err instanceof Error ? err.message : "Unknown error" });
+    } finally {
+      setEmailSending(false);
     }
   };
 
@@ -191,6 +214,53 @@ export default function DevPage() {
             )}
           </div>
         ))}
+      </div>
+
+      {/* Loops email tester */}
+      <div style={{ background: "#0F1929", border: "1px solid #1A2438", borderRadius: "10px", padding: "20px", maxWidth: "560px", marginTop: "32px" }}>
+        <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "4px", color: "#03fb83" }}>Loops Email Tester</div>
+        <div style={{ fontSize: "11px", color: "#6B7280", marginBottom: "16px" }}>
+          Sends a real results email using submission <span style={{ color: "#9CA3AF" }}>{TEST_SUBMISSION_ID.slice(0, 8)}…</span>
+          {" "}(<a href={`/investment-score/results/${TEST_SUBMISSION_ID}`} target="_blank" style={{ color: "#03fb83", textDecoration: "none" }}>view results ↗</a>)
+        </div>
+        <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+          <input
+            type="email"
+            value={testEmail}
+            onChange={e => setTestEmail(e.target.value)}
+            placeholder="Send to email..."
+            style={{
+              flex: 1, padding: "9px 12px", background: "#111927",
+              border: "1px solid #1A2438", borderRadius: "8px",
+              color: "#F8FAFC", fontSize: "13px", outline: "none",
+            }}
+          />
+          <button
+            onClick={sendTestEmail}
+            disabled={emailSending || !testEmail}
+            style={{
+              background: emailSending ? "#374151" : "#03fb83", color: "#000",
+              border: "none", borderRadius: "8px", padding: "9px 18px",
+              fontSize: "13px", fontWeight: 700,
+              cursor: emailSending || !testEmail ? "not-allowed" : "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {emailSending ? "Sending…" : "Send Test Email →"}
+          </button>
+        </div>
+        {emailResult && (
+          <div style={{
+            padding: "10px 14px", borderRadius: "8px", fontSize: "12px",
+            background: emailResult.ok ? "rgba(3,251,131,0.08)" : "rgba(239,68,68,0.08)",
+            border: `1px solid ${emailResult.ok ? "rgba(3,251,131,0.2)" : "rgba(239,68,68,0.2)"}`,
+            color: emailResult.ok ? "#03fb83" : "#EF4444",
+          }}>
+            {emailResult.ok
+              ? `✓ Sent to ${emailResult.sentTo}`
+              : `✗ ${emailResult.error}`}
+          </div>
+        )}
       </div>
 
       {error && (
