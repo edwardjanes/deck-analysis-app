@@ -37,10 +37,11 @@ export async function POST(req: NextRequest) {
       transactionalId: result.transactionalId,
       loopsResponse: result.body,
       payload: {
-        firstName: data.first_name,
-        businessName: data.business_name,
-        score: data.score,
-        verdict: data.verdict?.slice(0, 80) + "...",
+        deckFirstName: data.first_name,
+        deckBusinessName: data.business_name,
+        deckScore: data.score,
+        deckVerdict: data.verdict?.slice(0, 80) + "...",
+        deckResultsUrl: `${appUrl}/investment-score/results/${data.id}`,
       },
     });
   } catch (err) {
