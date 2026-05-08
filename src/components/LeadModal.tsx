@@ -9,9 +9,6 @@ interface LeadModalProps {
   onClose: () => void;
 }
 
-const LOOPS_ENDPOINT =
-  "https://app.loops.so/api/newsletter-form/cmn78et4k1pr10izg4si3mbut";
-
 export default function LeadModal({ onClose }: LeadModalProps) {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
@@ -44,26 +41,7 @@ export default function LeadModal({ onClose }: LeadModalProps) {
 
     setLoading(true);
 
-    const formBody = [
-      `userGroup=Pitch%20Deck%20Review`,
-      `mailingLists=`,
-      `email=${encodeURIComponent(email)}`,
-      `firstName=${encodeURIComponent(firstName)}`,
-      `lastName=${encodeURIComponent(lastName)}`,
-    ].join("&");
-
     try {
-      const res = await fetch(LOOPS_ENDPOINT, {
-        method: "POST",
-        body: formBody,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || "Submission failed");
-      }
-
       // Store lead details for the upload page
       sessionStorage.setItem(
         "deckscore-lead",

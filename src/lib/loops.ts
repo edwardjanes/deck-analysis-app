@@ -1,3 +1,33 @@
+export async function createOrUpdateContact(data: {
+  email: string;
+  firstName: string;
+  lastName?: string;
+  userGroup?: string;
+}): Promise<void> {
+  const apiKey = process.env.LOOPS_API_KEY;
+  if (!apiKey) {
+    console.warn("[loops] LOOPS_API_KEY not set — skipping contact create");
+    return;
+  }
+  const res = await fetch("https://app.loops.so/api/v1/contacts/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName ?? "",
+      userGroup: data.userGroup ?? "Pitch Deck Review",
+      source: "deck-analysis-app",
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`[loops] Failed to create contact: ${res.status} ${body}`);
+  } else {
+    console.log(`[loops] Contact created/updated: ${data.email}`);
+  }
+}
+
 async function sendTransactional(apiKey: string, transactionalId: string, email: string, dataVariables: Record<string, string>): Promise<void> {
   const res = await fetch("https://app.loops.so/api/v1/transactional", {
     method: "POST",
