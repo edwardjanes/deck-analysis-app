@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { sendPaymentConfirmationEmail } from "@/lib/loops";
+import { sendPaymentConfirmationEmail, createOrUpdateContact } from "@/lib/loops";
 
 // Whop sends webhook events when a payment completes.
 // We verify the signature, extract the submission_id from metadata,
@@ -82,14 +82,22 @@ export async function POST(req: NextRequest) {
 
     console.log(`[whop/webhook] Marked submission ${submissionId} as paid (order: ${orderId})`);
 
-    // Send payment confirmation email
+    // Update Loops contact as paid + send confirmation email
     if (submission?.email) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk";
+      const appUrl = "https://app.sourcecapital.co.uk";
+      const resultsUrl = `${appUrl}/investment-score/results/${submissionId}`;
+
+      createOrUpdateContact({
+        email: submission.email,
+        firstName: submission.first_name ?? "",
+        customProperties: { paid: "true" },
+      }).catch(err => console.error("[loops] Contact paid update error:", err));
+
       sendPaymentConfirmationEmail({
         email: submission.email,
         firstName: submission.first_name ?? "there",
         businessName: submission.business_name,
-        resultsUrl: `${appUrl}/investment-score/results/${submissionId}`,
+        resultsUrl,
         orderId: orderId || "—",
       }).catch(err => console.error("[loops] Payment email error:", err));
     }
