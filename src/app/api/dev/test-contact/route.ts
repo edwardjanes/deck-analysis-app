@@ -9,8 +9,6 @@ export async function POST(req: NextRequest) {
 
     if (!email) return NextResponse.json({ error: "email required" }, { status: 400 });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk";
-
     await createOrUpdateContact({
       email,
       firstName: firstName ?? "Test",
@@ -19,7 +17,7 @@ export async function POST(req: NextRequest) {
         score: score ?? 72,
         verdict: verdict ?? "Strong fundamentals with a compelling narrative. The team demonstrates clear domain expertise and the market opportunity is well-defined.",
         businessName: businessName ?? "Test Company Ltd",
-        results: resultsUrl ?? `${appUrl}/investment-score/results/test`,
+        results: resultsUrl ?? "https://app.sourcecapital.co.uk/investment-score/results/test",
       },
     });
 

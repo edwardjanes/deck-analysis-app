@@ -178,7 +178,7 @@ export async function POST(
 
       // Update Loops contact with analysis results as contact properties (non-blocking)
       if (submission.email) {
-        const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL}/investment-score/results/${id}`;
+        const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk"}/investment-score/results/${id}`;
         createOrUpdateContact({
           email: submission.email,
           firstName: submission.first_name ?? "",
