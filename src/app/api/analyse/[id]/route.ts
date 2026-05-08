@@ -7,7 +7,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { DECK_ANALYSIS_SYSTEM_PROMPT, DeckAnalysis } from "@/lib/deckPrompt";
 import { classifyAnalysisError, serializeError } from "@/lib/errorHandler";
 import { compressPdf } from "@/lib/compressPdf";
-import { sendAnalysisResultEmail } from "@/lib/loops";
+import { sendAnalysisResultEmail, createOrUpdateContact } from "@/lib/loops";
 
 export const maxDuration = 300; // 5 minutes — allows time for large deck analysis
 
@@ -176,15 +176,29 @@ export async function POST(
 
       console.log(`[analyse] Complete for ${id} — score ${analysis.meetingConversionScore} (attempt ${attempt})`);
 
-      // Send results email (non-blocking — don't fail the analysis if email fails)
+      // Update Loops contact with analysis results as contact properties (non-blocking)
       if (submission.email) {
+        const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL}/investment-score/results/${id}`;
+        createOrUpdateContact({
+          email: submission.email,
+          firstName: submission.first_name ?? "",
+          lastName: submission.last_name ?? "",
+          customProperties: {
+            deckScore: analysis.meetingConversionScore,
+            deckVerdict: analysis.verdict,
+            deckBusinessName: submission.business_name,
+            deckResultsUrl: resultsUrl,
+          },
+        }).catch((err) => console.error("[loops] Contact update error:", err));
+
+        // Send results email (non-blocking — don't fail the analysis if email fails)
         sendAnalysisResultEmail({
           email: submission.email,
           firstName: submission.first_name ?? "there",
           businessName: submission.business_name,
           score: analysis.meetingConversionScore,
           verdict: analysis.verdict,
-          resultsUrl: `${process.env.NEXT_PUBLIC_APP_URL}/results/${id}`,
+          resultsUrl,
         }).catch((err) => console.error("[loops] Email error:", err));
       }
 

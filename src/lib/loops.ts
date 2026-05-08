@@ -3,14 +3,15 @@ export async function createOrUpdateContact(data: {
   firstName: string;
   lastName?: string;
   userGroup?: string;
+  customProperties?: Record<string, string | number>;
 }): Promise<void> {
   const apiKey = process.env.LOOPS_API_KEY;
   if (!apiKey) {
     console.warn("[loops] LOOPS_API_KEY not set — skipping contact create");
     return;
   }
-  const res = await fetch("https://app.loops.so/api/v1/contacts/create", {
-    method: "POST",
+  const res = await fetch("https://app.loops.so/api/v1/contacts/update", {
+    method: "PUT",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
       email: data.email,
@@ -18,13 +19,36 @@ export async function createOrUpdateContact(data: {
       lastName: data.lastName ?? "",
       userGroup: data.userGroup ?? "Pitch Deck Review",
       source: "deck-analysis-app",
+      ...data.customProperties,
     }),
   });
   if (!res.ok) {
-    const body = await res.text();
-    console.error(`[loops] Failed to create contact: ${res.status} ${body}`);
+    // If contact doesn't exist yet, create it
+    if (res.status === 404) {
+      const createRes = await fetch("https://app.loops.so/api/v1/contacts/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName ?? "",
+          userGroup: data.userGroup ?? "Pitch Deck Review",
+          source: "deck-analysis-app",
+          ...data.customProperties,
+        }),
+      });
+      if (!createRes.ok) {
+        const body = await createRes.text();
+        console.error(`[loops] Failed to create contact: ${createRes.status} ${body}`);
+      } else {
+        console.log(`[loops] Contact created: ${data.email}`);
+      }
+    } else {
+      const body = await res.text();
+      console.error(`[loops] Failed to update contact: ${res.status} ${body}`);
+    }
   } else {
-    console.log(`[loops] Contact created/updated: ${data.email}`);
+    console.log(`[loops] Contact updated: ${data.email}`);
   }
 }
 
