@@ -125,6 +125,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
         <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
           {[
             { label: "Dashboard", href: "/dashboard" },
+            { label: "Investor CRM", href: "/crm" },
             { label: "Pricing", href: "https://sourcecapital.co.uk/pricing" },
             { label: "About", href: "https://sourcecapital.co.uk/about" },
             { label: "Contact", href: "https://sourcecapital.co.uk/contact" },
