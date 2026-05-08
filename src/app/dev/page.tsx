@@ -24,6 +24,9 @@ export default function DevPage() {
   const [testEmail, setTestEmail] = useState("edward@edwardjanes.co.uk");
   const [emailSending, setEmailSending] = useState(false);
   const [emailResult, setEmailResult] = useState<Record<string, unknown> | null>(null);
+  const [contactEmail, setContactEmail] = useState("edward@edwardjanes.co.uk");
+  const [contactSending, setContactSending] = useState(false);
+  const [contactResult, setContactResult] = useState<Record<string, unknown> | null>(null);
 
   const quickSubmit = async () => {
     if (!quickFile) { setError("Drop a PDF first"); return; }
@@ -64,6 +67,24 @@ export default function DevPage() {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setCloning(null);
+    }
+  };
+
+  const sendTestContact = async () => {
+    setContactSending(true);
+    setContactResult(null);
+    try {
+      const res = await fetch("/api/dev/test-contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: contactEmail }),
+      });
+      const data = await res.json();
+      setContactResult(data);
+    } catch (err) {
+      setContactResult({ error: err instanceof Error ? err.message : "Unknown error" });
+    } finally {
+      setContactSending(false);
     }
   };
 
@@ -261,6 +282,55 @@ export default function DevPage() {
             </div>
             <pre style={{ margin: 0, fontSize: "11px", color: "#9CA3AF", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
               {JSON.stringify(emailResult, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
+
+      {/* Loops contact property tester */}
+      <div style={{ background: "#0F1929", border: "1px solid #1A2438", borderRadius: "10px", padding: "20px", maxWidth: "560px", marginTop: "20px" }}>
+        <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "4px", color: "#03fb83" }}>Loops Contact Property Tester</div>
+        <div style={{ fontSize: "11px", color: "#6B7280", marginBottom: "16px" }}>
+          Creates/updates a contact in Loops with dummy score, verdict, businessName and results properties.
+        </div>
+        <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+          <input
+            type="email"
+            value={contactEmail}
+            onChange={e => setContactEmail(e.target.value)}
+            placeholder="Contact email..."
+            style={{
+              flex: 1, padding: "9px 12px", background: "#111927",
+              border: "1px solid #1A2438", borderRadius: "8px",
+              color: "#F8FAFC", fontSize: "13px", outline: "none",
+            }}
+          />
+          <button
+            onClick={sendTestContact}
+            disabled={contactSending || !contactEmail}
+            style={{
+              background: contactSending ? "#374151" : "#03fb83", color: "#000",
+              border: "none", borderRadius: "8px", padding: "9px 18px",
+              fontSize: "13px", fontWeight: 700,
+              cursor: contactSending || !contactEmail ? "not-allowed" : "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {contactSending ? "Sending…" : "Update Contact →"}
+          </button>
+        </div>
+        {contactResult && (
+          <div style={{
+            padding: "10px 14px", borderRadius: "8px", fontSize: "12px",
+            background: contactResult.ok ? "rgba(3,251,131,0.08)" : "rgba(239,68,68,0.08)",
+            border: `1px solid ${contactResult.ok ? "rgba(3,251,131,0.2)" : "rgba(239,68,68,0.2)"}`,
+            color: contactResult.ok ? "#03fb83" : "#EF4444",
+          }}>
+            <div style={{ marginBottom: "6px" }}>
+              {contactResult.ok ? `✓ Contact updated` : `✗ Failed`}
+            </div>
+            <pre style={{ margin: 0, fontSize: "11px", color: "#9CA3AF", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+              {JSON.stringify(contactResult, null, 2)}
             </pre>
           </div>
         )}
