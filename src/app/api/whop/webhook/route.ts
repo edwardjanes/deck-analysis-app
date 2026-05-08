@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
         email: submission.email,
         firstName: submission.first_name ?? "there",
         businessName: submission.business_name,
-        resultsUrl: `${appUrl}/results/${submissionId}`,
+        resultsUrl: `${appUrl}/investment-score/results/${submissionId}`,
         orderId: orderId || "—",
       }).catch(err => console.error("[loops] Payment email error:", err));
     }
