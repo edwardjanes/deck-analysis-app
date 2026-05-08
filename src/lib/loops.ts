@@ -28,16 +28,17 @@ export async function createOrUpdateContact(data: {
   }
 }
 
-async function sendTransactional(apiKey: string, transactionalId: string, email: string, dataVariables: Record<string, string>): Promise<void> {
+async function sendTransactional(apiKey: string, transactionalId: string, email: string, dataVariables: Record<string, string>): Promise<{ success: boolean; body: unknown }> {
   const res = await fetch("https://app.loops.so/api/v1/transactional", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({ transactionalId, email, dataVariables }),
   });
+  const body = await res.json().catch(() => res.text());
   if (!res.ok) {
-    const body = await res.text();
-    console.error(`[loops] Failed to send email (${transactionalId}): ${res.status} ${body}`);
+    console.error(`[loops] Failed to send email (${transactionalId}): ${res.status}`, body);
   }
+  return { success: res.ok, body };
 }
 
 interface AnalysisEmailData {
@@ -49,21 +50,22 @@ interface AnalysisEmailData {
   resultsUrl: string;
 }
 
-export async function sendAnalysisResultEmail(data: AnalysisEmailData): Promise<void> {
+export async function sendAnalysisResultEmail(data: AnalysisEmailData): Promise<{ success: boolean; body: unknown; transactionalId: string }> {
   const apiKey = process.env.LOOPS_API_KEY;
-  const transactionalId = process.env.LOOPS_TRANSACTIONAL_ID;
+  const transactionalId = process.env.LOOPS_TRANSACTIONAL_ID ?? "";
   if (!apiKey || !transactionalId) {
     console.warn("[loops] LOOPS_API_KEY or LOOPS_TRANSACTIONAL_ID not set — skipping email");
-    return;
+    return { success: false, body: "env vars not set", transactionalId };
   }
-  await sendTransactional(apiKey, transactionalId, data.email, {
+  const result = await sendTransactional(apiKey, transactionalId, data.email, {
     firstName: data.firstName,
     businessName: data.businessName,
     score: String(data.score),
     verdict: data.verdict,
     resultsUrl: data.resultsUrl,
   });
-  console.log(`[loops] Results email sent to ${data.email}`);
+  console.log(`[loops] Results email sent to ${data.email}:`, result);
+  return { ...result, transactionalId };
 }
 
 interface PaymentConfirmationData {

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk";
 
-    await sendAnalysisResultEmail({
+    const result = await sendAnalysisResultEmail({
       email: toEmail,
       firstName: data.first_name ?? "there",
       businessName: data.business_name,
@@ -32,9 +32,11 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
-      ok: true,
+      ok: result.success,
       sentTo: toEmail,
-      data: {
+      transactionalId: result.transactionalId,
+      loopsResponse: result.body,
+      payload: {
         firstName: data.first_name,
         businessName: data.business_name,
         score: data.score,

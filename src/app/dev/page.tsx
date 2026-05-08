@@ -23,7 +23,7 @@ export default function DevPage() {
   const [quickSubmitting, setQuickSubmitting] = useState(false);
   const [testEmail, setTestEmail] = useState("edward@edwardjanes.co.uk");
   const [emailSending, setEmailSending] = useState(false);
-  const [emailResult, setEmailResult] = useState<{ ok?: boolean; sentTo?: string; error?: string } | null>(null);
+  const [emailResult, setEmailResult] = useState<Record<string, unknown> | null>(null);
 
   const quickSubmit = async () => {
     if (!quickFile) { setError("Drop a PDF first"); return; }
@@ -256,9 +256,12 @@ export default function DevPage() {
             border: `1px solid ${emailResult.ok ? "rgba(3,251,131,0.2)" : "rgba(239,68,68,0.2)"}`,
             color: emailResult.ok ? "#03fb83" : "#EF4444",
           }}>
-            {emailResult.ok
-              ? `✓ Sent to ${emailResult.sentTo}`
-              : `✗ ${emailResult.error}`}
+            <div style={{ marginBottom: "6px" }}>
+              {emailResult.ok ? `✓ Sent to ${emailResult.sentTo}` : `✗ Failed`}
+            </div>
+            <pre style={{ margin: 0, fontSize: "11px", color: "#9CA3AF", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+              {JSON.stringify(emailResult, null, 2)}
+            </pre>
           </div>
         )}
       </div>
