@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Source Capital — User Journey Map</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0A0A0A;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 40px 24px 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #fff;
+  }
+
+  header h1 span {
+    color: #03fb83;
+  }
+
+  header p {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #666;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .canvas {
+    max-width: 1280px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* ── Column headers ── */
+  .col-headers {
+    display: grid;
+    grid-template-columns: 1fr 200px 1fr;
+    gap: 0;
+    margin-bottom: 8px;
+  }
+
+  .col-label {
+    text-align: center;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .col-label.f1 {
+    background: rgba(3, 251, 131, 0.07);
+    border: 1px solid rgba(3, 251, 131, 0.25);
+    color: #03fb83;
+  }
+
+  .col-label.shared {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #888;
+    font-size: 10px;
+    align-self: center;
+    margin: 0 8px;
+  }
+
+  .col-label.f2 {
+    background: rgba(99, 179, 237, 0.07);
+    border: 1px solid rgba(99, 179, 237, 0.25);
+    color: #63b3ed;
+  }
+
+  /* ── Main flow grid ── */
+  .flow {
+    display: grid;
+    grid-template-columns: 1fr 200px 1fr;
+    gap: 0;
+    align-items: start;
+  }
+
+  .col { display: flex; flex-direction: column; align-items: center; }
+  .col-mid { display: flex; flex-direction: column; align-items: center; }
+
+  /* ── Nodes ── */
+  .node {
+    width: 100%;
+    max-width: 340px;
+    border-radius: 10px;
+    padding: 14px 16px;
+    position: relative;
+    cursor: default;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .node:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+
+  .node.f1 {
+    background: #111;
+    border: 1px solid rgba(3, 251, 131, 0.3);
+  }
+
+  .node.f2 {
+    background: #0d1117;
+    border: 1px solid rgba(99, 179, 237, 0.3);
+  }
+
+  .node.shared {
+    background: #121212;
+    border: 1px solid rgba(255,255,255,0.15);
+    width: 100%;
+    max-width: 180px;
+  }
+
+  .node.checkout {
+    background: #0f1a12;
+    border: 1px solid rgba(3, 251, 131, 0.5);
+    width: 100%;
+    max-width: 180px;
+  }
+
+  .node.thankyou {
+    background: #0f1a12;
+    border: 1px solid rgba(3, 251, 131, 0.5);
+    width: 100%;
+    max-width: 180px;
+  }
+
+  .node-route {
+    font-size: 10px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: #555;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  .node-route a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .node-route a:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .node-route a .ext-icon {
+    font-size: 8px;
+    margin-left: 2px;
+    opacity: 0.7;
+  }
+
+  .node-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f0f0f0;
+    line-height: 1.35;
+  }
+
+  .node-desc {
+    font-size: 11px;
+    color: #777;
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+
+  .node-step {
+    position: absolute;
+    top: -9px;
+    left: 12px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  .step-f1 { background: rgba(3, 251, 131, 0.15); color: #03fb83; border: 1px solid rgba(3, 251, 131, 0.3); }
+  .step-f2 { background: rgba(99, 179, 237, 0.12); color: #63b3ed; border: 1px solid rgba(99, 179, 237, 0.3); }
+  .step-shared { background: rgba(255,255,255,0.07); color: #aaa; border: 1px solid rgba(255,255,255,0.15); }
+
+  /* ── Events badge ── */
+  .events {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .evt {
+    font-size: 9px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.2px;
+  }
+
+  .evt.posthog {
+    background: rgba(150, 100, 255, 0.12);
+    border: 1px solid rgba(150, 100, 255, 0.3);
+    color: #c4a7ff;
+  }
+
+  .evt.meta {
+    background: rgba(24, 119, 242, 0.1);
+    border: 1px solid rgba(24, 119, 242, 0.35);
+    color: #74a8f7;
+  }
+
+  /* ── Arrows ── */
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 0;
+  }
+
+  .arrow-line {
+    width: 2px;
+    height: 18px;
+    background: linear-gradient(to bottom, #333, #444);
+  }
+
+  .arrow-line.f1-color { background: linear-gradient(to bottom, rgba(3,251,131,0.3), rgba(3,251,131,0.15)); }
+  .arrow-line.f2-color { background: linear-gradient(to bottom, rgba(99,179,237,0.3), rgba(99,179,237,0.15)); }
+  .arrow-line.shared-color { background: linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); }
+
+  .arrow-label {
+    font-size: 9px;
+    color: #555;
+    text-align: center;
+    margin: 2px 0;
+    letter-spacing: 0.3px;
+  }
+
+  .arrowhead {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #444;
+  }
+
+  .arrowhead.f1-color { border-top-color: rgba(3,251,131,0.4); }
+  .arrowhead.f2-color { border-top-color: rgba(99,179,237,0.4); }
+  .arrowhead.shared-color { border-top-color: rgba(255,255,255,0.25); }
+
+  /* ── Diamond decision node ── */
+  .diamond-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+
+  .diamond {
+    width: 160px;
+    height: 80px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .diamond svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  .diamond-text {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #f0c060;
+    line-height: 1.3;
+    letter-spacing: 0.2px;
+  }
+
+  .diamond-branches {
+    display: flex;
+    width: 100%;
+    max-width: 340px;
+    justify-content: space-between;
+    position: relative;
+    margin-top: 4px;
+  }
+
+  .branch-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .branch-yes { color: #03fb83; background: rgba(3,251,131,0.1); border: 1px solid rgba(3,251,131,0.25); }
+  .branch-no  { color: #f87272; background: rgba(248,114,114,0.1); border: 1px solid rgba(248,114,114,0.25); }
+
+  /* ── Upsell branch ── */
+  .upsell-branches {
+    display: flex;
+    width: 100%;
+    max-width: 340px;
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .upsell-branch {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .upsell-node {
+    width: 100%;
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .upsell-accept {
+    background: rgba(3,251,131,0.07);
+    border: 1px solid rgba(3,251,131,0.3);
+  }
+
+  .upsell-decline {
+    background: rgba(248,114,114,0.07);
+    border: 1px solid rgba(248,114,114,0.25);
+  }
+
+  .upsell-node .node-title { font-size: 11px; }
+  .upsell-node .node-desc  { font-size: 10px; }
+
+  /* ── Merge indicator ── */
+  .merge-line {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 32px;
+    margin: 4px 0;
+  }
+
+  .merge-line::before {
+    content: '';
+    position: absolute;
+    left: 15%;
+    right: 15%;
+    top: 50%;
+    height: 1px;
+    background: linear-gradient(to right, rgba(255,255,255,0.0), rgba(255,255,255,0.12), rgba(255,255,255,0.0));
+  }
+
+  .merge-label {
+    font-size: 9px;
+    color: #555;
+    background: #0A0A0A;
+    padding: 2px 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-radius: 4px;
+    border: 1px solid #222;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Price tag ── */
+  .price-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #03fb83;
+    margin-top: 6px;
+  }
+
+  .price-tag.strike {
+    text-decoration: line-through;
+    color: #555;
+    font-size: 10px;
+  }
+
+  .price-tag.blue { color: #63b3ed; }
+
+  /* ── Plan ID ── */
+  .plan-id {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 9px;
+    color: #444;
+    margin-top: 3px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── Spacer rows ── */
+  .spacer { height: 8px; }
+  .row-spacer { height: 12px; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 52px;
+    padding-top: 24px;
+    border-top: 1px solid #1a1a1a;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #888;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+
+  /* ── Dashboard note ── */
+  .dashboard-note {
+    max-width: 460px;
+    margin: 32px auto 0;
+    padding: 14px 18px;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .dashboard-note h3 { font-size: 12px; color: #aaa; font-weight: 600; margin-bottom: 6px; }
+  .dashboard-note p  { font-size: 11px; color: #555; line-height: 1.6; }
+  .dashboard-note code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10px;
+    color: #03fb83;
+    background: rgba(3,251,131,0.08);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* ── Connector SVG overlay approach — using inline SVG per section ── */
+  .connector-row {
+    display: grid;
+    grid-template-columns: 1fr 200px 1fr;
+    align-items: center;
+    height: 28px;
+    position: relative;
+  }
+
+  .connector-row svg {
+    width: 100%;
+    height: 28px;
+    overflow: visible;
+  }
+
+  /* ── Horizontal merge arrows ── */
+  .merge-arrows {
+    display: grid;
+    grid-template-columns: 1fr 200px 1fr;
+    align-items: center;
+    height: 40px;
+    position: relative;
+  }
+
+  .half-arrow {
+    height: 40px;
+    position: relative;
+  }
+
+  .half-arrow svg {
+    width: 100%;
+    height: 40px;
+  }
+
+  /* ── Email nodes ── */
+  .email-branch-row {
+    display: grid;
+    grid-template-columns: 1fr 200px 1fr;
+    gap: 0;
+    align-items: start;
+    position: relative;
+  }
+
+  .email-branch-col {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding-right: 8px;
+  }
+
+  .email-branch-col.right-side {
+    justify-content: flex-start;
+    padding-right: 0;
+    padding-left: 8px;
+  }
+
+  .email-branch-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 14px;
+    margin-right: 0;
+  }
+
+  .email-branch-connector.right-side {
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .email-dashed-line {
+    width: 28px;
+    height: 2px;
+    border-top: 2px dashed rgba(245, 158, 11, 0.5);
+    margin-top: 1px;
+  }
+
+  .email-dashed-arrow {
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 6px solid rgba(245, 158, 11, 0.5);
+  }
+
+  .email-dashed-arrow.point-left {
+    border-left: none;
+    border-right: 6px solid rgba(245, 158, 11, 0.5);
+  }
+
+  .node.email {
+    background: #1a1200;
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    max-width: 190px;
+    width: 190px;
+    flex-shrink: 0;
+  }
+
+  .node.email .node-title {
+    color: #fcd34d;
+  }
+
+  .node.email .node-route {
+    color: #92683a;
+  }
+
+  .step-email {
+    background: rgba(245, 158, 11, 0.12);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+  }
+
+  .email-loops-label {
+    font-size: 9px;
+    color: #7a5a20;
+    letter-spacing: 0.4px;
+    text-align: center;
+    margin-top: 4px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .email-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 4px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  /* Email side-branch for shared checkout — positioned to the right */
+  .checkout-email-row {
+    display: grid;
+    grid-template-columns: 1fr 200px 1fr;
+    gap: 0;
+    align-items: center;
+    margin-top: 0;
+  }
+
+  .checkout-email-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 8px;
+    padding-top: 0;
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Source Capital — <span>User Journey Map</span></h1>
+  <p>Two funnels · Shared backend · PostHog + Meta Pixel analytics</p>
+</header>
+
+<div class="canvas">
+
+  <!-- Column headers -->
+  <div class="col-headers">
+    <div class="col-label f1">Funnel 1 — /investment-score<br><span style="font-size:10px;opacity:0.7;font-weight:400">Early Price ($7 → $97)</span></div>
+    <div class="col-label shared">Shared</div>
+    <div class="col-label f2">Funnel 2 — /investability-score<br><span style="font-size:10px;opacity:0.7;font-weight:400">Direct Price ($97)</span></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STEP 1 — Landing pages (parallel)
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="flow" style="margin-top:16px;">
+
+    <!-- F1 col -->
+    <div class="col">
+      <div class="node f1">
+        <div class="node-step step-f1">Step 1</div>
+        <div class="node-route"><a href="https://app.sourcecapital.co.uk/investment-score" target="_blank">/investment-score<span class="ext-icon">↗</span></a></div>
+        <div class="node-title">Landing Page</div>
+        <div class="node-desc">Hero section with CTA button → opens Lead Modal</div>
+        <div class="events">
+          <span class="evt posthog">$pageview</span>
+          <span class="evt posthog">cta_clicked</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mid col — empty at this row -->
+    <div class="col-mid"></div>
+
+    <!-- F2 col -->
+    <div class="col">
+      <div class="node f2">
+        <div class="node-step step-f2">Step 1</div>
+        <div class="node-route"><a href="https://app.sourcecapital.co.uk/investability-score" target="_blank">/investability-score<span class="ext-icon">↗</span></a></div>
+        <div class="node-title">Landing Page</div>
+        <div class="node-desc">Hero section with CTA button → opens Lead Modal</div>
+        <div class="events">
+          <span class="evt posthog">$pageview</span>
+          <span class="evt posthog">cta_clicked</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Arrows row 1→2 -->
+  <div class="flow">
+    <div class="col"><div class="arrow"><div class="arrow-line f1-color"></div><div class="arrow-label">CTA clicked</div><div class="arrowhead f1-color"></div></div></div>
+    <div class="col-mid"></div>
+    <div class="col"><div class="arrow"><div class="arrow-line f2-color"></div><div class="arrow-label">CTA clicked</div><div class="arrowhead f2-color"></div></div></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STEP 2 — Lead Modal (same for both, shown side-by-side merging to centre)
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="flow">
+
+    <div class="col">
+      <div class="node f1" style="border-style: dashed; opacity:0.6;">
+        <div class="node-route" style="font-style:italic;">Modal overlay</div>
+        <div class="node-title">Lead Modal</div>
+        <div class="node-desc">First name, last name, email — submit to capture lead</div>
+        <div class="events">
+          <span class="evt posthog">lead_captured</span>
+          <span class="evt meta">Meta: Lead</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-mid" style="justify-content:center;padding-top:12px;">
+      <div style="font-size:9px;color:#444;text-align:center;letter-spacing:0.5px;text-transform:uppercase;line-height:1.8;">Same<br>Modal<br>Component</div>
+    </div>
+
+    <div class="col">
+      <div class="node f2" style="border-style: dashed; opacity:0.6;">
+        <div class="node-route" style="font-style:italic;">Modal overlay</div>
+        <div class="node-title">Lead Modal</div>
+        <div class="node-desc">First name, last name, email — submit to capture lead</div>
+        <div class="events">
+          <span class="evt posthog">lead_captured</span>
+          <span class="evt meta">Meta: Lead</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Arrows row 2→3 -->
+  <div class="flow">
+    <div class="col"><div class="arrow"><div class="arrow-line f1-color"></div><div class="arrow-label">Submit</div><div class="arrowhead f1-color"></div></div></div>
+    <div class="col-mid"></div>
+    <div class="col"><div class="arrow"><div class="arrow-line f2-color"></div><div class="arrow-label">Submit</div><div class="arrowhead f2-color"></div></div></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STEP 3 — Upload pages (parallel)
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="flow">
+
+    <div class="col">
+      <div class="node f1">
+        <div class="node-step step-f1">Step 3</div>
+        <div class="node-route"><a href="https://app.sourcecapital.co.uk/investment-score/upload" target="_blank">/investment-score/upload<span class="ext-icon">↗</span></a></div>
+        <div class="node-title">Upload Deck</div>
+        <div class="node-desc">Business name, country, PDF upload</div>
+        <div class="events">
+          <span class="evt posthog">$pageview</span>
+          <span class="evt posthog">deck_uploaded</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-mid"></div>
+
+    <div class="col">
+      <div class="node f2">
+        <div class="node-step step-f2">Step 3</div>
+        <div class="node-route"><a href="https://app.sourcecapital.co.uk/investability-score/upload" target="_blank">/investability-score/upload<span class="ext-icon">↗</span></a></div>
+        <div class="node-title">Upload Deck</div>
+        <div class="node-desc">Business name, country, PDF upload</div>
+        <div class="events">
+          <span class="evt posthog">$pageview</span>
+          <span class="evt posthog">deck_uploaded</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Arrows row 3→4 -->
+  <div class="flow">
+    <div class="col"><div class="arrow"><div class="arrow-line f1-color"></div><div class="arrow-label">Upload submitted</div><div class="arrowhead f1-color"></div></div></div>
+    <div class="col-mid"></div>
+    <div class="col"><div class="arrow"><div class="arrow-line f2-color"></div><div class="arrow-label">Upload submitted</div><div class="arrowhead f2-color"></div></div></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STEP 4 — Analysing pages (parallel)
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="flow">
+
+    <div class="col">
+      <div class="node f1">
+        <div class="node-step step-f1">Step 4</div>
+        <div class="node-route"><a href="https://app.sourcecapital.co.uk/investment-score/analysing/test" target="_blank">/investment-score/analysing/[id]<span class="ext-icon">↗</span></a></div>
+        <div class="node-title">Analysing</div>
+        <div class="node-desc">120s progress bar, polling backend for completion</div>
+        <div class="events">
+          <span class="evt posthog">$pageview</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-mid"></div>
+
+    <div class="col">
+      <div class="node f2">
+        <div class="node-step step-f2">Step 4</div>
+        <div class="node-route"><a href="https://app.sourcecapital.co.uk/investability-score/analysing/test" target="_blank">/investability-score/analysing/[id]<span class="ext-icon">↗</span></a></div>
+        <div class="node-title">Analysing</div>
+        <div class="node-desc">120s progress bar, polling backend for completion</div>
+        <div class="events">
+          <span class="evt posthog">$pageview</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Email branches off Analysing — Results Email fires when AI analysis completes -->
+  <div class="email-branch-row" style="margin-top:6px;">
+
+    <!-- F1 side: email node floats to the right of F1 column -->
+    <div style="display:flex;flex-direction:row;align-items:flex-start;justify-content:flex-end;padding-right:8px;">
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="node email" style="margin-top:0;">
+          <div class="node-step step-email">Email</div>
+          <div class="node-route">api/analyse/[id]/route.ts</div>
+          <div class="node-title" style="display:flex;align-items:center;">
+            <span class="email-icon">
+              <svg width="13" height="10" viewBox="0 0 13 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0.5" y="0.5" width="12" height="9" rx="1.5" stroke="#F59E0B" stroke-width="1"/>
+                <path d="M1 1.5L6.5 5.5L12 1.5" stroke="#F59E0B" stroke-width="1" stroke-linecap="round"/>
+              </svg>
+            </span>
+            Results Email
+          </div>
+          <div class="node-desc">Sent immediately after AI analysis finishes. Contains: firstName, businessName, score, verdict, resultsUrl</div>
+        </div>
+        <div class="email-loops-label">via Loops.so</div>
+      </div>
+      <!-- Dashed connector line from email node to main flow column -->
+      <div style="display:flex;align-items:center;margin-top:22px;order:-1;margin-right:0;">
+        <div style="width:24px;height:2px;border-top:2px dashed rgba(245,158,11,0.45);"></div>
+        <div style="width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-right:6px solid rgba(245,158,11,0.45);"></div>
+      </div>
+    </div>
+
+    <!-- Mid col — spacer -->
+    <div class="col-mid"></div>
+
+    <!-- F2 side: email node floats to the left of F2 column -->
+    <div style="display:flex;flex-direction:row;align-items:flex-start;justify-content:flex-start;padding-left:8px;">
+      <!-- Dashed connector line -->
+      <div style="display:flex;align-items:center;margin-top:22px;margin-right:0;">
+        <div style="width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid rgba(245,158,11,0.45);"></div>
+        <div style="width:24px;height:2px;border-top:2px dashed rgba(245,158,11,0.45);"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="node email" style="margin-top:0;">
+          <div class="node-step step-email">Email</div>
+          <div class="node-route">api/analyse/[id]/route.ts</div>
+          <div class="node-title" style="display:flex;align-items:center;">
+            <span class="email-icon">
+              <svg width="13" height="10" viewBox="0 0 13 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0.5" y="0.5" width="12" height="9" rx="1.5" stroke="#F59E0B" stroke-width="1"/>
+                <path d="M1 1.5L6.5 5.5L12 1.5" stroke="#F59E0B" stroke-width="1" stroke-linecap="round"/>
+              </svg>
+            </span>
+            Results Email
+          </div>
+          <div class="node-desc">Sent immediately after AI analysis finishes. Contains: firstName, businessName, score, verdict, resultsUrl</div>
+        </div>
+        <div class="email-loops-label">via Loops.so</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Arrows row 4→5 -->
+  <div class="flow" style="margin-top:6px;">
+    <div class="col"><div class="arrow"><div class="arrow-line f1-color"></div><div class="arrow-label">Analysis complete</div><div class="arrowhead f1-color"></div></div></div>
+    <div class="col-mid"></div>
+    <div class="col"><div class="arrow"><div class="arrow-line f2-color"></div><div class="arrow-label">Analysis complete</div><div class="arrowhead f2-color"></div></div></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STEP 5 — Results pages (diverge: F1 has price switch, F2 is flat)
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="flow">
+
+    <!-- F1 Results + diamond -->
+    <div class="col">
+      <div class="node f1">
+        <div class="node-step step-f1">Step 5</div>
+        <div class="node-route"><a href="https://app.sourcecapital.co.uk/investment-score/results/488e62e2-99ca-4d02-a529-18b9a3e73b72" target="_blank">/investment-score/results/[id] (MerxOS)<span class="ext-icon">↗</span></a></div>
+        <div class="node-title">Results Page</div>
+        <div class="node-desc">Score shown, full report locked behind paywall</div>
+        <div class="events">
+          <span class="evt posthog">$pageview</span>
+          <span class="evt posthog">results_viewed</span>
+        </div>
+      </div>
+
+      <!-- Arrow down to diamond -->
+      <div class="arrow" style="padding: 8px 0 4px;">
+        <div class="arrow-line f1-color" style="height:14px;"></div>
+        <div class="arrowhead f1-color"></div>
+      </div>
+
+      <!-- Decision diamond -->
+      <div class="diamond-wrap">
+        <div class="diamond">
+          <svg viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="80,4 156,40 80,76 4,40" fill="rgba(240,192,96,0.08)" stroke="rgba(240,192,96,0.45)" stroke-width="1.5"/>
+          </svg>
+          <div class="diamond-text">Within<br>24 hours?</div>
+        </div>
+
+        <div class="diamond-branches" style="margin-top:4px;">
+          <span class="branch-label branch-yes">Yes → $7</span>
+          <span class="branch-label branch-no">No → $97</span>
+        </div>
+
+        <!-- Two sub-price nodes -->
+        <div style="display:flex;width:100%;gap:8px;margin-top:6px;">
+          <div style="flex:1;background:rgba(3,251,131,0.05);border:1px solid rgba(3,251,131,0.2);border-radius:7px;padding:8px 10px;text-align:center;">
+            <div class="price-tag">$7</div>
+            <div class="plan-id">plan_AUP8u87FOYnEZ</div>
+            <div style="font-size:9px;color:#555;margin-top:3px;">Early bird</div>
+          </div>
+          <div style="flex:1;background:rgba(248,114,114,0.05);border:1px solid rgba(248,114,114,0.2);border-radius:7px;padding:8px 10px;text-align:center;">
+            <div class="price-tag" style="color:#f87272;">$97</div>
+            <div class="plan-id">plan_7LlelIvBnFah9</div>
+            <div style="font-size:9px;color:#555;margin-top:3px;">After 24h</div>
+          </div>
+        </div>
+
+        <div class="events" style="margin-top:8px;justify-content:center;">
+          <span class="evt posthog">checkout_initiated</span>
+          <span class="evt meta">Meta: InitiateCheckout</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mid col -->
+    <div class="col-mid"></div>
+
+    <!-- F2 Results — flat $97 -->
+    <div class="col">
+      <div class="node f2">
+        <div class="node-step step-f2">Step 5</div>
+        <div class="node-route"><a href="https://app.sourcecapital.co.uk/investability-score/results/488e62e2-99ca-4d02-a529-18b9a3e73b72" target="_blank">/investability-score/results/[id] (MerxOS)<span class="ext-icon">↗</span></a></div>
+        <div class="node-title">Results Page</div>
+        <div class="node-desc">Score shown, full report locked — always $97, no countdown</div>
+        <div style="margin-top:8px;">
+          <div class="price-tag blue">$97</div>
+          <div class="plan-id">plan_7LlelIvBnFah9</div>
+        </div>
+        <div class="events">
+          <span class="evt posthog">$pageview</span>
+          <span class="evt posthog">results_viewed</span>
+          <span class="evt posthog">checkout_initiated</span>
+          <span class="evt meta">Meta: InitiateCheckout</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Arrows merging into shared Whop checkout -->
+  <div style="margin: 10px 0 4px; position:relative;">
+    <div class="merge-arrows">
+
+      <!-- F1 side: down-right arc -->
+      <div class="half-arrow">
+        <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+          <path d="M50,0 L50,20 Q50,38 75,38 L100,38" stroke="rgba(3,251,131,0.35)" stroke-width="1.5" fill="none"/>
+          <polygon points="96,33 104,38 96,43" fill="rgba(3,251,131,0.35)"/>
+        </svg>
+      </div>
+
+      <!-- Shared checkout node -->
+      <div class="col-mid" style="z-index:1;">
+        <div class="node checkout" style="width:100%;max-width:180px;">
+          <div class="node-step step-shared">Step 6</div>
+          <div class="node-route" style="text-align:center;">Whop</div>
+          <div class="node-title" style="text-align:center;font-size:12px;">Checkout</div>
+          <div class="node-desc" style="text-align:center;font-size:10px;">Hosted payment page</div>
+        </div>
+      </div>
+
+      <!-- F2 side: down-left arc -->
+      <div class="half-arrow">
+        <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+          <path d="M50,0 L50,20 Q50,38 25,38 L0,38" stroke="rgba(99,179,237,0.35)" stroke-width="1.5" fill="none"/>
+          <polygon points="4,33 -4,38 4,43" fill="rgba(99,179,237,0.35)"/>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Payment Confirmation Email — branches off Whop Checkout -->
+  <div class="checkout-email-row" style="margin-top:6px;">
+    <div style="display:flex;align-items:flex-start;justify-content:flex-end;padding-right:8px;">
+    </div>
+    <!-- Mid col: arrow going down from checkout (the dashed email branch exits to the right) -->
+    <div class="col-mid" style="position:relative;">
+      <div style="display:flex;flex-direction:row;align-items:flex-start;justify-content:flex-end;width:100%;">
+        <!-- The dashed horizontal connector exits right of the checkout column -->
+        <div style="display:flex;align-items:center;margin-top:18px;position:absolute;left:100%;top:0;">
+          <div style="width:2px;height:2px;"></div>
+          <div style="width:18px;height:2px;border-top:2px dashed rgba(245,158,11,0.45);"></div>
+          <div style="width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid rgba(245,158,11,0.45);"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Right col: email node -->
+    <div class="checkout-email-right">
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="node email">
+          <div class="node-step step-email">Email</div>
+          <div class="node-route">api/whop/webhook/route.ts</div>
+          <div class="node-title" style="display:flex;align-items:center;">
+            <span class="email-icon">
+              <svg width="13" height="10" viewBox="0 0 13 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0.5" y="0.5" width="12" height="9" rx="1.5" stroke="#F59E0B" stroke-width="1"/>
+                <path d="M1 1.5L6.5 5.5L12 1.5" stroke="#F59E0B" stroke-width="1" stroke-linecap="round"/>
+              </svg>
+            </span>
+            Payment Confirmation
+          </div>
+          <div class="node-desc">Triggered by Whop webhook on <code style="font-family:'SF Mono','Fira Code',monospace;font-size:9px;color:#d97706;background:rgba(245,158,11,0.1);padding:1px 4px;border-radius:3px;">payment.completed</code> or <code style="font-family:'SF Mono','Fira Code',monospace;font-size:9px;color:#d97706;background:rgba(245,158,11,0.1);padding:1px 4px;border-radius:3px;">membership.went_valid</code>. Contains: firstName, businessName, resultsUrl, orderId</div>
+        </div>
+        <div class="email-loops-label">via Loops.so</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arrow from checkout down -->
+  <div class="flow" style="margin-top:8px;">
+    <div class="col"></div>
+    <div class="col-mid">
+      <div class="arrow">
+        <div class="arrow-line shared-color"></div>
+        <div class="arrow-label">redirect</div>
+        <div class="arrowhead shared-color"></div>
+      </div>
+    </div>
+    <div class="col"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STEP 7 — Upsell page (shared, centre column, with branches)
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="flow">
+    <div class="col"></div>
+    <div class="col-mid">
+      <div class="node shared" style="max-width:180px;">
+        <div class="node-step step-shared">Step 7</div>
+        <div class="node-route" style="text-align:center;"><a href="https://app.sourcecapital.co.uk/upsell" target="_blank">/upsell<span class="ext-icon">↗</span></a></div>
+        <div class="node-title" style="text-align:center;font-size:12px;">Upsell Page</div>
+        <div class="node-desc" style="text-align:center;font-size:10px;">Raise Launchpad community $97/mo</div>
+        <div class="plan-id" style="text-align:center;">plan_J7CPhtS9G5ffD</div>
+        <div class="events" style="justify-content:center;margin-top:6px;">
+          <span class="evt posthog">$pageview</span>
+        </div>
+      </div>
+
+      <!-- Upsell arrow down to branches -->
+      <div class="arrow">
+        <div class="arrow-line shared-color" style="height:12px;"></div>
+        <div class="arrowhead shared-color"></div>
+      </div>
+
+    </div>
+    <div class="col"></div>
+  </div>
+
+  <!-- Upsell branches — span across all 3 cols -->
+  <div style="display:flex;gap:12px;max-width:500px;margin:0 auto;width:100%;">
+
+    <!-- Accept branch -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div class="upsell-node upsell-accept" style="width:100%;">
+        <div style="font-size:9px;font-weight:700;color:#03fb83;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Accept</div>
+        <div class="node-title" style="font-size:11px;color:#e0e0e0;">Whop Community Checkout</div>
+        <div class="node-desc" style="font-size:10px;">$97/month subscription</div>
+        <div class="events" style="justify-content:center;margin-top:6px;">
+          <span class="evt posthog">upsell_accepted</span>
+        </div>
+      </div>
+      <div class="arrow" style="padding:4px 0;">
+        <div class="arrow-line f1-color" style="height:12px;"></div>
+        <div class="arrowhead f1-color"></div>
+      </div>
+    </div>
+
+    <!-- Decline branch -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div class="upsell-node upsell-decline" style="width:100%;">
+        <div style="font-size:9px;font-weight:700;color:#f87272;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Decline</div>
+        <div class="node-title" style="font-size:11px;color:#e0e0e0;">Skip upsell</div>
+        <div class="node-desc" style="font-size:10px;">Proceeds directly</div>
+        <div class="events" style="justify-content:center;margin-top:6px;">
+          <span class="evt posthog">upsell_declined</span>
+        </div>
+      </div>
+      <div class="arrow" style="padding:4px 0;">
+        <div class="arrow-line" style="height:12px;background:rgba(248,114,114,0.3);"></div>
+        <div class="arrowhead" style="border-top-color:rgba(248,114,114,0.4);"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Re-merge to thank-you -->
+  <div style="display:flex;align-items:flex-start;justify-content:center;max-width:500px;margin:0 auto;width:100%;height:36px;position:relative;">
+    <svg width="100%" height="36" viewBox="0 0 500 36" preserveAspectRatio="none">
+      <!-- Left branch converging -->
+      <path d="M125,0 Q125,34 250,34" stroke="rgba(3,251,131,0.3)" stroke-width="1.5" fill="none"/>
+      <!-- Right branch converging -->
+      <path d="M375,0 Q375,34 250,34" stroke="rgba(248,114,114,0.25)" stroke-width="1.5" fill="none"/>
+      <!-- Arrowhead at center bottom -->
+      <polygon points="246,29 250,37 254,29" fill="rgba(255,255,255,0.2)"/>
+    </svg>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STEP 8 — Thank-you page (shared, centre)
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="flow" style="margin-top:2px;">
+    <div class="col"></div>
+    <div class="col-mid">
+      <div class="node thankyou" style="max-width:180px;">
+        <div class="node-step step-shared">Step 8</div>
+        <div class="node-route" style="text-align:center;"><a href="https://app.sourcecapital.co.uk/thank-you" target="_blank">/thank-you<span class="ext-icon">↗</span></a></div>
+        <div class="node-title" style="text-align:center;font-size:12px;">Thank You Page</div>
+        <div class="node-desc" style="text-align:center;font-size:10px;">Polls until payment confirmed, then shows "View Full Report" button</div>
+        <div class="events" style="justify-content:center;margin-top:6px;">
+          <span class="evt posthog">$pageview</span>
+        </div>
+      </div>
+
+      <div class="arrow">
+        <div class="arrow-line shared-color"></div>
+        <div class="arrow-label">payment confirmed</div>
+        <div class="arrowhead shared-color"></div>
+      </div>
+
+      <!-- Final: View Full Report -->
+      <div style="background:#0d1a13;border:1px solid rgba(3,251,131,0.4);border-radius:8px;padding:10px 14px;text-align:center;max-width:180px;width:100%;">
+        <div style="font-size:9px;color:#03fb83;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">CTA</div>
+        <div style="font-size:11px;font-weight:600;color:#fff;">View Full Report</div>
+        <div style="font-size:9px;font-family:'SF Mono','Fira Code',monospace;color:#444;margin-top:4px;">/investment-score/results/[id]</div>
+      </div>
+
+    </div>
+    <div class="col"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       DASHBOARD — separate section
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="dashboard-note">
+    <h3>Dashboard (Authenticated Users Only)</h3>
+    <p>
+      Root <code>/</code> redirects to <code><a href="https://app.sourcecapital.co.uk/dashboard" target="_blank" style="color:inherit;text-decoration:none;">/dashboard<span style="font-size:8px;margin-left:2px;opacity:0.7;">↗</span></a></code> — middleware redirects to <code><a href="https://app.sourcecapital.co.uk/login" target="_blank" style="color:inherit;text-decoration:none;">/login<span style="font-size:8px;margin-left:2px;opacity:0.7;">↗</span></a></code> if unauthenticated.<br>
+      Dashboard lists all submissions with links to <code><a href="https://app.sourcecapital.co.uk/investment-score/results/488e62e2-99ca-4d02-a529-18b9a3e73b72" target="_blank" style="color:inherit;text-decoration:none;">/investment-score/results/[id]<span style="font-size:8px;margin-left:2px;opacity:0.7;">↗</span></a></code>
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       LEGEND
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(3,251,131,0.3);border:1px solid rgba(3,251,131,0.5);"></div>
+      Funnel 1 — /investment-score
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(99,179,237,0.3);border:1px solid rgba(99,179,237,0.5);"></div>
+      Funnel 2 — /investability-score
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);"></div>
+      Shared steps (both funnels)
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(150,100,255,0.2);border:1px solid rgba(150,100,255,0.5);"></div>
+      PostHog event
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(24,119,242,0.2);border:1px solid rgba(24,119,242,0.5);"></div>
+      Meta Pixel event
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(240,192,96,0.15);border:1px solid rgba(240,192,96,0.5);"></div>
+      Decision / price branch
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.5);"></div>
+      Transactional email (Loops.so)
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

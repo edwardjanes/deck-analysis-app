@@ -51,16 +51,65 @@ export async function POST(req: NextRequest) {
   const action = event.action as string;
   console.log(`[whop/webhook] Received event: ${action}`);
 
-  // Handle payment completion events
+  const data = event.data as Record<string, unknown> ?? {};
+  const planId = (data.plan_id ?? (data.plan as Record<string, unknown>)?.id ?? "") as string;
+  const membershipId = (data.id ?? "") as string;
+  const userId = (data.user_id ?? (data.user as Record<string, unknown>)?.id ?? "") as string;
+
+  // ---- CRM subscription activation ----
+  const crmPlanId = process.env.WHOP_CRM_PLAN_ID;
+  if (
+    crmPlanId &&
+    planId === crmPlanId &&
+    (action === "membership.went_valid" || action === "payment.completed")
+  ) {
+    if (!userId) {
+      console.warn("[whop/webhook] CRM activation: no user_id in event", data);
+      return NextResponse.json({ received: true });
+    }
+
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({ crm_access: true, crm_whop_membership_id: membershipId })
+      .eq("id", userId);
+
+    if (error) {
+      Sentry.captureException(new Error(error.message), {
+        tags: { context: "whop_webhook_crm" },
+        extra: { userId, membershipId, planId },
+      });
+      console.error("[whop/webhook] CRM access update failed:", error);
+      return NextResponse.json({ error: "DB update failed" }, { status: 500 });
+    }
+
+    console.log(`[whop/webhook] CRM access granted to user ${userId}`);
+    return NextResponse.json({ received: true });
+  }
+
+  // ---- CRM subscription cancelled/revoked ----
+  if (
+    crmPlanId &&
+    planId === crmPlanId &&
+    action === "membership.went_invalid"
+  ) {
+    if (userId) {
+      await supabaseAdmin
+        .from("profiles")
+        .update({ crm_access: false })
+        .eq("id", userId);
+      console.log(`[whop/webhook] CRM access revoked for user ${userId}`);
+    }
+    return NextResponse.json({ received: true });
+  }
+
+  // ---- Deck analysis payment ----
   if (action === "payment.completed" || action === "membership.went_valid") {
-    const data = event.data as Record<string, unknown> ?? {};
     const metadata = (data.metadata ?? data.checkout_metadata ?? {}) as Record<string, string>;
     const submissionId = metadata.submission_id;
     const orderId = (data.id ?? data.order_id ?? "") as string;
 
     if (!submissionId) {
       console.warn("[whop/webhook] No submission_id in metadata", data);
-      // Still return 200 so Whop doesn't retry endlessly
       return NextResponse.json({ received: true });
     }
 
@@ -82,7 +131,6 @@ export async function POST(req: NextRequest) {
 
     console.log(`[whop/webhook] Marked submission ${submissionId} as paid (order: ${orderId})`);
 
-    // Update Loops contact as paid + send confirmation email
     if (submission?.email) {
       const appUrl = "https://app.sourcecapital.co.uk";
       const resultsUrl = `${appUrl}/investment-score/results/${submissionId}`;

@@ -28,6 +28,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // Protect CRM routes
+  if (request.nextUrl.pathname.startsWith("/crm") && !user) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
   // Redirect logged-in users away from login page
   if (request.nextUrl.pathname === "/login" && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -37,6 +42,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/crm/:path*", "/login"],
 };
 
