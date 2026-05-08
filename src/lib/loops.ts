@@ -58,11 +58,11 @@ export async function sendAnalysisResultEmail(data: AnalysisEmailData): Promise<
     return { success: false, body: "env vars not set", transactionalId };
   }
   const result = await sendTransactional(apiKey, transactionalId, data.email, {
-    firstName: data.firstName,
-    businessName: data.businessName,
-    score: String(data.score),
-    verdict: data.verdict,
-    resultsUrl: data.resultsUrl,
+    deckFirstName: data.firstName,
+    deckBusinessName: data.businessName,
+    deckScore: String(data.score),
+    deckVerdict: data.verdict,
+    deckResultsUrl: data.resultsUrl,
   });
   console.log(`[loops] Results email sent to ${data.email}:`, result);
   return { ...result, transactionalId };
@@ -84,10 +84,10 @@ export async function sendPaymentConfirmationEmail(data: PaymentConfirmationData
     return;
   }
   await sendTransactional(apiKey, transactionalId, data.email, {
-    firstName: data.firstName,
-    businessName: data.businessName,
-    resultsUrl: data.resultsUrl,
-    orderId: data.orderId,
+    deckFirstName: data.firstName,
+    deckBusinessName: data.businessName,
+    deckResultsUrl: data.resultsUrl,
+    deckOrderId: data.orderId,
   });
   console.log(`[loops] Payment confirmation sent to ${data.email}`);
 }
