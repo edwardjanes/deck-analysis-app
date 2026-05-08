@@ -184,10 +184,10 @@ export async function POST(
           firstName: submission.first_name ?? "",
           lastName: submission.last_name ?? "",
           customProperties: {
-            deckScore: analysis.meetingConversionScore,
-            deckVerdict: analysis.verdict,
-            deckBusinessName: submission.business_name,
-            deckResultsUrl: resultsUrl,
+            score: analysis.meetingConversionScore,
+            verdict: analysis.verdict,
+            businessName: submission.business_name,
+            results: resultsUrl,
           },
         }).catch((err) => console.error("[loops] Contact update error:", err));
 
