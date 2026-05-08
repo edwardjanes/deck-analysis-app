@@ -37,16 +37,7 @@ CREATE TABLE IF NOT EXISTS investor_profiles (
   source              text DEFAULT 'manual',
   last_verified_at    timestamptz,
 
-  -- Full-text search
-  search_vector       tsvector GENERATED ALWAYS AS (
-    to_tsvector('english',
-      coalesce(fund_name, '') || ' ' ||
-      coalesce(contact_name, '') || ' ' ||
-      coalesce(thesis_notes, '') || ' ' ||
-      coalesce(array_to_string(sector_focus, ' '), '') || ' ' ||
-      coalesce(array_to_string(stage_focus, ' '), '')
-    )
-  ) STORED
+  search_vector       tsvector
 );
 
 CREATE INDEX IF NOT EXISTS investor_profiles_search_idx ON investor_profiles USING GIN(search_vector);
@@ -157,7 +148,28 @@ CREATE POLICY "Users can manage own touchpoints" ON touchpoints
   FOR ALL USING (auth.uid() = user_id);
 
 
--- ---- 4. UPDATED_AT TRIGGERS ----
+-- ---- 4. SEARCH VECTOR TRIGGER ----
+
+CREATE OR REPLACE FUNCTION investor_profiles_search_vector()
+RETURNS trigger AS $$
+BEGIN
+  NEW.search_vector := to_tsvector('english',
+    coalesce(NEW.fund_name, '') || ' ' ||
+    coalesce(NEW.contact_name, '') || ' ' ||
+    coalesce(NEW.thesis_notes, '') || ' ' ||
+    coalesce(array_to_string(NEW.sector_focus, ' '), '') || ' ' ||
+    coalesce(array_to_string(NEW.stage_focus, ' '), '')
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER investor_profiles_search_vector_trigger
+  BEFORE INSERT OR UPDATE ON investor_profiles
+  FOR EACH ROW EXECUTE FUNCTION investor_profiles_search_vector();
+
+
+-- ---- 5. UPDATED_AT TRIGGERS ----
 
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS trigger AS $$

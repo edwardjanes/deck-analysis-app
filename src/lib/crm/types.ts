@@ -67,6 +67,19 @@ export interface PipelineInvestor {
   touchpoints?: Touchpoint[];
 }
 
+export interface PortfolioCompany {
+  id: string;
+  pipeline_investor_id: string;
+  user_id: string;
+  company_name: string;
+  website: string | null;
+  sector: string | null;
+  stage_at_investment: string | null;
+  year: number | null;
+  notes: string | null;
+  created_at: string;
+}
+
 export interface Touchpoint {
   id: string;
   pipeline_investor_id: string;

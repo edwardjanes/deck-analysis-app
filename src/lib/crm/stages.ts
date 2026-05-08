@@ -42,6 +42,27 @@ export const STAGE_COLORS: Record<PipelineStage, { bg: string; text: string; bor
   passed:             { bg: 'rgba(239,68,68,0.15)',   text: '#F87171', border: 'rgba(239,68,68,0.3)' },
 };
 
+export const SECTOR_TAGS = [
+  'AI / ML', 'B2B SaaS', 'Consumer', 'Climate Tech', 'Deep Tech',
+  'EdTech', 'FinTech', 'HealthTech', 'HRTech', 'LegalTech',
+  'Marketplace', 'PropTech', 'Retail / E-commerce', 'Security',
+  'Web3 / Crypto', 'Other',
+];
+
+export const INVESTMENT_STAGE_TAGS = [
+  'Pre-seed', 'Seed', 'Series A', 'Series B', 'Series C+', 'Growth', 'Any',
+];
+
+export const CHECK_SIZE_TAGS = [
+  '< $100k', '$100k – $500k', '$500k – $1M', '$1M – $5M',
+  '$5M – $10M', '$10M – $25M', '$25M+',
+];
+
+export const GEOGRAPHY_TAGS = [
+  'UK', 'Europe', 'US', 'North America', 'Latin America',
+  'Africa', 'Middle East', 'Asia Pacific', 'Global',
+];
+
 export const TOUCHPOINT_LABELS: Record<TouchpointType, string> = {
   email_sent:          'Email Sent',
   email_received:      'Email Received',
