@@ -35,9 +35,11 @@ interface Props {
   analyses: Analysis[];
   userId: string;
   userEmail: string;
+  crmAccess: boolean;
+  pipelineStageCounts: Record<string, number>;
 }
 
-export default function DashboardClient({ firstName, plan, analysesUsed, analyses, userId, userEmail }: Props) {
+export default function DashboardClient({ firstName, plan, analysesUsed, analyses, userId, userEmail, crmAccess, pipelineStageCounts }: Props) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -177,6 +179,9 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
             )}
           </div>
         </div>
+
+        {/* Stats row */}
+        <StatsRow analyses={analyses} crmAccess={crmAccess} pipelineStageCounts={pipelineStageCounts} />
 
         {/* Upload area */}
         <div style={{ background: "#161616", border: `1px solid ${limitReached ? "rgba(3,251,131,0.2)" : "#242424"}`, borderRadius: "16px", padding: "32px", marginBottom: "32px" }}>
@@ -384,6 +389,116 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Funnel stages (active only, no 'passed') ─────────────────────────────────
+const FUNNEL_STAGES: { key: string; label: string; color: string }[] = [
+  { key: "researching",       label: "Researching",    color: "#9CA3AF" },
+  { key: "targeted",          label: "Targeted",       color: "#60A5FA" },
+  { key: "reached_out",       label: "Reached Out",    color: "#A78BFA" },
+  { key: "replied",           label: "Replied",        color: "#FB923C" },
+  { key: "meeting_scheduled", label: "Meeting Sched.", color: "#FACC15" },
+  { key: "meeting_completed", label: "Meeting Done",   color: "#4ADE80" },
+  { key: "due_diligence",     label: "Due Diligence",  color: "#22D3EE" },
+  { key: "term_sheet",        label: "Term Sheet",     color: "#03fb83" },
+  { key: "committed",         label: "Committed",      color: "#03fb83" },
+];
+
+function ScoreGauge({ score }: { score: number }) {
+  const color = scoreColor(score);
+  const r = 38;
+  const cx = 50, cy = 50;
+  const circumference = 2 * Math.PI * r;
+  const progress = (score / 100) * circumference;
+
+  return (
+    <div style={{ background: "#161616", border: "1px solid #242424", borderRadius: "16px", padding: "24px 28px", flex: "0 0 220px" }}>
+      <div style={{ fontSize: "12px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>Latest Score</div>
+      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+        <svg width="90" height="90" viewBox="0 0 100 100">
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1F2937" strokeWidth="8" />
+          <circle
+            cx={cx} cy={cy} r={r} fill="none"
+            stroke={color} strokeWidth="8"
+            strokeDasharray={`${progress} ${circumference}`}
+            strokeLinecap="round"
+            transform={`rotate(-90 ${cx} ${cy})`}
+            style={{ transition: "stroke-dasharray 0.6s ease" }}
+          />
+          <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="middle" fill={color} fontSize="20" fontWeight="800">{score}</text>
+          <text x={cx} y={cy + 16} textAnchor="middle" dominantBaseline="middle" fill="#4B5563" fontSize="9">/100</text>
+        </svg>
+        <div>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: color, marginBottom: "4px" }}>
+            {score >= 75 ? "Strong" : score >= 50 ? "Developing" : "Needs Work"}
+          </div>
+          <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.5 }}>
+            Investability<br />score
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PipelineFunnel({ counts }: { counts: Record<string, number> }) {
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const active = FUNNEL_STAGES.filter(s => (counts[s.key] ?? 0) > 0);
+  const maxCount = Math.max(...active.map(s => counts[s.key] ?? 0), 1);
+
+  return (
+    <div style={{ background: "#161616", border: "1px solid #242424", borderRadius: "16px", padding: "24px 28px", flex: 1, minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+        <div style={{ fontSize: "12px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>Pipeline Funnel</div>
+        <a href="/crm/pipeline" style={{ fontSize: "12px", color: GREEN, textDecoration: "none", fontWeight: 600 }}>View pipeline →</a>
+      </div>
+      {total === 0 ? (
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <p style={{ fontSize: "13px", color: "#4B5563" }}>No investors in pipeline yet.</p>
+          <a href="/crm/pipeline" style={{ fontSize: "13px", color: GREEN, textDecoration: "none" }}>Add investors →</a>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          {active.map(stage => {
+            const count = counts[stage.key] ?? 0;
+            const pct = (count / maxCount) * 100;
+            return (
+              <div key={stage.key} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ width: "100px", fontSize: "11px", color: "#6B7280", flexShrink: 0, textAlign: "right" }}>{stage.label}</div>
+                <div style={{ flex: 1, background: "#1F2937", borderRadius: "4px", height: "18px", overflow: "hidden" }}>
+                  <div style={{
+                    height: "100%", borderRadius: "4px",
+                    width: `${pct}%`,
+                    background: `${stage.color}33`,
+                    border: `1px solid ${stage.color}66`,
+                    transition: "width 0.4s ease",
+                    display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: "6px",
+                  }}>
+                    <span style={{ fontSize: "10px", fontWeight: 700, color: stage.color }}>{count}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ marginTop: "6px", fontSize: "11px", color: "#4B5563", textAlign: "right" }}>{total} total investors</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatsRow({ analyses, crmAccess, pipelineStageCounts }: { analyses: Analysis[]; crmAccess: boolean; pipelineStageCounts: Record<string, number> }) {
+  const latestScore = analyses.find(a => a.status === "complete" && a.score !== null)?.score ?? null;
+  const hasPipeline = crmAccess;
+
+  if (latestScore === null && !hasPipeline) return null;
+
+  return (
+    <div style={{ display: "flex", gap: "16px", marginBottom: "28px", flexWrap: "wrap" }}>
+      {latestScore !== null && <ScoreGauge score={latestScore} />}
+      {hasPipeline && <PipelineFunnel counts={pipelineStageCounts} />}
     </div>
   );
 }

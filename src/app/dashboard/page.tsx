@@ -16,7 +16,7 @@ export default async function DashboardPage() {
   // Fetch profile
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("first_name, plan, analyses_used")
+    .select("first_name, plan, analyses_used, crm_access")
     .eq("id", user.id)
     .single();
 
@@ -27,6 +27,21 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(50);
+
+  // Fetch pipeline stage counts if user has CRM access
+  let pipelineStageCounts: Record<string, number> = {};
+  if (profile?.crm_access) {
+    const { data: pipeline } = await supabaseAdmin
+      .from("pipeline_investors")
+      .select("stage")
+      .eq("user_id", user.id)
+      .eq("archived", false);
+    if (pipeline) {
+      for (const row of pipeline) {
+        pipelineStageCounts[row.stage] = (pipelineStageCounts[row.stage] ?? 0) + 1;
+      }
+    }
+  }
 
   const firstName = profile?.first_name ?? user.email?.split("@")[0] ?? "there";
   const plan = profile?.plan ?? "free";
@@ -40,6 +55,8 @@ export default async function DashboardPage() {
       analyses={analyses ?? []}
       userId={user.id}
       userEmail={user.email ?? ""}
+      crmAccess={profile?.crm_access ?? false}
+      pipelineStageCounts={pipelineStageCounts}
     />
   );
 }
