@@ -37,9 +37,11 @@ interface Props {
   userEmail: string;
   crmAccess: boolean;
   pipelineStageCounts: Record<string, number>;
+  raiseCommitted: number;
+  raiseTarget: number;
 }
 
-export default function DashboardClient({ firstName, plan, analysesUsed, analyses, userId, userEmail, crmAccess, pipelineStageCounts }: Props) {
+export default function DashboardClient({ firstName, plan, analysesUsed, analyses, userId, userEmail, crmAccess, pipelineStageCounts, raiseCommitted, raiseTarget }: Props) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -181,7 +183,7 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
         </div>
 
         {/* Stats row */}
-        <StatsRow analyses={analyses} crmAccess={crmAccess} pipelineStageCounts={pipelineStageCounts} />
+        <StatsRow analyses={analyses} crmAccess={crmAccess} pipelineStageCounts={pipelineStageCounts} raiseCommitted={raiseCommitted} raiseTarget={raiseTarget} />
 
         {/* Upload area */}
         <div style={{ background: "#161616", border: `1px solid ${limitReached ? "rgba(3,251,131,0.2)" : "#242424"}`, borderRadius: "16px", padding: "32px", marginBottom: "32px" }}>
@@ -393,6 +395,55 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
   );
 }
 
+function fmtAmount(n: number): string {
+  if (n >= 1_000_000) return `£${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (n >= 1_000) return `£${Math.round(n / 1_000)}k`;
+  return `£${n.toLocaleString()}`;
+}
+
+function RaiseProgressBar({ committed, target }: { committed: number; target: number }) {
+  if (target === 0 && committed === 0) return null;
+  const pct = target > 0 ? Math.min((committed / target) * 100, 100) : 0;
+  const remaining = Math.max(target - committed, 0);
+  const color = pct >= 100 ? GREEN : pct >= 60 ? "#4ADE80" : pct >= 30 ? "#FACC15" : GREEN;
+
+  return (
+    <div style={{ background: "#161616", border: "1px solid #242424", borderRadius: "16px", padding: "20px 28px", marginBottom: "16px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+        <div style={{ fontSize: "12px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>Raise Progress</div>
+        <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+          <span style={{ fontSize: "13px", color: "#9CA3AF" }}>
+            <span style={{ color: color, fontWeight: 700, fontSize: "15px" }}>{fmtAmount(committed)}</span>
+            {target > 0 && <span style={{ color: "#4B5563" }}> committed of {fmtAmount(target)} target</span>}
+            {target === 0 && <span style={{ color: "#4B5563" }}> committed</span>}
+          </span>
+          {target > 0 && remaining > 0 && (
+            <span style={{ fontSize: "12px", color: "#4B5563" }}>{fmtAmount(remaining)} to go</span>
+          )}
+          {pct >= 100 && (
+            <span style={{ fontSize: "12px", fontWeight: 700, color: GREEN, background: "rgba(3,251,131,0.1)", border: "1px solid rgba(3,251,131,0.3)", padding: "2px 10px", borderRadius: "20px" }}>Target reached!</span>
+          )}
+        </div>
+      </div>
+      <div style={{ height: "10px", background: "#1F2937", borderRadius: "999px", overflow: "hidden" }}>
+        <div style={{
+          height: "100%",
+          width: `${pct}%`,
+          borderRadius: "999px",
+          background: `linear-gradient(90deg, ${color}99, ${color})`,
+          transition: "width 0.6s ease",
+          boxShadow: `0 0 8px ${color}66`,
+        }} />
+      </div>
+      {target > 0 && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "6px" }}>
+          <span style={{ fontSize: "12px", color: "#4B5563", fontWeight: 600 }}>{Math.round(pct)}%</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Funnel stages (active only, no 'passed') ─────────────────────────────────
 const FUNNEL_STAGES: { key: string; label: string; color: string }[] = [
   { key: "researching",       label: "Researching",    color: "#9CA3AF" },
@@ -489,16 +540,25 @@ function PipelineFunnel({ counts }: { counts: Record<string, number> }) {
   );
 }
 
-function StatsRow({ analyses, crmAccess, pipelineStageCounts }: { analyses: Analysis[]; crmAccess: boolean; pipelineStageCounts: Record<string, number> }) {
+function StatsRow({ analyses, crmAccess, pipelineStageCounts, raiseCommitted, raiseTarget }: {
+  analyses: Analysis[];
+  crmAccess: boolean;
+  pipelineStageCounts: Record<string, number>;
+  raiseCommitted: number;
+  raiseTarget: number;
+}) {
   const latestScore = analyses.find(a => a.status === "complete" && a.score !== null)?.score ?? null;
-  const hasPipeline = crmAccess;
+  const showProgress = crmAccess && (raiseCommitted > 0 || raiseTarget > 0);
 
-  if (latestScore === null && !hasPipeline) return null;
+  if (latestScore === null && !crmAccess) return null;
 
   return (
-    <div style={{ display: "flex", gap: "16px", marginBottom: "28px", flexWrap: "wrap" }}>
-      {latestScore !== null && <ScoreGauge score={latestScore} />}
-      {hasPipeline && <PipelineFunnel counts={pipelineStageCounts} />}
+    <div style={{ marginBottom: "28px" }}>
+      {showProgress && <RaiseProgressBar committed={raiseCommitted} target={raiseTarget} />}
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+        {latestScore !== null && <ScoreGauge score={latestScore} />}
+        {crmAccess && <PipelineFunnel counts={pipelineStageCounts} />}
+      </div>
     </div>
   );
 }

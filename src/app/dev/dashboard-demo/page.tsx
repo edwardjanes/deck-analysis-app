@@ -42,6 +42,10 @@ const DEMO_PIPELINE: Record<string, number> = {
   committed:          1,
 };
 
+// Committed investors: 2 × £250k + 1 × £500k = £1M committed of £2M target
+const DEMO_RAISE_COMMITTED = 1_000_000;
+const DEMO_RAISE_TARGET    = 2_000_000;
+
 export default function DashboardDemoPage() {
   return (
     <DashboardClient
@@ -53,6 +57,8 @@ export default function DashboardDemoPage() {
       userEmail="edward@sourcecapital.co.uk"
       crmAccess={true}
       pipelineStageCounts={DEMO_PIPELINE}
+      raiseCommitted={DEMO_RAISE_COMMITTED}
+      raiseTarget={DEMO_RAISE_TARGET}
     />
   );
 }
