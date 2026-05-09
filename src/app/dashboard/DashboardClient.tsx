@@ -151,39 +151,60 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
         </div>
       </nav>
 
-      {/* Main content */}
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "48px 24px" }}>
+      {/* Body: sidebar + main */}
+      <div style={{ display: "flex", minHeight: "calc(100vh - 60px)" }}>
 
-        {/* Header row */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "40px", flexWrap: "wrap", gap: "16px" }}>
-          <div>
-            <h1 style={{ fontSize: "28px", fontWeight: 800, marginBottom: "6px" }}>
-              Welcome back, {firstName}
-            </h1>
-            <p style={{ fontSize: "16px", color: "#6B7280" }}>
-              {isPro ? "You have unlimited analyses." : `${Math.max(0, FREE_LIMIT - analysesUsed)} free ${FREE_LIMIT - analysesUsed === 1 ? "analysis" : "analyses"} remaining.`}
-            </p>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{
-              padding: "6px 14px", borderRadius: "20px", fontSize: "12px", fontWeight: 700,
-              background: isPro ? "rgba(3,251,131,0.12)" : "rgba(107,114,128,0.15)",
-              color: isPro ? GREEN : "#9CA3AF",
-              border: `1px solid ${isPro ? "rgba(3,251,131,0.3)" : "#242424"}`,
-            }}>
-              {isPro ? "Pro Plan" : "Free Plan"}
+        {/* Sidebar */}
+        <aside style={{
+          width: "220px", flexShrink: 0,
+          borderRight: "1px solid #1A1A1A",
+          padding: "32px 16px",
+          display: "flex", flexDirection: "column", gap: "4px",
+          position: "sticky", top: "60px", height: "calc(100vh - 60px)", overflowY: "auto",
+        }}>
+          <SidebarItem href="/dashboard" icon={<IconGrid />} label="Dashboard" active />
+          <SidebarItem href="#" icon={<IconUpload />} label="Analyse Deck" onClick={() => setShowUploadForm(true)} />
+          <SidebarItem href="/crm/pipeline" icon={<IconPipeline />} label="Investor Pipeline" />
+          <SidebarItem href="/crm/projects" icon={<IconFolder />} label="Raise Projects" />
+          <div style={{ height: "1px", background: "#1A1A1A", margin: "8px 0" }} />
+          <SidebarItem href="#" icon={<IconDoc />} label="Documents" disabled />
+          <SidebarItem href="#" icon={<IconChart />} label="Analytics" disabled />
+          <SidebarItem href="#" icon={<IconSettings />} label="Settings" disabled />
+        </aside>
+
+        {/* Main content */}
+        <div style={{ flex: 1, minWidth: 0, padding: "40px 40px 60px" }}>
+
+          {/* Header row */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
+            <div>
+              <h1 style={{ fontSize: "26px", fontWeight: 800, marginBottom: "4px" }}>
+                Welcome back, {firstName}
+              </h1>
+              <p style={{ fontSize: "14px", color: "#6B7280" }}>
+                {isPro ? "You have unlimited analyses." : `${Math.max(0, FREE_LIMIT - analysesUsed)} free ${FREE_LIMIT - analysesUsed === 1 ? "analysis" : "analyses"} remaining.`}
+              </p>
             </div>
-            {!isPro && (
-              <a href={whopUrl} target="_blank" rel="noopener noreferrer"
-                style={{ padding: "8px 18px", borderRadius: "8px", background: GREEN, color: "#000", fontSize: "15px", fontWeight: 700 }}>
-                Upgrade to Pro
-              </a>
-            )}
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{
+                padding: "6px 14px", borderRadius: "20px", fontSize: "12px", fontWeight: 700,
+                background: isPro ? "rgba(3,251,131,0.12)" : "rgba(107,114,128,0.15)",
+                color: isPro ? GREEN : "#9CA3AF",
+                border: `1px solid ${isPro ? "rgba(3,251,131,0.3)" : "#242424"}`,
+              }}>
+                {isPro ? "Pro Plan" : "Free Plan"}
+              </div>
+              {!isPro && (
+                <a href={whopUrl} target="_blank" rel="noopener noreferrer"
+                  style={{ padding: "8px 18px", borderRadius: "8px", background: GREEN, color: "#000", fontSize: "15px", fontWeight: 700 }}>
+                  Upgrade to Pro
+                </a>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Stats row */}
-        <StatsRow analyses={analyses} crmAccess={crmAccess} pipelineStageCounts={pipelineStageCounts} raiseCommitted={raiseCommitted} raiseTarget={raiseTarget} />
+          {/* Stats row */}
+          <StatsRow analyses={analyses} crmAccess={crmAccess} pipelineStageCounts={pipelineStageCounts} raiseCommitted={raiseCommitted} raiseTarget={raiseTarget} />
 
         {/* Upload area */}
         <div style={{ background: "#161616", border: `1px solid ${limitReached ? "rgba(3,251,131,0.2)" : "#242424"}`, borderRadius: "16px", padding: "32px", marginBottom: "32px" }}>
@@ -390,9 +411,99 @@ export default function DashboardClient({ firstName, plan, analysesUsed, analyse
             </div>
           )}
         </div>
-      </div>
+        </div>{/* end main content */}
+      </div>{/* end body */}
     </div>
   );
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function SidebarItem({ href, icon, label, active, disabled, onClick }: {
+  href: string; icon: React.ReactNode; label: string;
+  active?: boolean; disabled?: boolean; onClick?: () => void;
+}) {
+  const style: React.CSSProperties = {
+    display: "flex", alignItems: "center", gap: "10px",
+    padding: "9px 12px", borderRadius: "8px",
+    fontSize: "13px", fontWeight: active ? 600 : 400,
+    color: disabled ? "#374151" : active ? "#F8FAFC" : "#9CA3AF",
+    background: active ? "#161616" : "transparent",
+    border: active ? "1px solid #242424" : "1px solid transparent",
+    cursor: disabled ? "default" : "pointer",
+    textDecoration: "none",
+    transition: "all 0.15s",
+    width: "100%", boxSizing: "border-box",
+  };
+
+  if (disabled) {
+    return (
+      <div style={style}>
+        {icon}
+        <span style={{ flex: 1 }}>{label}</span>
+        <span style={{ fontSize: "10px", color: "#374151", background: "#161616", border: "1px solid #1F2937", padding: "1px 6px", borderRadius: "4px" }}>Soon</span>
+      </div>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <button onClick={onClick} style={{ ...style, border: "1px solid transparent" }}
+        onMouseEnter={e => { e.currentTarget.style.background = "#111"; e.currentTarget.style.color = "#F8FAFC"; }}
+        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#9CA3AF"; }}>
+        {icon}<span>{label}</span>
+      </button>
+    );
+  }
+
+  return (
+    <a href={href} style={style}
+      onMouseEnter={e => { if (!active) { e.currentTarget.style.background = "#111"; e.currentTarget.style.color = "#F8FAFC"; } }}
+      onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#9CA3AF"; } }}>
+      {icon}<span>{label}</span>
+    </a>
+  );
+}
+
+function IconGrid() {
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+    <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+    <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+    <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+  </svg>;
+}
+function IconUpload() {
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M8 10V3M5 6l3-3 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>;
+}
+function IconPipeline() {
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>;
+}
+function IconFolder() {
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M1 4a1 1 0 011-1h4l2 2h6a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1V4z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+  </svg>;
+}
+function IconDoc() {
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <rect x="3" y="1" width="10" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+    <path d="M6 5h4M6 8h4M6 11h2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>;
+}
+function IconChart() {
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M2 13V8M6 13V5M10 13V9M14 13V3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>;
+}
+function IconSettings() {
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+    <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
+    <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>;
 }
 
 function fmtAmount(n: number): string {
