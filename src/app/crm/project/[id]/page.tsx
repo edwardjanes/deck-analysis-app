@@ -2,6 +2,10 @@ import { redirect, notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import ProjectDetailClient from "./ProjectDetailClient";
+import { RaiseProject, PipelineInvestor, ProjectRole } from "@/lib/crm/types";
+
+type Member = { id: string; user_id: string; role: string; profiles: { first_name: string | null; last_name: string | null } | null };
+type Invitation = { id: string; email: string; role: string; accepted_at: string | null; expires_at: string; created_at: string };
 
 export const dynamic = "force-dynamic";
 
@@ -28,13 +32,18 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
 
   if (!project) notFound();
 
+  const typedMembers = ((members ?? []) as { id: string; user_id: string; role: string; profiles: unknown }[]).map(m => ({
+    ...m,
+    profiles: (Array.isArray(m.profiles) ? m.profiles[0] : m.profiles) as { first_name: string | null; last_name: string | null } | null,
+  })) as Member[];
+
   return (
     <ProjectDetailClient
-      project={project}
-      members={members ?? []}
-      investors={investors ?? []}
-      invitations={invitations ?? []}
-      role={member.role}
+      project={project as RaiseProject}
+      members={typedMembers}
+      investors={(investors ?? []) as PipelineInvestor[]}
+      invitations={(invitations ?? []) as Invitation[]}
+      role={member.role as ProjectRole}
       currentUserId={user.id}
     />
   );
