@@ -22,7 +22,7 @@ export default async function JoinPage({ params }: { params: { token: string } }
     );
   }
 
-  const project = invitation.raise_projects as { name: string; company_name: string | null } | null;
+  const project = (Array.isArray(invitation.raise_projects) ? invitation.raise_projects[0] : invitation.raise_projects) as { name: string; company_name: string | null } | null;
   const expired = new Date(invitation.expires_at) < new Date();
   const used = !!invitation.accepted_at;
 
