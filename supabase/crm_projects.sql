@@ -25,15 +25,7 @@ ALTER TABLE raise_projects ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Project owner full access" ON raise_projects
   FOR ALL USING (auth.uid() = owner_id);
 
--- Members can view
-CREATE POLICY "Project members can view" ON raise_projects
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM raise_project_members
-      WHERE raise_project_members.project_id = raise_projects.id
-      AND raise_project_members.user_id = auth.uid()
-    )
-  );
+-- NOTE: "Project members can view" policy is added AFTER raise_project_members is created (see below)
 
 CREATE TRIGGER raise_projects_updated_at
   BEFORE UPDATE ON raise_projects
@@ -71,6 +63,16 @@ CREATE POLICY "Members can view project membership" ON raise_project_members
 -- Only service role can insert/update/delete (handled via API routes)
 CREATE POLICY "Service role manages members" ON raise_project_members
   FOR ALL USING (auth.role() = 'service_role');
+
+-- Now safe to add the cross-referencing policy on raise_projects
+CREATE POLICY "Project members can view" ON raise_projects
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM raise_project_members
+      WHERE raise_project_members.project_id = raise_projects.id
+      AND raise_project_members.user_id = auth.uid()
+    )
+  );
 
 
 -- ---- 3. PROJECT INVITATIONS ----
