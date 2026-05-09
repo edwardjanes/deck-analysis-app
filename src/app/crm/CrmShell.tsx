@@ -8,6 +8,7 @@ const LOGO = "https://raw.githubusercontent.com/edwardjanes/source-capital/0147b
 
 const NAV_LINKS = [
   { href: "/crm/pipeline",  label: "Pipeline" },
+  { href: "/crm/projects",  label: "Raise Projects" },
   { href: "/crm/investors", label: "Investor Database" },
   { href: "/dashboard",     label: "← Dashboard" },
 ];

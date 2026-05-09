@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const { fund_name, contact_name, role, email, linkedin_url, stage_focus, geography,
-    sector_focus, check_size_min, check_size_max, thesis_notes, investor_profile_id } = body;
+    sector_focus, check_size_min, check_size_max, thesis_notes, investor_profile_id, raise_project_id } = body;
 
   if (!fund_name) return NextResponse.json({ error: "fund_name is required" }, { status: 400 });
 
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     .insert({
       user_id: user.id,
       investor_profile_id: investor_profile_id ?? null,
+      raise_project_id: raise_project_id ?? null,
       fund_name,
       contact_name: contact_name ?? null,
       role: role ?? null,

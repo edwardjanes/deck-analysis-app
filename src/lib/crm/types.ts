@@ -67,6 +67,42 @@ export interface PipelineInvestor {
   touchpoints?: Touchpoint[];
 }
 
+export type ProjectRole = 'owner' | 'editor' | 'viewer';
+
+export interface RaiseProject {
+  id: string;
+  owner_id: string;
+  name: string;
+  company_name: string | null;
+  description: string | null;
+  target_raise: string | null;
+  stage: string | null;
+  status: 'active' | 'closed' | 'archived';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RaiseProjectMember {
+  id: string;
+  project_id: string;
+  user_id: string;
+  role: ProjectRole;
+  invited_by: string | null;
+  created_at: string;
+}
+
+export interface RaiseProjectInvitation {
+  id: string;
+  project_id: string;
+  invited_by: string;
+  email: string;
+  role: 'editor' | 'viewer';
+  token: string;
+  accepted_at: string | null;
+  expires_at: string;
+  created_at: string;
+}
+
 export interface PortfolioCompany {
   id: string;
   pipeline_investor_id: string;
