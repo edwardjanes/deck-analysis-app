@@ -1,3 +1,64 @@
+export type FirmType =
+  | 'vc'
+  | 'family_office'
+  | 'angel_network'
+  | 'accelerator'
+  | 'corporate_vc'
+  | 'syndicate'
+  | 'debt_fund'
+  | 'other';
+
+export const FIRM_TYPE_LABELS: Record<FirmType, string> = {
+  vc:           'Venture Capital',
+  family_office:'Family Office',
+  angel_network:'Angel Network',
+  accelerator:  'Accelerator',
+  corporate_vc: 'Corporate VC',
+  syndicate:    'Syndicate',
+  debt_fund:    'Debt Fund',
+  other:        'Other',
+};
+
+export interface InvestorFirm {
+  id: string;
+  name: string;
+  type: FirmType;
+  website: string | null;
+  description: string | null;
+  stage_focus: string[];
+  geography: string[];
+  sector_focus: string[];
+  check_size_min: number | null;
+  check_size_max: number | null;
+  thesis_notes: string | null;
+  verified: boolean;
+  source: string;
+  created_at: string;
+  updated_at: string;
+  // joined
+  contacts?: InvestorContact[];
+}
+
+export interface InvestorContact {
+  id: string;
+  investor_firm_id: string | null;
+  first_name: string;
+  last_name: string | null;
+  role: string | null;
+  email: string | null;
+  linkedin_url: string | null;
+  phone: string | null;
+  location: string | null;
+  bio: string | null;
+  notes: string | null;
+  verified: boolean;
+  source: string;
+  created_at: string;
+  updated_at: string;
+  // joined
+  investor_firms?: Pick<InvestorFirm, 'id' | 'name' | 'type'> | null;
+}
+
 export type PipelineStage =
   | 'researching'
   | 'targeted'
@@ -45,7 +106,9 @@ export interface InvestorProfile {
 export interface PipelineInvestor {
   id: string;
   user_id: string;
-  investor_profile_id: string | null;
+  investor_profile_id: string | null;  // legacy
+  investor_firm_id: string | null;
+  investor_contact_id: string | null;
   fund_name: string;
   contact_name: string | null;
   role: string | null;
@@ -106,6 +169,7 @@ export interface RaiseProjectInvitation {
 export interface PortfolioCompany {
   id: string;
   pipeline_investor_id: string;
+  investor_firm_id: string | null;
   user_id: string;
   company_name: string;
   website: string | null;
