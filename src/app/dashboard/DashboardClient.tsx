@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser";
-import { FunnelChart, Funnel, Tooltip, LabelList, ResponsiveContainer } from "recharts";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
@@ -23,7 +22,8 @@ const C = {
   success:   "#10B981",
   warning:   "#F59E0B",
   danger:    "#EF4444",
-  navBorder: "#E2E8F0",
+  nav:       "#0A0A0A",
+  navBorder: "#1A1A1A",
   sidebarBg: "#F0F7FF",
 };
 const FONT_SANS = "'Fira Sans', 'Inter', sans-serif";
@@ -141,8 +141,7 @@ export default function DashboardClient({
       <nav style={{
         borderBottom: `1px solid ${C.navBorder}`, padding: "0 32px", height: "60px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: C.panel, position: "sticky", top: 0, zIndex: 40,
-        boxShadow: "0 1px 3px rgba(30,64,175,0.06)",
+        background: C.nav, position: "sticky", top: 0, zIndex: 40,
       }}>
         <img src={LOGO} alt="Source Capital" style={{ height: "28px", width: "auto" }} />
         <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
@@ -154,16 +153,16 @@ export default function DashboardClient({
             { label: "Contact", href: "https://sourcecapital.co.uk/contact" },
           ].map(({ label, href }) => (
             <a key={label} href={href}
-              style={{ fontSize: "14px", color: C.textMuted, fontWeight: 500, fontFamily: FONT_SANS, transition: "color 0.15s" }}
-              onMouseOver={e => (e.currentTarget.style.color = C.primary)}
-              onMouseOut={e => (e.currentTarget.style.color = C.textMuted)}>
+              style={{ fontSize: "14px", color: "#9CA3AF", fontWeight: 500, fontFamily: FONT_SANS, transition: "color 0.15s" }}
+              onMouseOver={e => (e.currentTarget.style.color = "#fff")}
+              onMouseOut={e => (e.currentTarget.style.color = "#9CA3AF")}>
               {label}
             </a>
           ))}
           <button onClick={handleLogout}
-            style={{ fontSize: "14px", color: C.textMuted, background: "none", border: `1px solid ${C.border}`, borderRadius: "8px", padding: "6px 14px", cursor: "pointer", fontFamily: FONT_SANS, transition: "all 0.15s" }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = C.borderMid; e.currentTarget.style.color = C.primary; }}
-            onMouseOut={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textMuted; }}>
+            style={{ fontSize: "14px", color: "#9CA3AF", background: "none", border: "1px solid #333", borderRadius: "8px", padding: "6px 14px", cursor: "pointer", fontFamily: FONT_SANS, transition: "all 0.15s" }}
+            onMouseOver={e => { e.currentTarget.style.borderColor = "#555"; e.currentTarget.style.color = "#fff"; }}
+            onMouseOut={e => { e.currentTarget.style.borderColor = "#333"; e.currentTarget.style.color = "#9CA3AF"; }}>
             Log out
           </button>
         </div>
@@ -620,25 +619,23 @@ function ScoreGauge({ score }: { score: number }) {
   );
 }
 
-// ── Pipeline Funnel (Recharts) ────────────────────────────────────────────────
+// ── Pipeline Funnel (horizontal bars) ────────────────────────────────────────
 const FUNNEL_STAGES = [
-  { key: "researching",       label: "Researching",    fill: "#1E40AF" },
-  { key: "targeted",          label: "Targeted",       fill: "#2563EB" },
-  { key: "reached_out",       label: "Reached Out",    fill: "#3B82F6" },
-  { key: "replied",           label: "Replied",        fill: "#60A5FA" },
-  { key: "meeting_scheduled", label: "Meetings",       fill: "#93C5FD" },
-  { key: "meeting_completed", label: "Met",            fill: "#6EE7B7" },
-  { key: "due_diligence",     label: "Diligence",      fill: "#34D399" },
-  { key: "term_sheet",        label: "Term Sheet",     fill: "#10B981" },
-  { key: "committed",         label: "Committed",      fill: "#059669" },
+  { key: "researching",       label: "Researching",    color: "#9CA3AF" },
+  { key: "targeted",          label: "Targeted",       color: "#60A5FA" },
+  { key: "reached_out",       label: "Reached Out",    color: "#A78BFA" },
+  { key: "replied",           label: "Replied",        color: "#FB923C" },
+  { key: "meeting_scheduled", label: "Meeting Sched.", color: "#FACC15" },
+  { key: "meeting_completed", label: "Meeting Done",   color: "#4ADE80" },
+  { key: "due_diligence",     label: "Due Diligence",  color: "#22D3EE" },
+  { key: "term_sheet",        label: "Term Sheet",     color: "#03fb83" },
+  { key: "committed",         label: "Committed",      color: "#03fb83" },
 ];
 
 function PipelineFunnelChart({ counts }: { counts: Record<string, number> }) {
-  const data = FUNNEL_STAGES
-    .map(s => ({ ...s, value: counts[s.key] ?? 0 }))
-    .filter(s => s.value > 0);
-
+  const active = FUNNEL_STAGES.filter(s => (counts[s.key] ?? 0) > 0);
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const maxCount = Math.max(...active.map(s => counts[s.key] ?? 0), 1);
 
   return (
     <div style={{
@@ -646,7 +643,7 @@ function PipelineFunnelChart({ counts }: { counts: Record<string, number> }) {
       padding: "20px 24px", flex: 1, minWidth: "280px",
       boxShadow: "0 1px 4px rgba(30,64,175,0.05)",
     }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
         <span style={{ fontSize: "11px", fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.07em" }}>Pipeline Funnel</span>
         <a href="/crm/pipeline" style={{ fontSize: "12px", color: C.secondary, fontWeight: 600, transition: "color 0.15s" }}
           onMouseOver={e => (e.currentTarget.style.color = C.primary)}
@@ -661,35 +658,30 @@ function PipelineFunnelChart({ counts }: { counts: Record<string, number> }) {
         </div>
       ) : (
         <>
-          <ResponsiveContainer width="100%" height={data.length * 28 + 20}>
-            <FunnelChart>
-              <Tooltip
-                contentStyle={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: "8px", fontSize: "12px", fontFamily: FONT_SANS, color: C.text, boxShadow: "0 2px 8px rgba(30,64,175,0.1)" }}
-                formatter={(value, _name, entry) => [`${value ?? 0} investors`, (entry as { payload?: { label?: string } })?.payload?.label ?? ""]}
-              />
-              <Funnel dataKey="value" data={data} isAnimationActive>
-                <LabelList
-                  position="right"
-                  content={({ value, x, y, width, height, index }) => {
-                    const item = data[index as number];
-                    const prev = index! > 0 ? data[(index as number) - 1].value : null;
-                    const convPct = prev ? Math.round((item.value / prev) * 100) : null;
-                    const cx = (x as number) + (width as number) + 8;
-                    const cy = (y as number) + (height as number) / 2;
-                    return (
-                      <g>
-                        <text x={cx} y={cy - 5} fontSize={11} fontFamily={FONT_SANS} fill={C.text} fontWeight={600}>{item.label}</text>
-                        <text x={cx} y={cy + 8} fontSize={10} fontFamily={FONT_MONO} fill={C.textMuted}>
-                          {value}{convPct !== null ? ` · ${convPct}%` : ""}
-                        </text>
-                      </g>
-                    );
-                  }}
-                />
-              </Funnel>
-            </FunnelChart>
-          </ResponsiveContainer>
-          <div style={{ fontSize: "11px", color: C.textFaint, textAlign: "right", marginTop: "4px", fontFamily: FONT_MONO }}>{total} total</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {active.map(stage => {
+              const count = counts[stage.key] ?? 0;
+              const pct = (count / maxCount) * 100;
+              return (
+                <div key={stage.key} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{ width: "96px", fontSize: "11px", color: C.textMuted, flexShrink: 0, textAlign: "right", fontFamily: FONT_SANS }}>{stage.label}</div>
+                  <div style={{ flex: 1, background: C.panelAlt, borderRadius: "4px", height: "18px", overflow: "hidden" }}>
+                    <div style={{
+                      height: "100%", borderRadius: "4px",
+                      width: `${pct}%`,
+                      background: `${stage.color}33`,
+                      border: `1px solid ${stage.color}66`,
+                      transition: "width 0.4s ease",
+                      display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: "6px",
+                    }}>
+                      <span style={{ fontSize: "10px", fontWeight: 700, color: stage.color, fontFamily: FONT_MONO }}>{count}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop: "8px", fontSize: "11px", color: C.textFaint, textAlign: "right", fontFamily: FONT_MONO }}>{total} total</div>
         </>
       )}
     </div>
