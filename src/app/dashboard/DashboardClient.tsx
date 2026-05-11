@@ -509,6 +509,7 @@ function StatsRow({ analyses, crmAccess, pipelineStageCounts, raiseCommitted, ra
       {showProgress && <BulletGauge committed={raiseCommitted} target={raiseTarget} />}
       <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
         {latestScore !== null && <ScoreGauge score={latestScore} />}
+        <RaiseReadinessScore />
         {crmAccess && <PipelineFunnelChart counts={pipelineStageCounts} />}
       </div>
     </div>
@@ -613,6 +614,39 @@ function ScoreGauge({ score }: { score: number }) {
         <div>
           <div style={{ fontSize: "13px", fontWeight: 700, color, marginBottom: "3px" }}>{label}</div>
           <div style={{ fontSize: "11px", color: C.textMuted, lineHeight: 1.5 }}>Investability<br />score</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Raise Readiness Score ─────────────────────────────────────────────────────
+function RaiseReadinessScore() {
+  const score = null; // placeholder — no data yet
+  const r = 38; const cx = 50; const cy = 50;
+  const circumference = 2 * Math.PI * r;
+
+  return (
+    <div style={{
+      background: C.panel, border: `1px solid ${C.border}`, borderRadius: "14px",
+      padding: "20px 24px", flex: "0 0 200px",
+      boxShadow: "0 1px 4px rgba(30,64,175,0.05)",
+    }}>
+      <div style={{ fontSize: "11px", fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "14px" }}>Raise Readiness</div>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <svg width="84" height="84" viewBox="0 0 100 100" aria-label="Raise readiness score — coming soon">
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke={C.panelAlt} strokeWidth="9"/>
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke={C.border} strokeWidth="9"
+            strokeDasharray={`0 ${circumference}`} strokeLinecap="round"
+            transform={`rotate(-90 ${cx} ${cy})`}/>
+          <text x={cx} y={cy - 4} textAnchor="middle" dominantBaseline="middle"
+            fill={C.textFaint} fontSize="11" fontFamily={FONT_SANS}>Coming</text>
+          <text x={cx} y={cy + 10} textAnchor="middle" dominantBaseline="middle"
+            fill={C.textFaint} fontSize="11" fontFamily={FONT_SANS}>soon</text>
+        </svg>
+        <div>
+          <div style={{ fontSize: "13px", fontWeight: 700, color: C.textFaint, marginBottom: "3px" }}>—</div>
+          <div style={{ fontSize: "11px", color: C.textMuted, lineHeight: 1.5 }}>Raise readiness<br />score</div>
         </div>
       </div>
     </div>
