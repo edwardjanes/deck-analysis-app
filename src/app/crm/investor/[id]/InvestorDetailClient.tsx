@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PipelineInvestor, Touchpoint, TouchpointType, PortfolioCompany, PipelineStage } from "@/lib/crm/types";
+import { PipelineInvestor, Touchpoint, TouchpointType, PortfolioCompany, PipelineStage, InvestorFirm, InvestorContact, FIRM_TYPE_LABELS, FirmType } from "@/lib/crm/types";
 import {
   STAGE_ORDER, STAGE_LABELS, STAGE_COLORS, TOUCHPOINT_LABELS,
   SECTOR_TAGS, INVESTMENT_STAGE_TAGS, CHECK_SIZE_TAGS, GEOGRAPHY_TAGS,
@@ -11,6 +11,27 @@ const GREEN = "#03fb83";
 const CARD_BG = "#0F1929";
 const BORDER = "#1A2438";
 const MUTED = "#6B7280";
+
+const FIRM_TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  vc:           { bg: "rgba(59,130,246,0.15)",  text: "#60A5FA", border: "rgba(59,130,246,0.4)" },
+  family_office:{ bg: "rgba(139,92,246,0.15)",  text: "#A78BFA", border: "rgba(139,92,246,0.4)" },
+  accelerator:  { bg: "rgba(34,197,94,0.15)",   text: "#4ADE80", border: "rgba(34,197,94,0.4)" },
+  corporate_vc: { bg: "rgba(251,191,36,0.15)",  text: "#FBBF24", border: "rgba(251,191,36,0.4)" },
+  angel_network:{ bg: "rgba(245,158,11,0.15)",  text: "#F59E0B", border: "rgba(245,158,11,0.4)" },
+  syndicate:    { bg: "rgba(236,72,153,0.15)",  text: "#F472B6", border: "rgba(236,72,153,0.4)" },
+  debt_fund:    { bg: "rgba(107,114,128,0.15)", text: "#9CA3AF", border: "rgba(107,114,128,0.4)" },
+  other:        { bg: "rgba(107,114,128,0.15)", text: "#9CA3AF", border: "rgba(107,114,128,0.4)" },
+};
+
+function FirmTypeBadge({ type }: { type: string }) {
+  const c = FIRM_TYPE_COLORS[type] ?? FIRM_TYPE_COLORS.other;
+  const label = FIRM_TYPE_LABELS[type as FirmType] ?? type;
+  return (
+    <span style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}`, fontSize: "11px", fontWeight: 600, padding: "3px 10px", borderRadius: "20px" }}>
+      {label}
+    </span>
+  );
+}
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "9px 12px", background: "#111927",
@@ -78,15 +99,30 @@ export default function InvestorDetailClient({
   investor: initial,
   touchpoints: initialTouchpoints,
   portfolio: initialPortfolio,
+  firm,
+  firmContacts: initialFirmContacts,
 }: {
   investor: PipelineInvestor;
   touchpoints: Touchpoint[];
   portfolio: PortfolioCompany[];
+  firm: InvestorFirm | null;
+  firmContacts: InvestorContact[];
 }) {
   const [investor, setInvestor] = useState(initial);
   const [touchpoints, setTouchpoints] = useState(initialTouchpoints);
   const [portfolio, setPortfolio] = useState(initialPortfolio);
+  const [firmContacts, setFirmContacts] = useState(initialFirmContacts);
   const [saving, setSaving] = useState(false);
+
+  // Add contact form state
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [addingContact, setAddingContact] = useState(false);
+  const [contactFirstName, setContactFirstName] = useState("");
+  const [contactLastName, setContactLastName] = useState("");
+  const [contactRole, setContactRole] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactLinkedIn, setContactLinkedIn] = useState("");
+  const [contactLocation, setContactLocation] = useState("");
   const [notes, setNotes] = useState(investor.personal_notes ?? "");
   const [followUpDate, setFollowUpDate] = useState(investor.next_follow_up_date ?? "");
   const [followUpNote, setFollowUpNote] = useState(investor.follow_up_note ?? "");
@@ -201,6 +237,34 @@ export default function InvestorDetailClient({
     await fetch(`/api/crm/portfolio?id=${id}`, { method: "DELETE" });
   }
 
+  async function addContact(e: React.FormEvent) {
+    e.preventDefault();
+    if (!contactFirstName.trim()) return;
+    setAddingContact(true);
+    try {
+      const res = await fetch("/api/crm/contacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          investor_firm_id: investor.investor_firm_id,
+          first_name: contactFirstName,
+          last_name: contactLastName || null,
+          role: contactRole || null,
+          email: contactEmail || null,
+          linkedin_url: contactLinkedIn || null,
+          location: contactLocation || null,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setFirmContacts(prev => [...prev, data.contact]);
+        setContactFirstName(""); setContactLastName(""); setContactRole("");
+        setContactEmail(""); setContactLinkedIn(""); setContactLocation("");
+        setShowContactForm(false);
+      }
+    } finally { setAddingContact(false); }
+  }
+
   return (
     <div>
       <a href="/crm/pipeline" style={{ fontSize: "13px", color: MUTED, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", marginBottom: "24px" }}>
@@ -213,11 +277,22 @@ export default function InvestorDetailClient({
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "6px", flexWrap: "wrap" }}>
             <h1 style={{ fontSize: "28px", fontWeight: 800, color: "#F8FAFC", margin: 0 }}>{investor.fund_name}</h1>
             <StageBadge stage={investor.stage} />
+            {firm && <FirmTypeBadge type={firm.type} />}
+            {firm?.verified && (
+              <span style={{ fontSize: "11px", color: "#4ADE80", background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", padding: "3px 10px", borderRadius: "20px" }}>
+                Verified
+              </span>
+            )}
           </div>
           {(investor.contact_name || investor.role) && (
             <p style={{ fontSize: "14px", color: "#94A3B8", margin: 0 }}>
               {investor.contact_name}{investor.role ? ` · ${investor.role}` : ""}
             </p>
+          )}
+          {firm?.website && (
+            <a href={firm.website} target="_blank" rel="noopener noreferrer" style={{ fontSize: "13px", color: MUTED, textDecoration: "none", marginTop: "4px", display: "inline-block" }}>
+              {firm.website} ↗
+            </a>
           )}
         </div>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -401,6 +476,94 @@ export default function InvestorDetailClient({
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Contacts — only shown if linked to a firm */}
+          {investor.investor_firm_id && (
+            <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: "14px", padding: "24px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+                <h2 style={{ fontSize: "14px", fontWeight: 700, color: "#F8FAFC", margin: 0 }}>
+                  Contacts {firmContacts.length > 0 && <span style={{ fontSize: "12px", color: MUTED, fontWeight: 400 }}>({firmContacts.length})</span>}
+                </h2>
+                <button
+                  onClick={() => setShowContactForm(v => !v)}
+                  style={{ background: "rgba(3,251,131,0.1)", color: GREEN, border: `1px solid rgba(3,251,131,0.3)`, borderRadius: "8px", padding: "5px 12px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}
+                >
+                  + Add Contact
+                </button>
+              </div>
+
+              {showContactForm && (
+                <form onSubmit={addContact} style={{ background: "#111927", border: `1px solid ${BORDER}`, borderRadius: "10px", padding: "14px", marginBottom: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={labelStyle}>First Name *</label>
+                      <input style={inputStyle} value={contactFirstName} onChange={e => setContactFirstName(e.target.value)} placeholder="Jane" required />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={labelStyle}>Last Name</label>
+                      <input style={inputStyle} value={contactLastName} onChange={e => setContactLastName(e.target.value)} placeholder="Smith" />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Role / Title</label>
+                    <input style={inputStyle} value={contactRole} onChange={e => setContactRole(e.target.value)} placeholder="e.g. Partner, Associate" />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Email</label>
+                    <input style={inputStyle} type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} placeholder="jane@firm.com" />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>LinkedIn URL</label>
+                    <input style={inputStyle} value={contactLinkedIn} onChange={e => setContactLinkedIn(e.target.value)} placeholder="https://linkedin.com/in/..." />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Location</label>
+                    <input style={inputStyle} value={contactLocation} onChange={e => setContactLocation(e.target.value)} placeholder="London, UK" />
+                  </div>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button type="submit" disabled={addingContact} style={{ background: addingContact ? "#374151" : GREEN, color: "#000", border: "none", borderRadius: "8px", padding: "7px 16px", fontSize: "12px", fontWeight: 700, cursor: addingContact ? "not-allowed" : "pointer" }}>
+                      {addingContact ? "Adding…" : "Add Contact"}
+                    </button>
+                    <button type="button" onClick={() => setShowContactForm(false)} style={{ background: "transparent", color: MUTED, border: `1px solid ${BORDER}`, borderRadius: "8px", padding: "7px 12px", fontSize: "12px", cursor: "pointer" }}>Cancel</button>
+                  </div>
+                </form>
+              )}
+
+              {firmContacts.length === 0 ? (
+                <p style={{ fontSize: "13px", color: MUTED, textAlign: "center", padding: "16px 0" }}>No contacts yet. Add the first one.</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
+                  {firmContacts.map(contact => {
+                    const initials = `${contact.first_name[0] ?? ""}${contact.last_name?.[0] ?? ""}`.toUpperCase();
+                    const fullName = [contact.first_name, contact.last_name].filter(Boolean).join(" ");
+                    return (
+                      <a
+                        key={contact.id}
+                        href={`/crm/contact/${contact.id}`}
+                        style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 8px", borderRadius: "8px", textDecoration: "none", transition: "background 0.12s", cursor: "pointer" }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "#111927")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "rgba(59,130,246,0.2)", color: "#60A5FA", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          {initials || "?"}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: "13px", fontWeight: 600, color: "#F8FAFC" }}>{fullName}</div>
+                          {contact.role && <div style={{ fontSize: "12px", color: MUTED }}>{contact.role}</div>}
+                        </div>
+                        {contact.linkedin_url && (
+                          <span onClick={e => e.preventDefault()} style={{ fontSize: "11px", color: MUTED }}>
+                            <a href={contact.linkedin_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ color: "#60A5FA", textDecoration: "none", fontSize: "11px" }}>in ↗</a>
+                          </span>
+                        )}
+                        <span style={{ fontSize: "11px", color: MUTED }}>→</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 

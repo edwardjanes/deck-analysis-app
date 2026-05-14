@@ -49,6 +49,7 @@ CREATE INDEX IF NOT EXISTS investor_firms_type_idx     ON investor_firms(type);
 
 ALTER TABLE investor_firms ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "CRM users can view investor firms" ON investor_firms;
 CREATE POLICY "CRM users can view investor firms" ON investor_firms
   FOR SELECT USING (
     EXISTS (
@@ -73,10 +74,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS investor_firms_search_vector_trigger ON investor_firms;
 CREATE TRIGGER investor_firms_search_vector_trigger
   BEFORE INSERT OR UPDATE ON investor_firms
   FOR EACH ROW EXECUTE FUNCTION investor_firms_search_vector();
 
+DROP TRIGGER IF EXISTS investor_firms_updated_at ON investor_firms;
 CREATE TRIGGER investor_firms_updated_at
   BEFORE UPDATE ON investor_firms
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -119,6 +122,7 @@ CREATE INDEX IF NOT EXISTS investor_contacts_email_idx   ON investor_contacts(em
 
 ALTER TABLE investor_contacts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "CRM users can view investor contacts" ON investor_contacts;
 CREATE POLICY "CRM users can view investor contacts" ON investor_contacts
   FOR SELECT USING (
     EXISTS (
@@ -142,10 +146,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS investor_contacts_search_vector_trigger ON investor_contacts;
 CREATE TRIGGER investor_contacts_search_vector_trigger
   BEFORE INSERT OR UPDATE ON investor_contacts
   FOR EACH ROW EXECUTE FUNCTION investor_contacts_search_vector();
 
+DROP TRIGGER IF EXISTS investor_contacts_updated_at ON investor_contacts;
 CREATE TRIGGER investor_contacts_updated_at
   BEFORE UPDATE ON investor_contacts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();

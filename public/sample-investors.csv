@@ -1,0 +1,6 @@
+fund_name,contact_name,role,email,linkedin_url,stage_focus,geography,sector_focus,check_size_min,check_size_max,thesis_notes
+Accel Partners,Jane Smith,Partner,jane@accel.com,https://linkedin.com/in/jane-smith,Seed;Series A,US;EU,SaaS;FinTech,100000,1000000,Early-stage B2B software
+Sequoia Capital,John Chen,Investor,john@sequoia.com,https://linkedin.com/in/john-chen,Series A;Series B,US,AI;ML,500000,5000000,Focusing on AI infrastructure
+Y Combinator,Sarah Johnson,Partner,sarah@yc.com,https://linkedin.com/in/sarah-johnson,Pre-seed;Seed,US;APAC,Deep Tech;Climate,25000,500000,Pre-seed investors network
+Benchmark,Michael Park,General Partner,michael@benchmark.com,https://linkedin.com/in/michael-park,Series B;Series C,US,Enterprise SaaS,2000000,10000000,Late-stage scaling companies
+Greylock Partners,Lisa Wong,Associate,lisa@greylock.com,https://linkedin.com/in/lisa-wong,Seed;Series A,US;EU,B2B SaaS,250000,2000000,Developer tools and infrastructure

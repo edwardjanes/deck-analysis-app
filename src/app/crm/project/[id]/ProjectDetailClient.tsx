@@ -66,6 +66,13 @@ export default function ProjectDetailClient({
   const [newContactName, setNewContactName] = useState("");
   const [addingInvestor, setAddingInvestor] = useState(false);
 
+  // CSV import
+  const [showCsvImport, setShowCsvImport] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvPreview, setCsvPreview] = useState<Array<Record<string, string>> | null>(null);
+  const [csvImporting, setCsvImporting] = useState(false);
+  const [csvResult, setCsvResult] = useState<{ ok: boolean; message: string; imported?: number } | null>(null);
+
   const canEdit = role === "owner" || role === "editor";
 
   // Stats
@@ -139,6 +146,69 @@ export default function ProjectDetailClient({
     setMemberList(prev => prev.filter(m => m.user_id !== userId));
   }
 
+  function handleCsvFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCsvFile(file);
+    setCsvResult(null);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      const lines = content.trim().split('\n');
+      if (lines.length < 2) {
+        setCsvResult({ ok: false, message: "CSV must have at least a header and one data row" });
+        return;
+      }
+
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const rows: Array<Record<string, string>> = [];
+      for (let i = 1; i < Math.min(lines.length, 6); i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        const row: Record<string, string> = {};
+        headers.forEach((header, idx) => {
+          if (idx < values.length) row[header] = values[idx];
+        });
+        rows.push(row);
+      }
+      setCsvPreview(rows);
+    };
+    reader.readAsText(file);
+  }
+
+  async function handleCsvImport() {
+    if (!csvFile) return;
+    setCsvImporting(true);
+    setCsvResult(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", csvFile);
+      const res = await fetch(`/api/crm/projects/${initial.id}/investors/import`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCsvResult({
+          ok: false,
+          message: data.details?.join("; ") || data.error || "Import failed"
+        });
+        return;
+      }
+      setCsvResult({
+        ok: true,
+        message: `Successfully imported ${data.imported} investor${data.imported !== 1 ? 's' : ''}`,
+        imported: data.imported
+      });
+      setInvestors(prev => [...(data.investors ?? []), ...prev]);
+      setCsvFile(null);
+      setCsvPreview(null);
+      setTimeout(() => setShowCsvImport(false), 1500);
+    } catch (err) {
+      setCsvResult({ ok: false, message: err instanceof Error ? err.message : "Import failed" });
+    } finally { setCsvImporting(false); }
+  }
+
   const tabStyle = (active: boolean): React.CSSProperties => ({
     padding: "8px 20px", borderRadius: "8px", fontSize: "14px", fontWeight: active ? 600 : 400,
     color: active ? GREEN : MUTED, background: active ? "rgba(3,251,131,0.08)" : "transparent",
@@ -166,9 +236,14 @@ export default function ProjectDetailClient({
           </div>
         </div>
         {canEdit && (
-          <button onClick={() => setShowAddInvestor(v => !v)} style={{ background: GREEN, color: "#000", border: "none", borderRadius: "10px", padding: "10px 18px", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
-            + Add Investor
-          </button>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button onClick={() => setShowAddInvestor(v => !v)} style={{ background: GREEN, color: "#000", border: "none", borderRadius: "10px", padding: "10px 18px", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
+              + Add Investor
+            </button>
+            <button onClick={() => { setShowCsvImport(true); setCsvResult(null); setCsvFile(null); setCsvPreview(null); }} style={{ background: "transparent", color: GREEN, border: `2px solid ${GREEN}`, borderRadius: "10px", padding: "8px 16px", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
+              📁 Import CSV
+            </button>
+          </div>
         )}
       </div>
 
@@ -373,6 +448,101 @@ export default function ProjectDetailClient({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* CSV Import Modal */}
+      {showCsvImport && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(5,8,16,0.85)", backdropFilter: "blur(6px)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}
+          onClick={e => { if (e.target === e.currentTarget) setShowCsvImport(false); }}
+        >
+          <div style={{ background: "#0D1420", border: `1px solid ${BORDER}`, borderRadius: "16px", padding: "36px", width: "100%", maxWidth: "600px", maxHeight: "90vh", overflow: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#F8FAFC", margin: 0 }}>Import Investors from CSV</h2>
+              <button onClick={() => setShowCsvImport(false)} style={{ background: "none", border: "none", color: MUTED, fontSize: "20px", cursor: "pointer" }}>×</button>
+            </div>
+
+            {!csvFile ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <p style={{ fontSize: "13px", color: MUTED, margin: "0 0 8px 0" }}>
+                  Upload a CSV file with investor data. Required column: <strong>fund_name</strong>
+                </p>
+                <div style={{ background: "#111927", border: `2px dashed ${BORDER}`, borderRadius: "12px", padding: "40px", textAlign: "center", cursor: "pointer", transition: "border-color 0.2s" }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = GREEN)}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = BORDER)}
+                >
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCsvFileSelect}
+                    style={{ display: "none" }}
+                    id="csv-file-input"
+                  />
+                  <label htmlFor="csv-file-input" style={{ cursor: "pointer", display: "block" }}>
+                    <div style={{ fontSize: "28px", marginBottom: "8px" }}>📄</div>
+                    <div style={{ fontSize: "14px", fontWeight: 600, color: "#F8FAFC", marginBottom: "4px" }}>Drop or click to select CSV</div>
+                    <div style={{ fontSize: "12px", color: MUTED }}>Support columns: fund_name, contact_name, role, email, linkedin_url, stage_focus, geography, sector_focus, check_size_min, check_size_max, thesis_notes</div>
+                  </label>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div style={{ padding: "12px 16px", background: "#111927", border: `1px solid ${BORDER}`, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ fontSize: "13px", color: "#F8FAFC", fontWeight: 600 }}>{csvFile.name}</div>
+                    <div style={{ fontSize: "11px", color: MUTED, marginTop: "2px" }}>{csvPreview?.length ?? 0} row{csvPreview && csvPreview.length !== 1 ? "s" : ""} to preview</div>
+                  </div>
+                  <button onClick={() => { setCsvFile(null); setCsvPreview(null); setCsvResult(null); }} style={{ background: "none", border: "none", color: MUTED, fontSize: "14px", cursor: "pointer", padding: "4px 8px" }}>Change</button>
+                </div>
+
+                {csvPreview && csvPreview.length > 0 && (
+                  <div style={{ background: "#111927", border: `1px solid ${BORDER}`, borderRadius: "8px", overflow: "hidden" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+                      <thead>
+                        <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                          {Object.keys(csvPreview[0]).slice(0, 4).map(key => (
+                            <th key={key} style={{ padding: "10px", textAlign: "left", fontWeight: 600, color: MUTED, textTransform: "capitalize" }}>{key}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {csvPreview.slice(0, 3).map((row, i) => (
+                          <tr key={i} style={{ borderBottom: i < csvPreview.length - 1 ? `1px solid ${BORDER}` : "none" }}>
+                            {Object.keys(csvPreview[0]).slice(0, 4).map(key => (
+                              <td key={key} style={{ padding: "10px", color: "#F8FAFC", maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row[key] || "—"}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {csvResult && (
+                  <div style={{ padding: "12px 16px", background: csvResult.ok ? "rgba(3,251,131,0.1)" : "rgba(239,68,68,0.1)", border: `1px solid ${csvResult.ok ? "rgba(3,251,131,0.3)" : "rgba(239,68,68,0.3)"}`, borderRadius: "8px" }}>
+                    <div style={{ fontSize: "13px", color: csvResult.ok ? GREEN : "#EF4444", fontWeight: 600 }}>{csvResult.ok ? "✓ " : "✗ "}{csvResult.message}</div>
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                  <button
+                    type="button"
+                    onClick={() => { setCsvFile(null); setCsvPreview(null); setCsvResult(null); }}
+                    style={{ background: "transparent", color: MUTED, border: `1px solid ${BORDER}`, borderRadius: "8px", padding: "10px 18px", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCsvImport}
+                    disabled={csvImporting || csvResult?.ok}
+                    style={{ background: csvImporting || csvResult?.ok ? "#374151" : GREEN, color: "#000", border: "none", borderRadius: "8px", padding: "10px 18px", fontSize: "13px", fontWeight: 700, cursor: csvImporting || csvResult?.ok ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
+                  >
+                    {csvImporting ? "Importing…" : csvResult?.ok ? "Imported ✓" : `Import ${csvPreview?.length ?? 0} Investor${csvPreview && csvPreview.length !== 1 ? "s" : ""}`}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
