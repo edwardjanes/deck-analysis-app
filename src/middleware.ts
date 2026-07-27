@@ -33,6 +33,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // Protect raise-listing routes
+  if (request.nextUrl.pathname.startsWith("/raise-listing") && !user) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
+    return NextResponse.redirect(loginUrl);
+  }
+
   // Redirect logged-in users away from login page
   if (request.nextUrl.pathname === "/login" && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -42,6 +49,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/crm/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/crm/:path*", "/raise-listing/:path*", "/login"],
 };
 
