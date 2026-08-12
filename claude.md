@@ -4,6 +4,28 @@
 
 ---
 
+## Recent Updates (August 2026)
+
+### Completed
+- ✅ **GoHighLevel Integration**: Migrated deck submitter sync from Loops to GHL (Source Capital location: `Px7umc3EewzT2DNAvJxr`)
+  - Deck submissions → GHL contacts (firstName, lastName, email, businessName, website, country)
+  - Analysis completion → GHL custom fields (score, verdict, resultsUrl)
+  - GHL handles downstream Loops sync via webhook
+  - See `GHL_SETUP.md` for full setup guide
+  
+- ✅ **PostHog Funnel Tracking**: Added 4-event funnel to track deck analysis conversion
+  - `deck_submitted` → submission succeeds
+  - `analysis_completed` → analysis finishes with score/verdict
+  - `upgrade_viewed` → results page shown to unpaid users
+  - `upgrade_purchased` → payment confirmed on thank-you page
+  - Enables complete user journey visibility in PostHog
+
+- ✅ **Production Deployment**: All changes committed, pushed, and deployed to Vercel
+  - Requires: `GHL_API_TOKEN` env var in production
+  - Status: Live at https://app.sourcecapital.co.uk
+
+---
+
 ## Tech Stack
 
 - **Framework**: Next.js 14.2.20 (App Router, Server Components)
@@ -418,12 +440,16 @@ profiles (
 
 - [ ] Review `/SKILL.md` for deck analysis scoring rubric
 - [ ] Review `/CSV_IMPORT_GUIDE.md` for CRM import specs
+- [ ] Review `/GHL_SETUP.md` for GoHighLevel integration setup
 - [ ] Check `lib/deckPrompt.ts` for current Claude system prompt
+- [ ] Check `lib/ghl.ts` for GoHighLevel contact sync logic
 - [ ] Understand RLS policies: every table enforces auth
 - [ ] Verify all styling is inline (no Tailwind/CSS modules)
 - [ ] Test a deck submission end-to-end (upload → analysis → results)
+- [ ] Verify contact appears in GoHighLevel within 5 seconds of submission
+- [ ] Check PostHog for 4 funnel events: deck_submitted → analysis_completed → upgrade_viewed → upgrade_purchased
 - [ ] Test CSV import with `public/sample-investors.csv`
-- [ ] Confirm Supabase & Anthropic API keys are in env
+- [ ] Confirm Supabase, Anthropic, GHL API keys are in env
 
 ---
 
@@ -432,6 +458,8 @@ profiles (
 - **Bug fix in deck analysis**: Check `lib/deckPrompt.ts`, `src/app/api/analyse/`, results display
 - **CRM improvements**: Check `src/app/crm/`, `src/app/api/crm/`, database schema
 - **Raise listing changes**: Check `src/app/raise-listing/`, `supabase/raise_listing_schema.sql`
+- **GoHighLevel/contact sync**: Check `lib/ghl.ts`, `src/app/api/submit/`, `src/app/api/analyse/`
+- **PostHog funnel tracking**: Check component files for `posthog.capture()` calls (upload, analysing, results, thank-you)
 - **Auth/user flow**: Check `src/middleware.ts`, `src/app/dashboard/`, profile logic
 - **Styling issues**: Check component files for inline styles (no Tailwind)
 - **Performance**: Check PDF compression, API response times, RLS query counts
