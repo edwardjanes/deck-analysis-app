@@ -131,6 +131,9 @@ export async function POST(
       const { data: signedData } = await supabaseAdmin.storage
         .from(bucket)
         .createSignedUrl(fileName, 60 * 60 * 24 * 7); // 7 day expiry
+      if (!signedData) {
+        return NextResponse.json({ error: 'Failed to generate signed URL' }, { status: 500 });
+      }
       fileUrl = signedData.signedUrl;
     }
 
