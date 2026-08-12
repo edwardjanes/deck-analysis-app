@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser";
 
@@ -22,7 +22,7 @@ const labelStyle: React.CSSProperties = {
   color: "#9CA3AF", marginBottom: "6px",
 };
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createSupabaseBrowserClient();
@@ -198,5 +198,17 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <main style={{ minHeight: "100vh", background: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: "32px", height: "32px", border: "3px solid #242424", borderTopColor: GREEN, borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+      </main>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
