@@ -7,7 +7,8 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { DECK_ANALYSIS_SYSTEM_PROMPT, DeckAnalysis } from "@/lib/deckPrompt";
 import { classifyAnalysisError, serializeError } from "@/lib/errorHandler";
 import { compressPdf } from "@/lib/compressPdf";
-import { sendAnalysisResultEmail, createOrUpdateContact } from "@/lib/loops";
+import { sendAnalysisResultEmail } from "@/lib/loops";
+import { createOrUpdateContact } from "@/lib/ghl";
 
 export const maxDuration = 300; // 5 minutes — allows time for large deck analysis
 
@@ -176,20 +177,20 @@ export async function POST(
 
       console.log(`[analyse] Complete for ${id} — score ${analysis.meetingConversionScore} (attempt ${attempt})`);
 
-      // Update Loops contact with analysis results as contact properties (non-blocking)
+      // Update GHL contact with analysis results (non-blocking)
       if (submission.email) {
         const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk"}/investment-score/results/${id}`;
         createOrUpdateContact({
           email: submission.email,
           firstName: submission.first_name ?? "",
           lastName: submission.last_name ?? "",
-          customProperties: {
-            score: analysis.meetingConversionScore,
+          customFields: {
+            score: String(analysis.meetingConversionScore),
             verdict: analysis.verdict,
             businessName: submission.business_name,
-            results: resultsUrl,
+            resultsUrl,
           },
-        }).catch((err) => console.error("[loops] Contact update error:", err));
+        }).catch((err) => console.error("[ghl] Contact update error:", err));
 
         // Send results email (non-blocking — don't fail the analysis if email fails)
         sendAnalysisResultEmail({

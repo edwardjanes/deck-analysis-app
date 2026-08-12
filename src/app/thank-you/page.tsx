@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 
 const GREEN = "#03fb83";
 const LOGO = "https://raw.githubusercontent.com/edwardjanes/source-capital/0147b27fad891686f67559992e43319411f07ba4/logo.png";
@@ -11,6 +12,12 @@ function ThankYouInner() {
   const submissionId = searchParams.get("submission_id");
   const [unlocked, setUnlocked] = useState(false);
   const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (unlocked) {
+      posthog.capture("upgrade_purchased", { submission_id: submissionId });
+    }
+  }, [unlocked, submissionId]);
 
   // Poll until the webhook has marked the submission as paid
   useEffect(() => {

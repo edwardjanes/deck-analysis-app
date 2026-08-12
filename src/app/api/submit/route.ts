@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { classifyUploadError } from "@/lib/errorHandler";
-import { createOrUpdateContact } from "@/lib/loops";
+import { createOrUpdateContact } from "@/lib/ghl";
 
 export const maxDuration = 60;
 
@@ -91,13 +91,18 @@ export async function POST(req: NextRequest) {
 
     submissionId = submission.id;
 
-    // Add contact to Loops (non-blocking)
+    // Add contact to GoHighLevel (non-blocking)
     if (email) {
       createOrUpdateContact({
         email,
         firstName,
         lastName: lastName ?? "",
-      }).catch(err => console.error("[loops] Contact error:", err));
+        customFields: {
+          businessName,
+          website,
+          country,
+        },
+      }).catch(err => console.error("[ghl] Contact error:", err));
     }
 
     // 2. Upload PDF to Supabase Storage

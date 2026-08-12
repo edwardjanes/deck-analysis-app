@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { RecoveryAction } from "@/lib/errorHandler";
+import posthog from "posthog-js";
 
 const MESSAGES = [
   "Reading your slides...",
@@ -189,6 +190,11 @@ export default function AnalysingPage() {
 
         if (data.status === "complete") {
           stoppedRef.current = true;
+          posthog.capture("analysis_completed", {
+            score: data.score,
+            verdict: data.verdict,
+            verdictType: data.verdict_type,
+          });
           router.push(`/results/${id}`);
         } else if (data.status === "error") {
           stoppedRef.current = true;

@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser";
 import { useRouter } from "next/navigation";
 import { DeckAnalysis, SlideAssessment } from "@/lib/deckPrompt";
+import posthog from "posthog-js";
 
 interface SubmissionResult {
   id: string;
@@ -559,6 +560,12 @@ function ResultsPageInner() {
         setLoading(false);
         setBuyHref(checkoutUrl(d.id));
         setCreatedAt(d.created_at);
+        if (!d.paid) {
+          posthog.capture("upgrade_viewed", {
+            submission_id: d.id,
+            score: d.score,
+          });
+        }
         setTimeout(() => setAnimated(true), 100);
       })
       .catch(() => setLoading(false));
