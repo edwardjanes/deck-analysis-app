@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { RaiseListing } from '@/lib/raiseListing/types';
 import OpportunitiesDirectoryGrid from '@/components/raise-listing/OpportunitiesDirectoryGrid';
 
+export const revalidate = 60; // ISR: revalidate every 60 seconds
 export const metadata = {
   title: 'Investment Opportunities | Source Capital',
   description: 'Discover vetted pre-seed and seed startups raising capital.',
