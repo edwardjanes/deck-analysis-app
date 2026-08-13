@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { classifyUploadError } from "@/lib/errorHandler";
-import { createOrUpdateContact } from "@/lib/ghl";
+import { createOrUpdateContact as createGHLContact } from "@/lib/ghl";
+import { createOrUpdateContact as createLoopsContact } from "@/lib/loops";
 
 export const maxDuration = 60;
 
@@ -92,9 +93,10 @@ export async function POST(req: NextRequest) {
 
     submissionId = submission.id;
 
-    // Add contact to GoHighLevel (non-blocking)
+    // Sync contact to both GHL and Loops (non-blocking)
     if (email) {
-      createOrUpdateContact({
+      // Push to GHL
+      createGHLContact({
         email,
         firstName,
         lastName: lastName ?? "",
@@ -108,6 +110,26 @@ export async function POST(req: NextRequest) {
         console.error("[ghl] Contact error:", err);
         Sentry.captureException(err, {
           tags: { type: "ghl_contact_sync" },
+          extra: { email, firstName, lastName, businessName },
+        });
+      });
+
+      // Push to Loops
+      createLoopsContact({
+        email,
+        firstName,
+        lastName: lastName ?? "",
+        userGroup: "Pitch Deck Review",
+        customProperties: {
+          deckSubmissionId: submissionId,
+          deckBusinessName: businessName,
+          deckWebsite: website,
+          deckCountry: country,
+        },
+      }).catch(err => {
+        console.error("[loops] Contact error:", err);
+        Sentry.captureException(err, {
+          tags: { type: "loops_contact_sync" },
           extra: { email, firstName, lastName, businessName },
         });
       });

@@ -8,7 +8,8 @@ import { DECK_ANALYSIS_SYSTEM_PROMPT, DeckAnalysis } from "@/lib/deckPrompt";
 import { classifyAnalysisError, serializeError } from "@/lib/errorHandler";
 import { compressPdf } from "@/lib/compressPdf";
 import { sendAnalysisResultEmail } from "@/lib/loops";
-import { createOrUpdateContact } from "@/lib/ghl";
+import { createOrUpdateContact as createGHLContact } from "@/lib/ghl";
+import { createOrUpdateContact as createLoopsContact } from "@/lib/loops";
 
 export const maxDuration = 300; // 5 minutes — allows time for large deck analysis
 
@@ -177,10 +178,11 @@ export async function POST(
 
       console.log(`[analyse] Complete for ${id} — score ${analysis.meetingConversionScore} (attempt ${attempt})`);
 
-      // Update GHL contact with analysis results (non-blocking)
+      // Update contacts with analysis results (non-blocking)
       const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk"}/investment-score/results/${id}`;
       if (submission.email) {
-        createOrUpdateContact({
+        // Push to GHL
+        createGHLContact({
           email: submission.email,
           firstName: submission.first_name ?? "",
           lastName: submission.last_name ?? "",
@@ -191,6 +193,26 @@ export async function POST(
           //   { id: "field_id_resultsUrl", value: resultsUrl },
           // ],
         }).catch((err) => console.error("[ghl] Contact update error:", err));
+
+        // Push to Loops
+        createLoopsContact({
+          email: submission.email,
+          firstName: submission.first_name ?? "",
+          lastName: submission.last_name ?? "",
+          customProperties: {
+            deckScore: String(analysis.meetingConversionScore),
+            deckVerdict: analysis.verdict,
+            deckResultsUrl: resultsUrl,
+            problemScore: String(analysis.scores?.problem ?? 0),
+            solutionScore: String(analysis.scores?.solution ?? 0),
+            marketScore: String(analysis.scores?.market ?? 0),
+            businessModelScore: String(analysis.scores?.businessModel ?? 0),
+            tractionScore: String(analysis.scores?.traction ?? 0),
+            teamScore: String(analysis.scores?.team ?? 0),
+            financialsScore: String(analysis.scores?.financials ?? 0),
+            competitiveLandscapeScore: String(analysis.scores?.competitiveLandscape ?? 0),
+          },
+        }).catch((err) => console.error("[loops] Contact update error:", err));
 
         // Send results email (non-blocking — don't fail the analysis if email fails)
         sendAnalysisResultEmail({
