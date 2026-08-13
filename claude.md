@@ -7,11 +7,27 @@
 ## Recent Updates (August 2026)
 
 ### Completed
-- ✅ **GoHighLevel Integration**: Migrated deck submitter sync from Loops to GHL (Source Capital location: `Px7umc3EewzT2DNAvJxr`)
-  - Deck submissions → GHL contacts (firstName, lastName, email, businessName, website, country)
-  - Analysis completion → GHL custom fields (score, verdict, resultsUrl)
-  - GHL handles downstream Loops sync via webhook
-  - See `GHL_SETUP.md` for full setup guide
+- ✅ **Dual CRM Sync (GHL + Loops)**: Contact data now syncs to both platforms
+  - **On deck submission**: Email, name, submission ID → both GHL and Loops
+  - **On analysis completion**: Score, verdict, all 8 dimension scores → both platforms
+  - **12 GHL custom fields wired up**:
+    - `Deck Score` (3bxhCqt09ygRcoBoAZ8B), `Deck Verdict` (iZv15mWFhiIMlqZNH4c6), `Deck Results URL` (fzyfynLQ9mVvpYdcOoU1), `Deck Submission ID` (hQDLWShDeKgJBbTYWc9m)
+    - Problem (u1bV8tEnu2zWTsBflXIu), Solution (xsIZlE6GQYGpSjtGjf7w), Market (6ViiQIyHWkGRsFBdGeXt), Business Model (dZ4hNcy8j03li0GSB8IL), Traction (HcKCNrlfmFeHTA9pZwRQ), Team (EUcRv01IQp6Vp2Pw622q), Financials (pgtlybd1fNPvWcyBAsTM), Competition (UZGCpIfva0egbh1CKnYK)
+  - GHL API: Fixed endpoint to `https://services.leadconnectorhq.com`, added Version header (2021-07-28)
+  - Loops receives dimension scores as custom properties for automation
+
+- ✅ **Free Tier UX Improvements**: Better conversion flow when users hit free limit
+  - Error detection: Redirects to `/upsell?reason=free_limit` instead of showing error message
+  - Smart decline: "No thanks" button on upsell → `/results/{id}` (shows their free analysis) instead of payment page
+  - Clear value prop: Distinct messaging for free-tier upsell ($7 unlimited) vs community upsell ($97/month)
+
+- ✅ **Sentry Re-enabled**: Full error tracking restored
+  - Captures all GHL and Loops sync errors with context
+  - Tracks API failures, response codes, and request bodies
+  - Explicit error reporting for debugging contact sync issues
+
+- ✅ **GoHighLevel Integration (Phase 1)**: Migrated deck submitter sync from Loops to GHL (Source Capital location: `Px7umc3EewzT2DNAvJxr`)
+  - See `GHL_SETUP.md` for full setup guide (API endpoint, headers, location ID verification)
   
 - ✅ **PostHog Funnel Tracking**: Added 4-event funnel to track deck analysis conversion
   - `deck_submitted` → submission succeeds
@@ -23,6 +39,20 @@
 - ✅ **Production Deployment**: All changes committed, pushed, and deployed to Vercel
   - Requires: `GHL_API_TOKEN` env var in production
   - Status: Live at https://app.sourcecapital.co.uk
+
+- ✅ **Client Journey Visualization Prompt**: Created comprehensive prompt for designing complete product flow diagram
+  - File: `CLIENT_JOURNEY_PROMPT.md`
+  - Documents 3 parallel user journeys: Founder (Deck Analysis), Investor (Raise Listings), Fundraiser (CRM Pipeline)
+  - Includes 5 strategic upsell moments with triggers and pricing
+  - Details all system integrations (Supabase, Claude AI, GHL, Whop, Loops, PostHog, Sentry)
+  - Provides visual style guidelines, metrics, and layout templates
+  - Use with Figma, Miro, Lucidchart, or Adobe XD to create visual diagrams
+
+### In Progress / Planned
+- 🔲 **Payment Tracking in GHL**: Update customer status when deck upgrade is purchased
+  - Need: Whop webhook → submission lookup → GHL contact update
+  - Fields to create: Customer Status, Purchase Date, Plan Type, Subscription Status
+  - Requires: Passing `submission_id` through Whop checkout metadata
 
 ---
 
@@ -325,22 +355,37 @@ profiles (
 - All rows are inserted with stage='researching' by default
 - See `CSV_IMPORT_GUIDE.md` for user-facing docs
 
-### 5. GoHighLevel Contact Sync
-- Deck submitters are synced to GoHighLevel (Source Capital location: `Px7umc3EewzT2DNAvJxr`)
-- Integration: `lib/ghl.ts` provides `createOrUpdateContact()`
-- Called from: `src/app/api/submit/route.ts` (on deck submission) and `src/app/api/analyse/[id]/route.ts` (on analysis completion)
-- Data synced: first_name, last_name, email, businessName, website, country, score, verdict, resultsUrl
-- GHL then pushes contacts to Loops via webhook (you configure this in GHL settings)
-- Requires `GHL_API_TOKEN` env var (Bearer token from GoHighLevel)
+### 5. Dual CRM Sync (GHL + Loops)
+- **GoHighLevel Contact Sync**:
+  - API endpoint: `https://services.leadconnectorhq.com/contacts/upsert`
+  - Location ID: `Px7umc3EewzT2DNAvJxr` (Source Capital)
+  - Headers: `Authorization: Bearer {GHL_API_TOKEN}`, `Version: 2021-07-28`
+  - On submission: Basic contact info + Deck Submission ID
+  - On analysis: Score, verdict, resultsUrl, + all 8 dimension scores as custom fields
+  - Custom field IDs: See Recent Updates section for full mapping
+  - Integration: `lib/ghl.ts` provides `createOrUpdateContact()` with customFieldValues array
+  - Called from: `src/app/api/submit/route.ts` and `src/app/api/analyse/[id]/route.ts`
+  
+- **Loops Contact Sync** (parallel to GHL):
+  - Syncs same data to Loops for marketing automation
+  - Loops receives custom properties (customProperties) for all dimension scores
+  - Allows segmentation and automated workflows based on deck quality
+  - Integration: `lib/loops.ts` provides same `createOrUpdateContact()` function
 
-### 6. Styling Constraints
+### 6. PDF Storage
+- Deck PDFs stored in Supabase Storage (bucket: `decks`)
+- Path structure: `{submissionId}/{filename}`
+- File path recorded in `deck_submissions.deck_file_path` column
+- PDFs permanently retained (not deleted after analysis)
+
+### 7. Styling Constraints
 - **No Tailwind, no CSS modules.** All styling is inline React style objects
 - Example: `<div style={{ backgroundColor: '#0A0A0A', padding: '16px' }}>`
 - Nav header must always be `#0A0A0A` (black background)
 - Charts: use custom horizontal bars, not Recharts `<FunnelChart>`
 - Metrics: apply green/red color-coding based on thresholds (see `project_raw_data_highlighting.md` in memory)
 
-### 6. Data Unwrapping (Supabase Joins)
+### 8. Data Unwrapping (Supabase Joins)
 - When Supabase returns joined data, check if it's an array before accessing:
   ```ts
   const investor = row.pipeline_investors;
@@ -349,7 +394,7 @@ profiles (
   ```
 - This prevents TypeScript build errors on array-wrapped single records
 
-### 7. Airtable Field Names (if used)
+### 9. Airtable Field Names (if used)
 - Investors table: use "Current Firm" not "Firm Name"
 - This pattern applies when syncing with external Airtable bases
 
@@ -441,6 +486,7 @@ profiles (
 - [ ] Review `/SKILL.md` for deck analysis scoring rubric
 - [ ] Review `/CSV_IMPORT_GUIDE.md` for CRM import specs
 - [ ] Review `/GHL_SETUP.md` for GoHighLevel integration setup
+- [ ] Review `/CLIENT_JOURNEY_PROMPT.md` for product architecture & upsell strategy
 - [ ] Check `lib/deckPrompt.ts` for current Claude system prompt
 - [ ] Check `lib/ghl.ts` for GoHighLevel contact sync logic
 - [ ] Understand RLS policies: every table enforces auth
