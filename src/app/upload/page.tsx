@@ -91,6 +91,8 @@ export default function UploadPage() {
       if (!res.ok) {
         // Handle free limit - redirect to upsell
         if (data.error === "free_limit_reached") {
+          console.log("[upload] Free limit reached, redirecting to upsell", { submissionId: data.existingSubmissionId });
+          setSubmitting(false);
           sessionStorage.removeItem("deckscore-lead");
           router.push(`/upsell?reason=free_limit&submission_id=${data.existingSubmissionId}`);
           return;
