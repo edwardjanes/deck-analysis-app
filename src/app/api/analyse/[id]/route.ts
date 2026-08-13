@@ -178,8 +178,8 @@ export async function POST(
       console.log(`[analyse] Complete for ${id} — score ${analysis.meetingConversionScore} (attempt ${attempt})`);
 
       // Update GHL contact with analysis results (non-blocking)
+      const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk"}/investment-score/results/${id}`;
       if (submission.email) {
-        // const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk"}/investment-score/results/${id}`;
         createOrUpdateContact({
           email: submission.email,
           firstName: submission.first_name ?? "",
