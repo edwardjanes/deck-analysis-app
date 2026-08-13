@@ -22,9 +22,10 @@ export async function createOrUpdateContact(data: {
     lastName: data.lastName ?? "",
   };
 
-  if (data.customFields) {
-    contactData.customFields = data.customFields;
-  }
+  // TODO: Add proper custom field IDs from GHL once identified
+  // if (data.customFields) {
+  //   contactData.customFields = data.customFields;
+  // }
 
   try {
     console.log("[ghl] Attempting contact upsert:", { email: data.email, apiBase: GHL_API_BASE, locationId: GHL_LOCATION_ID });
