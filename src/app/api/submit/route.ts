@@ -98,11 +98,12 @@ export async function POST(req: NextRequest) {
         email,
         firstName,
         lastName: lastName ?? "",
-        customFields: {
-          businessName,
-          website,
-          country,
-        },
+        // TODO: Map custom fields once we have GHL field IDs for businessName, website, country
+        // customFieldValues: [
+        //   { id: "field_id_businessName", value: businessName },
+        //   { id: "field_id_website", value: website },
+        //   { id: "field_id_country", value: country },
+        // ],
       }).catch(err => {
         console.error("[ghl] Contact error:", err);
         Sentry.captureException(err, {

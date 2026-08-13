@@ -1,13 +1,14 @@
 import * as Sentry from "@sentry/nextjs";
 
-const GHL_API_BASE = "https://api.higherlevel.com/crm/v1";
+const GHL_API_BASE = "https://services.leadconnectorhq.com";
 const GHL_LOCATION_ID = "Px7umc3EewzT2DNAvJxr"; // Source Capital
+const GHL_API_VERSION = "2021-07-28";
 
 export async function createOrUpdateContact(data: {
   email: string;
   firstName: string;
   lastName?: string;
-  customFields?: Record<string, string>;
+  customFieldValues?: Array<{ id: string; value: string }>;
 }): Promise<void> {
   const apiToken = process.env.GHL_API_TOKEN;
   if (!apiToken) {
@@ -22,10 +23,9 @@ export async function createOrUpdateContact(data: {
     lastName: data.lastName ?? "",
   };
 
-  // TODO: Add proper custom field IDs from GHL once identified
-  // if (data.customFields) {
-  //   contactData.customFields = data.customFields;
-  // }
+  if (data.customFieldValues && data.customFieldValues.length > 0) {
+    contactData.customFields = data.customFieldValues;
+  }
 
   try {
     console.log("[ghl] Attempting contact upsert:", { email: data.email, apiBase: GHL_API_BASE, locationId: GHL_LOCATION_ID });
@@ -35,6 +35,7 @@ export async function createOrUpdateContact(data: {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiToken}`,
+        Version: GHL_API_VERSION,
       },
       body: JSON.stringify(contactData),
     });
