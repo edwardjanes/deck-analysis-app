@@ -41,10 +41,11 @@ export async function createOrUpdateContact(data: {
     console.log(`[ghl] Response status: ${res.status}`);
 
     let body;
+    const text = await res.text();
     try {
-      body = await res.json();
+      body = text ? JSON.parse(text) : {};
     } catch {
-      body = await res.text();
+      body = text;
     }
 
     if (!res.ok) {
