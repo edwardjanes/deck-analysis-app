@@ -25,6 +25,8 @@ export async function createOrUpdateContact(data: {
   }
 
   try {
+    console.log("[ghl] Attempting contact upsert:", { email: data.email, apiBase: GHL_API_BASE, locationId: GHL_LOCATION_ID });
+
     const res = await fetch(`${GHL_API_BASE}/contacts/upsert`, {
       method: "POST",
       headers: {
@@ -34,15 +36,22 @@ export async function createOrUpdateContact(data: {
       body: JSON.stringify(contactData),
     });
 
-    const body = await res.json().catch(() => res.text());
+    console.log(`[ghl] Response status: ${res.status}`);
+
+    let body;
+    try {
+      body = await res.json();
+    } catch {
+      body = await res.text();
+    }
 
     if (!res.ok) {
-      console.error(`[ghl] Failed to upsert contact ${data.email}: ${res.status}`, body);
+      console.error(`[ghl] Failed to upsert contact ${data.email}: ${res.status}`, { body, request: contactData });
       return;
     }
 
-    console.log(`[ghl] Contact upserted: ${data.email}`);
+    console.log(`[ghl] Contact upserted successfully: ${data.email}`, body);
   } catch (err) {
-    console.error("[ghl] Contact upsert error:", err);
+    console.error("[ghl] Contact upsert error:", err, { email: data.email });
   }
 }
