@@ -88,7 +88,16 @@ export default function UploadPage() {
       const res = await fetch("/api/submit", { method: "POST", body: fd });
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || "Submission failed");
+      if (!res.ok) {
+        // Handle free limit - redirect to upsell
+        if (data.error === "free_limit_reached") {
+          setSubmitting(false);
+          sessionStorage.removeItem("deckscore-lead");
+          router.push(`/upsell?reason=free_limit&submission_id=${data.existingSubmissionId}`);
+          return;
+        }
+        throw new Error(data.error || "Submission failed");
+      }
 
       sessionStorage.removeItem("deckscore-lead");
       posthog.capture("deck_uploaded", { business_name: businessName, country });
