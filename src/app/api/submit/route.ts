@@ -96,20 +96,22 @@ export async function POST(req: NextRequest) {
     // Sync contact to both GHL and Loops (non-blocking)
     if (email) {
       // Push to GHL
-      createGHLContact({
-        email,
-        firstName,
-        lastName: lastName ?? "",
-        customFieldValues: [
-          { id: "hQDLWShDeKgJBbTYWc9m", value: submissionId },
-        ],
-      }).catch(err => {
-        console.error("[ghl] Contact error:", err);
-        Sentry.captureException(err, {
-          tags: { type: "ghl_contact_sync" },
-          extra: { email, firstName, lastName, businessName },
+      if (submissionId) {
+        createGHLContact({
+          email,
+          firstName,
+          lastName: lastName ?? "",
+          customFieldValues: [
+            { id: "hQDLWShDeKgJBbTYWc9m", value: submissionId },
+          ],
+        }).catch(err => {
+          console.error("[ghl] Contact error:", err);
+          Sentry.captureException(err, {
+            tags: { type: "ghl_contact_sync" },
+            extra: { email, firstName, lastName, businessName },
+          });
         });
-      });
+      }
 
       // Push to Loops
       if (submissionId) {
