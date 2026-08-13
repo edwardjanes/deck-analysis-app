@@ -179,17 +179,17 @@ export async function POST(
 
       // Update GHL contact with analysis results (non-blocking)
       if (submission.email) {
-        const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk"}/investment-score/results/${id}`;
+        // const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk"}/investment-score/results/${id}`;
         createOrUpdateContact({
           email: submission.email,
           firstName: submission.first_name ?? "",
           lastName: submission.last_name ?? "",
-          customFields: {
-            score: String(analysis.meetingConversionScore),
-            verdict: analysis.verdict,
-            businessName: submission.business_name,
-            resultsUrl,
-          },
+          // TODO: Add custom field IDs for score, verdict, resultsUrl once identified
+          // customFieldValues: [
+          //   { id: "field_id_score", value: String(analysis.meetingConversionScore) },
+          //   { id: "field_id_verdict", value: analysis.verdict },
+          //   { id: "field_id_resultsUrl", value: resultsUrl },
+          // ],
         }).catch((err) => console.error("[ghl] Contact update error:", err));
 
         // Send results email (non-blocking — don't fail the analysis if email fails)
