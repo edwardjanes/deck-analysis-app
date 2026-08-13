@@ -182,16 +182,34 @@ export async function POST(
       const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk"}/investment-score/results/${id}`;
       if (submission.email) {
         // Push to GHL
+        const dimensionMap: Record<string, string> = {
+          "Problem": "u1bV8tEnu2zWTsBflXIu",
+          "Solution": "xsIZlE6GQYGpSjtGjf7w",
+          "Market": "6ViiQIyHWkGRsFBdGeXt",
+          "Business Model": "dZ4hNcy8j03li0GSB8IL",
+          "Traction": "HcKCNrlfmFeHTA9pZwRQ",
+          "Team": "EUcRv01IQp6Vp2Pw622q",
+          "Financials": "pgtlybd1fNPvWcyBAsTM",
+          "Competition": "UZGCpIfva0egbh1CKnYK",
+        };
+
+        const dimensionCustomFields = analysis.dimensions
+          .filter(d => dimensionMap[d.name])
+          .map(d => ({
+            id: dimensionMap[d.name],
+            value: String(d.score),
+          }));
+
         createGHLContact({
           email: submission.email,
           firstName: submission.first_name ?? "",
           lastName: submission.last_name ?? "",
-          // TODO: Add custom field IDs for score, verdict, resultsUrl once identified
-          // customFieldValues: [
-          //   { id: "field_id_score", value: String(analysis.meetingConversionScore) },
-          //   { id: "field_id_verdict", value: analysis.verdict },
-          //   { id: "field_id_resultsUrl", value: resultsUrl },
-          // ],
+          customFieldValues: [
+            { id: "3bxhCqt09ygRcoBoAZ8B", value: String(analysis.meetingConversionScore) },
+            { id: "iZv15mWFhiIMlqZNH4c6", value: analysis.verdict },
+            { id: "fzyfynLQ9mVvpYdcOoU1", value: resultsUrl },
+            ...dimensionCustomFields,
+          ],
         }).catch((err) => console.error("[ghl] Contact update error:", err));
 
         // Push to Loops
