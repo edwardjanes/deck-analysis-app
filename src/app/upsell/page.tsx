@@ -26,6 +26,10 @@ function UpsellInner() {
     ? `/thank-you?submission_id=${submissionId}`
     : "/thank-you";
 
+  const declineUrl = reason === "free_limit" && submissionId
+    ? `/results/${submissionId}`
+    : thankYouUrl;
+
   const communityUrl = `https://whop.com/checkout/${COMMUNITY_PLAN_ID}/?${new URLSearchParams({
     ...(submissionId ? { "metadata[submission_id]": submissionId } : {}),
     redirect_url: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk"}${thankYouUrl}`,
@@ -38,7 +42,7 @@ function UpsellInner() {
 
   const handleDecline = () => {
     posthog.capture("upsell_declined", { plan: COMMUNITY_PLAN_ID });
-    window.location.href = thankYouUrl;
+    window.location.href = declineUrl;
   };
 
   return (
