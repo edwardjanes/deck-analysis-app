@@ -88,6 +88,8 @@ export default function UploadPage() {
       const res = await fetch("/api/submit", { method: "POST", body: fd });
       const data = await res.json();
 
+      console.log("[upload] API response:", { status: res.status, ok: res.ok, error: data.error, data });
+
       if (!res.ok) {
         // Handle free limit - redirect to upsell
         if (data.error === "free_limit_reached") {
@@ -97,6 +99,7 @@ export default function UploadPage() {
           router.push(`/upsell?reason=free_limit&submission_id=${data.existingSubmissionId}`);
           return;
         }
+        console.log("[upload] Error but not free_limit_reached, throwing:", data.error);
         throw new Error(data.error || "Submission failed");
       }
 
