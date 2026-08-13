@@ -195,6 +195,15 @@ export async function POST(
         }).catch((err) => console.error("[ghl] Contact update error:", err));
 
         // Push to Loops
+        const dimensionScores = analysis.dimensions.reduce((acc, dim) => {
+          const scoreKey = dim.name
+            .toLowerCase()
+            .replace(/\s+/g, "")
+            .replace(/competition/g, "competitiveLandscape");
+          acc[`${scoreKey}Score`] = String(dim.score);
+          return acc;
+        }, {} as Record<string, string>);
+
         createLoopsContact({
           email: submission.email,
           firstName: submission.first_name ?? "",
@@ -203,14 +212,7 @@ export async function POST(
             deckScore: String(analysis.meetingConversionScore),
             deckVerdict: analysis.verdict,
             deckResultsUrl: resultsUrl,
-            problemScore: String(analysis.scores?.problem ?? 0),
-            solutionScore: String(analysis.scores?.solution ?? 0),
-            marketScore: String(analysis.scores?.market ?? 0),
-            businessModelScore: String(analysis.scores?.businessModel ?? 0),
-            tractionScore: String(analysis.scores?.traction ?? 0),
-            teamScore: String(analysis.scores?.team ?? 0),
-            financialsScore: String(analysis.scores?.financials ?? 0),
-            competitiveLandscapeScore: String(analysis.scores?.competitiveLandscape ?? 0),
+            ...dimensionScores,
           },
         }).catch((err) => console.error("[loops] Contact update error:", err));
 
