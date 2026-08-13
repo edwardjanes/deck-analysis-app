@@ -20,6 +20,7 @@ const BULLETS = [
 function UpsellInner() {
   const searchParams = useSearchParams();
   const submissionId = searchParams.get("submission_id") ?? "";
+  const reason = searchParams.get("reason") ?? "community"; // "community" or "free_limit"
 
   const thankYouUrl = submissionId
     ? `/thank-you?submission_id=${submissionId}`
@@ -65,19 +66,29 @@ function UpsellInner() {
           <div style={{ textAlign: "center", marginBottom: "24px" }}>
             <span style={{
               display: "inline-block", padding: "5px 14px",
-              background: "rgba(3,251,131,0.1)", border: "1px solid rgba(3,251,131,0.25)",
+              background: reason === "free_limit" ? "rgba(249,115,22,0.1)" : "rgba(3,251,131,0.1)",
+              border: reason === "free_limit" ? "1px solid rgba(249,115,22,0.25)" : "1px solid rgba(3,251,131,0.25)",
               borderRadius: "20px", fontSize: "12px", fontWeight: 600,
-              color: GREEN, letterSpacing: "0.06em", textTransform: "uppercase",
+              color: reason === "free_limit" ? "#F59E0B" : GREEN, letterSpacing: "0.06em", textTransform: "uppercase",
             }}>
-              One-Time Offer — For New Members Only
+              {reason === "free_limit" ? "Unlock Unlimited Analyses" : "One-Time Offer — For New Members Only"}
             </span>
           </div>
 
           {/* Heading */}
           <h1 style={{ fontSize: "32px", fontWeight: 800, textAlign: "center", marginBottom: "12px", letterSpacing: "-0.5px", lineHeight: 1.2 }}>
-            Your deck is scored.<br />Now let&apos;s get it funded.
+            {reason === "free_limit"
+              ? "You've used your 1 free analysis."
+              : "Your deck is scored."}
+            <br />
+            {reason === "free_limit"
+              ? "Upgrade for unlimited decks."
+              : "Now let&apos;s get it funded."}
           </h1>
           <p style={{ textAlign: "center", fontSize: "16px", color: "#9CA3AF", marginBottom: "32px", lineHeight: 1.7 }}>
+            {reason === "free_limit"
+              ? "Analyze as many pitches as you want with unlimited deck analyses."
+              : ""}
             Join the Raise Launchpad — a private community of founders actively raising, with weekly investor access and everything you need to close your round.
           </p>
 
@@ -126,14 +137,27 @@ function UpsellInner() {
 
           {/* Pricing + CTA */}
           <div style={{
-            background: "#111111", border: `1px solid rgba(3,251,131,0.2)`,
+            background: "#111111", border: `1px solid ${reason === "free_limit" ? "rgba(249,115,22,0.2)" : "rgba(3,251,131,0.2)"}`,
             borderRadius: "14px", padding: "28px", marginBottom: "16px", textAlign: "center",
           }}>
-            <p style={{ fontSize: "13px", color: "#4B5563", marginBottom: "6px" }}>Join today for just</p>
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: "6px", marginBottom: "20px" }}>
-              <span style={{ fontSize: "48px", fontWeight: 800, color: "#fff", lineHeight: 1 }}>$97</span>
-              <span style={{ fontSize: "16px", color: "#6B7280" }}>/month</span>
-            </div>
+            {reason === "free_limit" ? (
+              <>
+                <p style={{ fontSize: "13px", color: "#4B5563", marginBottom: "6px" }}>Unlimited analyses for</p>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: "6px", marginBottom: "20px" }}>
+                  <span style={{ fontSize: "48px", fontWeight: 800, color: "#fff", lineHeight: 1 }}>$7</span>
+                  <span style={{ fontSize: "16px", color: "#6B7280" }}>one-time</span>
+                </div>
+                <p style={{ fontSize: "12px", color: "#6B7280", marginBottom: "20px" }}>Or $97 for the full Raise Launchpad (includes community + investor database)</p>
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: "13px", color: "#4B5563", marginBottom: "6px" }}>Join today for just</p>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: "6px", marginBottom: "20px" }}>
+                  <span style={{ fontSize: "48px", fontWeight: 800, color: "#fff", lineHeight: 1 }}>$97</span>
+                  <span style={{ fontSize: "16px", color: "#6B7280" }}>/month</span>
+                </div>
+              </>
+            )}
             <button
               onClick={handleAccept}
               style={{
@@ -145,12 +169,18 @@ function UpsellInner() {
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
               }}
             >
-              Yes — Add Raise Launchpad Access
+              {reason === "free_limit"
+                ? "Upgrade Now — $7 Unlimited"
+                : "Yes — Add Raise Launchpad Access"}
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8h10M8.5 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-            <p style={{ fontSize: "12px", color: "#4B5563" }}>Cancel any time. No lock-in.</p>
+            <p style={{ fontSize: "12px", color: "#4B5563" }}>
+              {reason === "free_limit"
+                ? "Use your existing analysis + analyze unlimited decks"
+                : "Cancel any time. No lock-in."}
+            </p>
           </div>
 
           {/* Decline */}
@@ -163,7 +193,9 @@ function UpsellInner() {
                 textDecorationColor: "#2A2A2A",
               }}
             >
-              No thanks — just take me to my report
+              {reason === "free_limit"
+                ? "No thanks — view my existing analysis"
+                : "No thanks — just take me to my report"}
             </button>
           </div>
 

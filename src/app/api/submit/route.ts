@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
         if (!isPro) {
           return NextResponse.json({
             error: "free_limit_reached",
+            message: "You've used your 1 free deck analysis. Upgrade to Pro for unlimited analyses.",
             existingSubmissionId: existing.id,
           }, { status: 403 });
         }

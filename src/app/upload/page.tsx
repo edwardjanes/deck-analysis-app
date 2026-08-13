@@ -88,7 +88,15 @@ export default function UploadPage() {
       const res = await fetch("/api/submit", { method: "POST", body: fd });
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || "Submission failed");
+      if (!res.ok) {
+        // Handle free limit - redirect to upsell
+        if (data.error === "free_limit_reached") {
+          sessionStorage.removeItem("deckscore-lead");
+          router.push(`/upsell?reason=free_limit&submission_id=${data.existingSubmissionId}`);
+          return;
+        }
+        throw new Error(data.error || "Submission failed");
+      }
 
       posthog.capture("deck_submitted", {
         submission_id: data.id,
