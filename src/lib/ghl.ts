@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 const GHL_API_BASE = "https://api.higherlevel.com/crm/v1";
 const GHL_LOCATION_ID = "Px7umc3EewzT2DNAvJxr"; // Source Capital
 
@@ -46,12 +48,21 @@ export async function createOrUpdateContact(data: {
     }
 
     if (!res.ok) {
+      const error = new Error(`GHL API error ${res.status}: ${typeof body === 'string' ? body : JSON.stringify(body)}`);
       console.error(`[ghl] Failed to upsert contact ${data.email}: ${res.status}`, { body, request: contactData });
+      Sentry.captureException(error, {
+        tags: { type: "ghl_api_error" },
+        extra: { status: res.status, body, email: data.email, request: contactData },
+      });
       return;
     }
 
     console.log(`[ghl] Contact upserted successfully: ${data.email}`, body);
   } catch (err) {
     console.error("[ghl] Contact upsert error:", err, { email: data.email });
+    Sentry.captureException(err, {
+      tags: { type: "ghl_contact_exception" },
+      extra: { email: data.email },
+    });
   }
 }

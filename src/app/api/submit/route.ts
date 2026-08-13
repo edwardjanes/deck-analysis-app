@@ -103,7 +103,13 @@ export async function POST(req: NextRequest) {
           website,
           country,
         },
-      }).catch(err => console.error("[ghl] Contact error:", err));
+      }).catch(err => {
+        console.error("[ghl] Contact error:", err);
+        Sentry.captureException(err, {
+          tags: { type: "ghl_contact_sync" },
+          extra: { email, firstName, lastName, businessName },
+        });
+      });
     }
 
     // 2. Upload PDF to Supabase Storage
