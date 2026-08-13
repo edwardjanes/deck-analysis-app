@@ -115,24 +115,26 @@ export async function POST(req: NextRequest) {
       });
 
       // Push to Loops
-      createLoopsContact({
-        email,
-        firstName,
-        lastName: lastName ?? "",
-        userGroup: "Pitch Deck Review",
-        customProperties: {
-          deckSubmissionId: submissionId,
-          deckBusinessName: businessName,
-          deckWebsite: website,
-          deckCountry: country,
-        },
-      }).catch(err => {
-        console.error("[loops] Contact error:", err);
-        Sentry.captureException(err, {
-          tags: { type: "loops_contact_sync" },
-          extra: { email, firstName, lastName, businessName },
+      if (submissionId) {
+        createLoopsContact({
+          email,
+          firstName,
+          lastName: lastName ?? "",
+          userGroup: "Pitch Deck Review",
+          customProperties: {
+            deckSubmissionId: submissionId,
+            deckBusinessName: businessName,
+            deckWebsite: website,
+            deckCountry: country,
+          },
+        }).catch(err => {
+          console.error("[loops] Contact error:", err);
+          Sentry.captureException(err, {
+            tags: { type: "loops_contact_sync" },
+            extra: { email, firstName, lastName, businessName },
+          });
         });
-      });
+      }
     }
 
     // 2. Upload PDF to Supabase Storage
