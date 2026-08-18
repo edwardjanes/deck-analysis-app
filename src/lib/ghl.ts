@@ -9,6 +9,7 @@ export async function createOrUpdateContact(data: {
   firstName: string;
   lastName?: string;
   customFieldValues?: Array<{ id: string; value: string }>;
+  tags?: string[];
 }): Promise<void> {
   const apiToken = process.env.GHL_API_TOKEN;
   if (!apiToken) {
@@ -25,6 +26,10 @@ export async function createOrUpdateContact(data: {
 
   if (data.customFieldValues && data.customFieldValues.length > 0) {
     contactData.customFields = data.customFieldValues;
+  }
+
+  if (data.tags && data.tags.length > 0) {
+    contactData.tags = data.tags;
   }
 
   try {

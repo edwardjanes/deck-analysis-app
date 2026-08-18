@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
         customFieldValues: [
           { id: "hQDLWShDeKgJBbTYWc9m", value: submissionId },
         ],
+        tags: ["Admin Upload"],
       }).catch(err => {
         console.error("[ghl] Contact error:", err);
         Sentry.captureException(err, {
