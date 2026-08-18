@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
         business_name: businessName,
         country,
         status:        "pending",
+        is_admin_upload: true,
       })
       .select("id")
       .single();

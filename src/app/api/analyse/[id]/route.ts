@@ -180,8 +180,8 @@ export async function POST(
 
       // Update contacts with analysis results (non-blocking)
       const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://app.sourcecapital.co.uk"}/investment-score/results/${id}`;
+
       if (submission.email) {
-        // Push to GHL
         const dimensionMap: Record<string, string> = {
           "Problem": "u1bV8tEnu2zWTsBflXIu",
           "Solution": "xsIZlE6GQYGpSjtGjf7w",
@@ -200,6 +200,8 @@ export async function POST(
             value: String(d.score),
           }));
 
+        // Always push to GHL
+        const ghlTags = submission.is_admin_upload ? ["Admin Upload"] : undefined;
         createGHLContact({
           email: submission.email,
           firstName: submission.first_name ?? "",
@@ -210,39 +212,42 @@ export async function POST(
             { id: "fzyfynLQ9mVvpYdcOoU1", value: resultsUrl },
             ...dimensionCustomFields,
           ],
+          tags: ghlTags,
         }).catch((err) => console.error("[ghl] Contact update error:", err));
 
-        // Push to Loops
-        const dimensionScores = analysis.dimensions.reduce((acc, dim) => {
-          const scoreKey = dim.name
-            .toLowerCase()
-            .replace(/\s+/g, "")
-            .replace(/competition/g, "competitiveLandscape");
-          acc[`${scoreKey}Score`] = String(dim.score);
-          return acc;
-        }, {} as Record<string, string>);
+        // Push to Loops only for non-admin uploads
+        if (!submission.is_admin_upload) {
+          const dimensionScores = analysis.dimensions.reduce((acc, dim) => {
+            const scoreKey = dim.name
+              .toLowerCase()
+              .replace(/\s+/g, "")
+              .replace(/competition/g, "competitiveLandscape");
+            acc[`${scoreKey}Score`] = String(dim.score);
+            return acc;
+          }, {} as Record<string, string>);
 
-        createLoopsContact({
-          email: submission.email,
-          firstName: submission.first_name ?? "",
-          lastName: submission.last_name ?? "",
-          customProperties: {
-            deckScore: String(analysis.meetingConversionScore),
-            deckVerdict: analysis.verdict,
-            deckResultsUrl: resultsUrl,
-            ...dimensionScores,
-          },
-        }).catch((err) => console.error("[loops] Contact update error:", err));
+          createLoopsContact({
+            email: submission.email,
+            firstName: submission.first_name ?? "",
+            lastName: submission.last_name ?? "",
+            customProperties: {
+              deckScore: String(analysis.meetingConversionScore),
+              deckVerdict: analysis.verdict,
+              deckResultsUrl: resultsUrl,
+              ...dimensionScores,
+            },
+          }).catch((err) => console.error("[loops] Contact update error:", err));
 
-        // Send results email (non-blocking — don't fail the analysis if email fails)
-        sendAnalysisResultEmail({
-          email: submission.email,
-          firstName: submission.first_name ?? "there",
-          businessName: submission.business_name,
-          score: analysis.meetingConversionScore,
-          verdict: analysis.verdict,
-          resultsUrl,
-        }).catch((err) => console.error("[loops] Email error:", err));
+          // Send results email (non-blocking — don't fail the analysis if email fails)
+          sendAnalysisResultEmail({
+            email: submission.email,
+            firstName: submission.first_name ?? "there",
+            businessName: submission.business_name,
+            score: analysis.meetingConversionScore,
+            verdict: analysis.verdict,
+            resultsUrl,
+          }).catch((err) => console.error("[loops] Email error:", err));
+        }
       }
 
       return NextResponse.json({
