@@ -47,13 +47,14 @@ export async function POST(req: NextRequest) {
 
     // Try to set admin upload flag if the column exists
     if (!dbError && submission?.id) {
-      await supabaseAdmin
-        .from("deck_submissions")
-        .update({ is_admin_upload: true })
-        .eq("id", submission.id)
-        .catch(() => {
-          // Column may not exist yet, that's ok
-        });
+      try {
+        await supabaseAdmin
+          .from("deck_submissions")
+          .update({ is_admin_upload: true })
+          .eq("id", submission.id);
+      } catch {
+        // Column may not exist yet, that's ok
+      }
     }
 
     if (dbError || !submission) {
