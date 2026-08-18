@@ -101,7 +101,7 @@ export default function AdminUploadPage() {
       submitFormData.append("country", formData.country);
       submitFormData.append("deck", file);
 
-      const response = await fetch("/api/submit", {
+      const response = await fetch("/api/admin/submit", {
         method: "POST",
         body: submitFormData,
       });
@@ -171,7 +171,7 @@ export default function AdminUploadPage() {
             <p style={{ color: "#4ade80", marginBottom: "8px", fontWeight: "600" }}>✓ Upload successful!</p>
             <p style={{ color: "#888888", marginBottom: "12px" }}>Submission ID: <code style={{ color: "#4ade80" }}>{successId}</code></p>
             <p style={{ color: "#888888", fontSize: "14px" }}>
-              Analysis is running. The results will be pushed to GHL when complete.
+              Analysis is running. Results will be pushed to GHL only (no customer emails sent).
             </p>
             <a
               href={`/investment-score/results/${successId}`}
