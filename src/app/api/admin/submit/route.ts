@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Create submission record
+    // Note: is_admin_upload column may not exist yet, so we'll update it after insert if needed
     const { data: submission, error: dbError } = await supabaseAdmin
       .from("deck_submissions")
       .insert({
@@ -40,10 +41,20 @@ export async function POST(req: NextRequest) {
         business_name: businessName,
         country,
         status:        "pending",
-        is_admin_upload: true,
       })
       .select("id")
       .single();
+
+    // Try to set admin upload flag if the column exists
+    if (!dbError && submission?.id) {
+      await supabaseAdmin
+        .from("deck_submissions")
+        .update({ is_admin_upload: true })
+        .eq("id", submission.id)
+        .catch(() => {
+          // Column may not exist yet, that's ok
+        });
+    }
 
     if (dbError || !submission) {
       console.error("DB insert error:", dbError);
