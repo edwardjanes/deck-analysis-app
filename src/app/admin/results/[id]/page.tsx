@@ -224,8 +224,8 @@ export default function AdminResultsPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {a.slideAssessments.map((slide, i) => (
                 <Card key={i}>
-                  <p style={{ fontSize: "12px", color: MUTED, fontWeight: 600, marginBottom: "8px" }}>Slide {i + 1}</p>
-                  <p style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>{slide.title}</p>
+                  <p style={{ fontSize: "12px", color: MUTED, fontWeight: 600, marginBottom: "8px" }}>{slide.slide}</p>
+                  <p style={{ fontSize: "12px", color: slide.verdict === "Strong" ? GREEN : slide.verdict === "Acceptable" ? "#FBBF24" : slide.verdict === "Weak" ? "#EF4444" : "#888888", fontWeight: 600, marginBottom: "8px" }}>Verdict: {slide.verdict}</p>
                   <p style={{ fontSize: "13px", color: "#D1D5DB", lineHeight: 1.6 }}>{slide.assessment}</p>
                 </Card>
               ))}
