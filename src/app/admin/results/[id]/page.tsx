@@ -17,6 +17,7 @@ interface SubmissionResult {
   analysis_json: DeckAnalysis;
   error_message?: string;
   created_at: string;
+  status: "pending" | "analysing" | "complete" | "error";
 }
 
 const GREEN = "#03fb83";
