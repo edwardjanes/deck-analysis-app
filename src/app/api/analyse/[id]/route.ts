@@ -201,7 +201,7 @@ export async function POST(
           }));
 
         // Always push to GHL
-        const ghlTags = submission.is_admin_upload ? ["Admin Upload"] : undefined;
+        const ghlTags = submission?.is_admin_upload ? ["Admin Upload"] : undefined;
         createGHLContact({
           email: submission.email,
           firstName: submission.first_name ?? "",
@@ -216,7 +216,7 @@ export async function POST(
         }).catch((err) => console.error("[ghl] Contact update error:", err));
 
         // Push to Loops only for non-admin uploads
-        if (!submission.is_admin_upload) {
+        if (!submission?.is_admin_upload) {
           const dimensionScores = analysis.dimensions.reduce((acc, dim) => {
             const scoreKey = dim.name
               .toLowerCase()

@@ -4,6 +4,18 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser";
 
+const COUNTRIES = [
+  "Australia", "Austria", "Belgium", "Brazil", "Canada", "Chile", "China",
+  "Colombia", "Czech Republic", "Denmark", "Egypt", "Finland", "France",
+  "Germany", "Ghana", "Greece", "Hong Kong", "Hungary", "India", "Indonesia",
+  "Ireland", "Israel", "Italy", "Japan", "Kenya", "Malaysia", "Mexico",
+  "Netherlands", "New Zealand", "Nigeria", "Norway", "Pakistan", "Philippines",
+  "Poland", "Portugal", "Romania", "Saudi Arabia", "Singapore", "South Africa",
+  "South Korea", "Spain", "Sweden", "Switzerland", "Taiwan", "Thailand",
+  "Turkey", "Ukraine", "United Arab Emirates", "United Kingdom", "United States",
+  "Vietnam", "Other",
+];
+
 export default function AdminUploadPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -312,12 +324,10 @@ export default function AdminUploadPage() {
             <label style={{ display: "block", color: "#FFFFFF", marginBottom: "8px", fontSize: "14px", fontWeight: "600" }}>
               Country *
             </label>
-            <input
-              type="text"
+            <select
               name="country"
               value={formData.country}
               onChange={handleInputChange}
-              placeholder="United Kingdom"
               required
               style={{
                 width: "100%",
@@ -325,11 +335,19 @@ export default function AdminUploadPage() {
                 backgroundColor: "#0A0A0A",
                 border: "1px solid #2a2a2a",
                 borderRadius: "6px",
-                color: "#FFFFFF",
+                color: formData.country ? "#FFFFFF" : "#888888",
                 fontSize: "14px",
                 boxSizing: "border-box",
+                cursor: "pointer",
               }}
-            />
+            >
+              <option value="" disabled>Select your country</option>
+              {COUNTRIES.map((c) => (
+                <option key={c} value={c} style={{ background: "#0A0A0A", color: "#FFFFFF" }}>
+                  {c}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* PDF Upload */}
