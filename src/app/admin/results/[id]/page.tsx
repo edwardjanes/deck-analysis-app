@@ -212,7 +212,6 @@ export default function AdminResultsPage() {
                     transition: "width 0.3s ease",
                   }} />
                 </div>
-                <p style={{ fontSize: "13px", color: MUTED, marginTop: "8px", lineHeight: 1.6 }}>{d.rationale}</p>
               </Card>
             ))}
           </div>
