@@ -13,14 +13,41 @@ import {
   LTG_GROWTH_RATE_DEFAULT,
 } from './referenceData';
 
+const COUNTRY_NAME_TO_CODE: Record<string, keyof typeof COUNTRIES> = {
+  'united states': 'US', 'usa': 'US', 'us': 'US',
+  'united kingdom': 'GB', 'uk': 'GB', 'britain': 'GB',
+  'germany': 'DE',
+  'france': 'FR',
+  'netherlands': 'NL',
+  'ireland': 'IE',
+  'spain': 'ES',
+  'italy': 'IT',
+  'sweden': 'SE',
+  'switzerland': 'CH',
+  'israel': 'IL',
+  'uae': 'AE', 'united arab emirates': 'AE',
+  'singapore': 'SG',
+  'hong kong': 'HK',
+  'india': 'IN',
+  'china': 'CN',
+  'japan': 'JP',
+  'south korea': 'KR', 'korea': 'KR',
+  'canada': 'CA',
+  'brazil': 'BR',
+  'mexico': 'MX',
+  'australia': 'AU',
+  'south africa': 'ZA',
+  'nigeria': 'NG',
+  'poland': 'PL',
+};
+
 export function buildDefaultParameters(
   profile: CompanyProfile,
   financials: FinancialYear[]
 ): UpdatedValuationParameters {
   // Look up country data from reference data
-  const countryKey = (Object.keys(COUNTRIES) as (keyof typeof COUNTRIES)[]).find(
-    (key) => key.toLowerCase() === (profile.country || '').toLowerCase().substring(0, 2)
-  ) || 'default';
+  const normalizedCountry = (profile.country || '').toLowerCase().trim();
+  const countryKey = COUNTRY_NAME_TO_CODE[normalizedCountry] || 'default';
   const countryRef = COUNTRIES[countryKey];
   const countryData = {
     name: profile.country,

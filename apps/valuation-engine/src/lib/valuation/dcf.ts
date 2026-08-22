@@ -11,7 +11,7 @@ export function computeDcfShared(
   // Sum discounted cash flows: Σ[t=1..n] (FCFE_t × SurvivalRate_t) / (1+DR)^t
   let discountedFcfSum = 0;
   for (const fcfeYear of fcfeYears) {
-    const survivalRate = SURVIVAL_RATES[fcfeYear.yearOffset] ?? SURVIVAL_RATES[SURVIVAL_RATES.length - 1] ?? 0.5;
+    const survivalRate = SURVIVAL_RATES[fcfeYear.yearOffset - 1] ?? SURVIVAL_RATES[SURVIVAL_RATES.length - 1] ?? 0.5;
     const discount = Math.pow(1 + discountRate, fcfeYear.yearOffset);
     discountedFcfSum += (fcfeYear.fcfe * survivalRate) / discount;
   }

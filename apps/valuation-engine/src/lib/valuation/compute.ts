@@ -24,6 +24,9 @@ export async function computeValuation(
   // Derive FCFE for all years
   const fcfeByYear = deriveFcfeByYear(financials);
 
+  // Filter to forecast years only (yearOffset >= 1) for DCF calculations
+  const forecastFcfeYears = fcfeByYear.filter((f) => f.yearOffset >= 1);
+
   // Discount rate from parameters
   const discountRate = parameters.dcf_shared.discount_rate;
 
@@ -52,13 +55,13 @@ export async function computeValuation(
 
   // DCF LTG result
   const terminalValueLtg =
-    (fcfeByYear[fcfeByYear.length - 1]?.fcfe || 0) *
-    parameters.dcf_ltg.survival_rates[5] *
+    (forecastFcfeYears[forecastFcfeYears.length - 1]?.fcfe || 0) *
+    parameters.dcf_ltg.survival_rates[4] *
     (1 + parameters.dcf_ltg.terminal_growth_rate) /
     (discountRate - parameters.dcf_ltg.terminal_growth_rate);
 
   const dcfLtgResult = computeDcfShared(
-    fcfeByYear,
+    forecastFcfeYears,
     terminalValueLtg,
     discountRate,
     parameters.dcf_shared.illiquidity_discount,
@@ -71,7 +74,7 @@ export async function computeValuation(
   const terminalValueMultiple = lastYearRevenue * parameters.dcf_multiple.exit_multiple;
 
   const dcfMultipleResult = computeDcfShared(
-    fcfeByYear,
+    forecastFcfeYears,
     terminalValueMultiple,
     discountRate,
     parameters.dcf_shared.illiquidity_discount,
