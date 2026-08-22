@@ -18,11 +18,6 @@ export function computeWeightedValuation(
 
   const totalWeighted = perMethod.reduce((sum, m) => sum + m.contribution, 0);
 
-  // Filter out methods with zero weight for the low/high bounds
-  const activeMethodResults = perMethod.filter((m) => m.weight > 0).map((m) => m.valuation);
-  const lowBound = activeMethodResults.length > 0 ? Math.min(...activeMethodResults) : 0;
-  const highBound = activeMethodResults.length > 0 ? Math.max(...activeMethodResults) : 0;
-
   return {
     weighted: totalWeighted,
     perMethod,

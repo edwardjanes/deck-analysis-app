@@ -17,17 +17,29 @@ export function buildDefaultParameters(
   profile: CompanyProfile,
   financials: FinancialYear[]
 ): UpdatedValuationParameters {
+  // Look up country data from reference data
+  const countryKey = (Object.keys(COUNTRIES) as (keyof typeof COUNTRIES)[]).find(
+    (key) => key.toLowerCase() === (profile.country || '').toLowerCase().substring(0, 2)
+  ) || 'default';
+  const countryRef = COUNTRIES[countryKey];
   const countryData = {
     name: profile.country,
-    avg_seed_pre_money: 4_000_000,
-    risk_free_rate: 0.04,
-    equity_risk_premium: 0.065,
+    avg_seed_pre_money: countryRef.avgSeedPreMoney,
+    risk_free_rate: countryRef.riskFree10Y,
+    equity_risk_premium: countryRef.equityRiskPremium,
   };
 
+  // Look up industry data from reference data
+  const industryKey = (Object.keys(INDUSTRIES) as (keyof typeof INDUSTRIES)[]).find(
+    (key) => key.toLowerCase().replace(/_/g, '').replace(' ', '') ===
+             (profile.industry || '').toLowerCase().replace(/_/g, '').replace(/\s/g, '')
+  ) || 'default';
+  const industryRef = INDUSTRIES[industryKey];
   const industryData = {
     name: profile.industry,
-    beta: 1.2,
-    revenue_multiple: 5.5,
+    beta: industryRef.beta,
+    revenue_multiple: industryRef.revenueMultiple,
+    ebitda_multiple: industryRef.ebitdaMultiple,
   };
 
   const stageNormalized = (profile.stage as string).toLowerCase();
@@ -76,7 +88,7 @@ export function buildDefaultParameters(
     // VC Method parameters
     vc_method: {
       terminal_metric_value: terminalRevenue,
-      industry_multiple: industryData.revenue_multiple,
+      industry_multiple: industryData.ebitda_multiple,
       required_roi: requiredRoi,
       projection_years: 5,
     },

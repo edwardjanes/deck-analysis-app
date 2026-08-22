@@ -128,9 +128,9 @@ export async function computeValuation(
 
   const weightedValuation = perMethod.reduce((sum, m) => sum + m.weightedContribution, 0);
 
-  // Bounds (20% below/above)
-  const lowBound = weightedValuation * 0.8;
-  const highBound = weightedValuation * 1.2;
+  // Bounds (±9.6% as per Equidam methodology)
+  const lowBound = weightedValuation * 0.904;
+  const highBound = weightedValuation * 1.096;
 
   return {
     methodResults,

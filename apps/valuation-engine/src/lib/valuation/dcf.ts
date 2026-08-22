@@ -1,4 +1,5 @@
 import { DcfResult, FcfeYear } from "./types";
+import { SURVIVAL_RATES } from "./referenceData";
 
 export function computeDcfShared(
   fcfeYears: FcfeYear[],
@@ -10,7 +11,7 @@ export function computeDcfShared(
   // Sum discounted cash flows: Σ[t=1..n] (FCFE_t × SurvivalRate_t) / (1+DR)^t
   let discountedFcfSum = 0;
   for (const fcfeYear of fcfeYears) {
-    const survivalRate = 0.95; // Simplified; in real code this would come from referenceData per year
+    const survivalRate = SURVIVAL_RATES[fcfeYear.yearOffset] ?? SURVIVAL_RATES[SURVIVAL_RATES.length - 1] ?? 0.5;
     const discount = Math.pow(1 + discountRate, fcfeYear.yearOffset);
     discountedFcfSum += (fcfeYear.fcfe * survivalRate) / discount;
   }
