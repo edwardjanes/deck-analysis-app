@@ -3,6 +3,7 @@ import { FinancialYear, FcfeYear } from "./types";
 export function deriveFcfeByYear(years: FinancialYear[]): FcfeYear[] {
   const sortedYears = [...years].sort((a, b) => a.yearOffset - b.yearOffset);
   const result: FcfeYear[] = [];
+  let deferredTaxBenefit = 0;
 
   for (let i = 0; i < sortedYears.length; i++) {
     const current = sortedYears[i];
@@ -14,7 +15,7 @@ export function deriveFcfeByYear(years: FinancialYear[]): FcfeYear[] {
     const otherOpex = current.otherOpex || 0;
     const totalDa = current.totalDa || 0;
     const interest = current.interest || 0;
-    const taxes = current.taxes || 0;
+    const rawTaxes = current.taxes || 0;
     const receivables = current.receivables || 0;
     const inventory = current.inventory || 0;
     const payables = current.payables || 0;
@@ -24,6 +25,20 @@ export function deriveFcfeByYear(years: FinancialYear[]): FcfeYear[] {
     const ebitda = revenue - cogs - salaries - otherOpex;
     const ebit = ebitda - totalDa;
     const ebt = ebit - interest;
+
+    // Handle NOL carryforward: loss years generate deferred tax benefits
+    let taxes = rawTaxes;
+    if (ebt < 0 && rawTaxes < 0) {
+      // Loss year with an implied tax benefit — defer it to future profitable years
+      deferredTaxBenefit += -rawTaxes;
+      taxes = 0;
+    } else if (ebt >= 0 && rawTaxes > 0 && deferredTaxBenefit > 0) {
+      // Profitable year — use up as much carried-forward benefit as this year's tax liability allows
+      const offset = Math.min(deferredTaxBenefit, rawTaxes);
+      taxes = rawTaxes - offset;
+      deferredTaxBenefit -= offset;
+    }
+
     const netIncome = ebt - taxes;
 
     // Change in working capital = Δ(Receivables + Inventory - Payables)
