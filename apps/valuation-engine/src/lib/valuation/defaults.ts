@@ -52,6 +52,7 @@ export function buildDefaultParameters(
   const countryData = {
     name: profile.country,
     avg_seed_pre_money: countryRef.avgSeedPreMoney,
+    checklist_max_valuation: countryRef.checklistMaxValuation,
     risk_free_rate: countryRef.riskFree10Y,
     equity_risk_premium: countryRef.equityRiskPremium,
   };
@@ -109,7 +110,7 @@ export function buildDefaultParameters(
 
     // Checklist parameters
     checklist: {
-      max_valuation: countryData.avg_seed_pre_money * 3,
+      max_valuation: countryData.checklist_max_valuation,
     },
 
     // VC Method parameters
