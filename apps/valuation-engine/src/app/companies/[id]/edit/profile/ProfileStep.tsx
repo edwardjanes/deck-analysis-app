@@ -27,6 +27,33 @@ const INDUSTRIES = [
   'PropTech',
   'Media',
 ];
+const COUNTRIES = [
+  'Australia',
+  'Brazil',
+  'Canada',
+  'China',
+  'France',
+  'Germany',
+  'Hong Kong',
+  'India',
+  'Ireland',
+  'Israel',
+  'Italy',
+  'Japan',
+  'Mexico',
+  'Netherlands',
+  'Nigeria',
+  'Poland',
+  'Singapore',
+  'South Africa',
+  'South Korea',
+  'Spain',
+  'Sweden',
+  'Switzerland',
+  'United Arab Emirates',
+  'United Kingdom',
+  'United States',
+];
 
 export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
   const [formData, setFormData] = useState({
@@ -131,14 +158,14 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
         <div style={gridStyle}>
           <div>
             <label style={labelStyle}>Country *</label>
-            <input
-              type="text"
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-              placeholder="e.g., Germany, United States"
-              style={inputStyle}
-            />
+            <select name="country" value={formData.country} onChange={handleChange} style={inputStyle}>
+              <option value="">Select a country</option>
+              {COUNTRIES.map((country) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
