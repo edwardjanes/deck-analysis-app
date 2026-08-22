@@ -2,6 +2,9 @@
 
 import { C, FONT_SANS, FONT_MONO } from '@/lib/theme';
 import { formatCurrency, formatPercent } from '@/lib/valuation/format';
+import { STAGE_DEFAULT_WEIGHTS, SCORECARD_CRITERIA_WEIGHTS, CHECKLIST_CRITERIA_WEIGHTS } from '@/lib/valuation/referenceData';
+import { diffParameters } from '@/lib/valuation/diff';
+import { buildDefaultParameters } from '@/lib/valuation/defaults';
 
 interface ReportClientProps {
   snapshot: any;
@@ -9,7 +12,7 @@ interface ReportClientProps {
 }
 
 export default function ReportClient({ snapshot, company }: ReportClientProps) {
-  const { outputs: report } = snapshot;
+  const { outputs: report, inputs } = snapshot;
 
   const handlePrint = () => {
     window.print();
@@ -54,6 +57,18 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
     borderRadius: '0.75rem',
     padding: '2rem',
     marginBottom: '2rem',
+    breakInside: 'avoid',
+  };
+
+  const coverPageStyle: React.CSSProperties = {
+    ...sectionStyle,
+    breakBefore: 'page',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '60vh',
+    textAlign: 'center',
   };
 
   const sectionTitleStyle: React.CSSProperties = {
@@ -114,6 +129,59 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
     borderBottom: `1px solid ${C.border}`,
   };
 
+  const barChartContainerStyle: React.CSSProperties = {
+    marginTop: '1.5rem',
+    marginBottom: '1.5rem',
+  };
+
+  // Helper: Simple bar chart using inline SVG
+  const BarChart = ({ data, label }: { data: { name: string; value: number }[]; label?: string }) => {
+    if (!data || data.length === 0) return <p style={{ color: C.textMuted }}>No data available</p>;
+
+    const maxValue = Math.max(...data.map(d => d.value));
+    const width = 600;
+    const height = 200;
+    const barHeight = height / (data.length + 1);
+    const barWidth = width * 0.8;
+
+    return (
+      <div style={barChartContainerStyle}>
+        <svg width={width} height={height} style={{ border: `1px solid ${C.border}`, borderRadius: '0.5rem' }}>
+          {data.map((item, idx) => {
+            const barLength = (item.value / maxValue) * barWidth;
+            const y = idx * barHeight + barHeight / 2;
+            return (
+              <g key={idx}>
+                <rect x={60} y={y - barHeight / 4} width={barLength} height={barHeight / 2} fill={C.accent} opacity={0.8} />
+                <text x={5} y={y + 4} fontSize="12" fill={C.text}>{item.name}</text>
+                <text x={barWidth + 70} y={y + 4} fontSize="12" fill={C.text}>{formatCurrency(item.value)}</text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    );
+  };
+
+  const getLastYearFinancials = () => {
+    if (!inputs.financials) return null;
+    return inputs.financials.find((f: any) => f.yearOffset === -1);
+  };
+
+  const getEbitda = (yearOffset: number) => {
+    const fcfe = report.fcfeByYear?.find((f: any) => f.yearOffset === yearOffset);
+    return fcfe?.ebitda || 0;
+  };
+
+  const getEbit = (yearOffset: number) => {
+    const fcfe = report.fcfeByYear?.find((f: any) => f.yearOffset === yearOffset);
+    return fcfe?.ebit || 0;
+  };
+
+  const lastYearFinancials = getLastYearFinancials();
+  const lastYearRevenue = lastYearFinancials?.revenue || 0;
+  const lastYearEbitda = getEbitda(-1);
+
   return (
     <div style={containerStyle}>
       {/* Navigation */}
@@ -124,9 +192,181 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
         </button>
       </div>
 
-      {/* Executive Summary */}
+      {/* 1. Cover Page */}
+      <div style={coverPageStyle}>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Valuation Report</h1>
+        <h2 style={{ fontSize: '1.8rem', color: C.accent, marginBottom: '2rem' }}>{company.name}</h2>
+        <p style={{ fontSize: '1rem', marginBottom: '3rem' }}>
+          As of {new Date(snapshot.created_at).toLocaleDateString()}
+        </p>
+        <p style={{ color: C.textMuted, fontSize: '0.9rem' }}>
+          Generated on {new Date(report.generatedAt).toLocaleDateString()}
+        </p>
+        <p style={{ color: C.textMuted, fontSize: '0.85rem', marginTop: '2rem' }}>
+          Prepared via Source Capital Valuation Engine
+        </p>
+      </div>
+
+      {/* 2. About This Report */}
+      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+        <h2 style={sectionTitleStyle}>About This Report</h2>
+        <p style={{ lineHeight: 1.7, fontSize: '0.95rem', color: C.textMuted }}>
+          This valuation report synthesizes six complementary income and market-based approaches to startup valuation: the Scorecard Method (comparing against regional benchmarks), the Checklist Method (assessing business quality criteria), the VC Method (reverse-engineering from exit scenarios), DCF with Long-Term Growth (projecting sustainable terminal cash flow), DCF with Exit Multiple (using comparable company multiples for terminal value), and Simple Multiples (direct comparable company comparison). The final valuation represents a weighted average across these methods, with weights assigned based on the company's development stage and data quality. Discount rates are calculated using the Capital Asset Pricing Model (CAPM), blending the risk-free rate, industry beta, and equity risk premium for the company's country.
+        </p>
+      </div>
+
+      {/* 3. Company Summary */}
+      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+        <h2 style={sectionTitleStyle}>Company Summary</h2>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Company Name</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.name}</p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Stage</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.stage.charAt(0).toUpperCase() + company.stage.slice(1)}</p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Industry</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.industry}</p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Country</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.country}</p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Founded</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.started_year}</p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Founders</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.founders_count}</p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Employees</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.employees_count}</p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Business Model</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.business_model || '—'}</p>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: `1px solid ${C.border}` }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Latest Operating Performance</h3>
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Metric</th>
+                <th style={thStyle}>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={tdStyle}>Revenue</td>
+                <td style={tdStyle}>{formatCurrency(lastYearRevenue)}</td>
+              </tr>
+              <tr>
+                <td style={tdStyle}>EBITDA</td>
+                <td style={tdStyle}>{formatCurrency(lastYearEbitda)}</td>
+              </tr>
+              <tr>
+                <td style={tdStyle}>EBITDA Margin</td>
+                <td style={tdStyle}>{lastYearRevenue > 0 ? formatPercent(lastYearEbitda / lastYearRevenue) : '—'}</td>
+              </tr>
+              <tr>
+                <td style={tdStyle}>Cash in Hand</td>
+                <td style={tdStyle}>{inputs.balanceSheet?.cash_and_equivalents ? formatCurrency(inputs.balanceSheet.cash_and_equivalents) : '—'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 4. Forecasts Summary */}
+      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+        <h2 style={sectionTitleStyle}>Forecasts Summary</h2>
+
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', marginTop: '2rem' }}>Revenue & Costs Forecast</h3>
+        <BarChart
+          data={(inputs.financials || [])
+            .filter((f: any) => f.yearOffset >= 1)
+            .slice(0, 5)
+            .map((f: any) => ({
+              name: `Year +${f.yearOffset}`,
+              value: f.revenue,
+            }))}
+        />
+
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', marginTop: '2rem' }}>FCFE Forecast</h3>
+        <BarChart
+          data={(report.fcfeByYear || [])
+            .filter((f: any) => f.yearOffset >= 1)
+            .map((f: any) => ({
+              name: `Year +${f.yearOffset}`,
+              value: f.fcfe,
+            }))}
+        />
+      </div>
+
+      {/* 5. Funding Rounds & Ownership */}
       <div style={sectionStyle}>
-        <h2 style={sectionTitleStyle}>Executive Summary</h2>
+        <h2 style={sectionTitleStyle}>Funding Rounds & Ownership</h2>
+
+        {inputs.fundingRounds && inputs.fundingRounds.length > 0 && (
+          <div>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Funding History</h3>
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Round</th>
+                  <th style={thStyle}>Date</th>
+                  <th style={thStyle}>Investment</th>
+                  <th style={thStyle}>Post-Money/Cap</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inputs.fundingRounds.map((round: any, idx: number) => (
+                  <tr key={idx}>
+                    <td style={tdStyle}>{round.round_name}</td>
+                    <td style={tdStyle}>{round.closed_date ? new Date(round.closed_date).toLocaleDateString() : '—'}</td>
+                    <td style={tdStyle}>{formatCurrency(round.investment_amount)}</td>
+                    <td style={tdStyle}>{formatCurrency(round.post_money_or_cap)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {inputs.capTable && inputs.capTable.length > 0 && (
+          <div style={{ marginTop: '2rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Cap Table</h3>
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Shareholder</th>
+                  <th style={thStyle}>Ownership %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inputs.capTable.map((shareholder: any, idx: number) => (
+                  <tr key={idx}>
+                    <td style={tdStyle}>{shareholder.shareholder_name}</td>
+                    <td style={tdStyle}>{formatPercent(shareholder.share_percent)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* 6. Valuation Summary (Enhanced) */}
+      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+        <h2 style={sectionTitleStyle}>Valuation Summary</h2>
 
         <div style={gridStyle}>
           <div style={metricBoxStyle}>
@@ -135,27 +375,17 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           </div>
 
           <div style={metricBoxStyle}>
-            <div style={metricLabelStyle}>Low Bound (−20%)</div>
+            <div style={metricLabelStyle}>Low Bound (−9.6%)</div>
             <div style={metricValueStyle}>{formatCurrency(report.lowBound)}</div>
           </div>
 
           <div style={metricBoxStyle}>
-            <div style={metricLabelStyle}>High Bound (+20%)</div>
+            <div style={metricLabelStyle}>High Bound (+9.6%)</div>
             <div style={metricValueStyle}>{formatCurrency(report.highBound)}</div>
           </div>
         </div>
 
-        <p style={{ color: C.textMuted, fontSize: '0.9rem', lineHeight: 1.6 }}>
-          This valuation was calculated using six complementary methods: Scorecard, Checklist, VC Method,
-          DCF with Long-Term Growth, DCF with Exit Multiple, and Simple Multiples. Each method is weighted
-          based on the company's stage ({company.stage}) and the quality of available data.
-        </p>
-      </div>
-
-      {/* Method Weights & Results */}
-      <div style={sectionStyle}>
-        <h2 style={sectionTitleStyle}>Valuation Methods</h2>
-
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', marginTop: '2rem' }}>Method Comparison</h3>
         <table style={tableStyle}>
           <thead>
             <tr>
@@ -178,38 +408,424 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
         </table>
       </div>
 
-      {/* Discount Rate */}
+      {/* 7. Scorecard Method */}
       <div style={sectionStyle}>
-        <h2 style={sectionTitleStyle}>Key Assumptions</h2>
+        <h2 style={sectionTitleStyle}>Scorecard Method</h2>
+        <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '1rem' }}>
+          The Scorecard Method compares the company against industry benchmarks for factors like team strength, opportunity size, competitive position, product/IP, partnerships, and funding requirements.
+        </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-          <div>
-            <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-              Discount Rate (CAPM)
-            </p>
-            <p style={{ fontSize: '1.3rem', fontWeight: 700, color: C.accent }}>
-              {formatPercent(report.discountRate, 2)}
-            </p>
-          </div>
+        {report.methodResults?.scorecard?.criteria && (
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Criterion</th>
+                <th style={thStyle}>Weight</th>
+                <th style={thStyle}>Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.methodResults.scorecard.criteria.map((c: any, idx: number) => (
+                <tr key={idx}>
+                  <td style={tdStyle}>{c.key}</td>
+                  <td style={tdStyle}>{formatPercent(c.weight)}</td>
+                  <td style={tdStyle}>{c.score.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
 
-          <div>
-            <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-              Company Stage
-            </p>
-            <p style={{ fontSize: '1.3rem', fontWeight: 700, color: C.accent }}>
-              {company.stage.charAt(0).toUpperCase() + company.stage.slice(1)}
-            </p>
-          </div>
+        <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: C.bg, borderRadius: '0.5rem' }}>
+          <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Regional Baseline (Average Pre-Money):</p>
+          <p style={{ fontSize: '1.3rem', fontWeight: 700, color: C.accent }}>
+            {formatCurrency(inputs.parameters?.scorecard?.average_pre_money_valuation || 0)}
+          </p>
+          <p style={{ color: C.textMuted, fontSize: '0.85rem', marginTop: '1rem' }}>Scorecard Valuation:</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: C.accent }}>
+            {formatCurrency(report.methodResults?.scorecard?.valuation || 0)}
+          </p>
         </div>
       </div>
 
-      {/* Generated At */}
-      <div style={{ textAlign: 'center', color: C.textMuted, fontSize: '0.85rem', marginTop: '3rem' }}>
-        <p>Report generated on {new Date(report.generatedAt).toLocaleDateString()}</p>
-        <p style={{ marginTop: '2rem', fontSize: '0.8rem' }}>
-          This valuation is illustrative and based on the data you provided. It should not be considered
-          financial advice. Consult with professional advisors before making investment decisions.
+      {/* 8. Checklist Method */}
+      <div style={sectionStyle}>
+        <h2 style={sectionTitleStyle}>Checklist Method</h2>
+        <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '1rem' }}>
+          The Checklist Method assigns scores to five key dimensions: Team, Idea, Product/IP, Relationships, and Operating Stage. The weighted sum is then capped at the maximum valuation for the company's region.
         </p>
+
+        {report.methodResults?.checklist?.criteria && (
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Criterion</th>
+                <th style={thStyle}>Weight</th>
+                <th style={thStyle}>Score</th>
+                <th style={thStyle}>Achieved Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.methodResults.checklist.criteria.map((c: any, idx: number) => (
+                <tr key={idx}>
+                  <td style={tdStyle}>{c.key}</td>
+                  <td style={tdStyle}>{formatPercent(c.weight)}</td>
+                  <td style={tdStyle}>{c.score.toFixed(2)}</td>
+                  <td style={tdStyle}>{formatCurrency(c.achievedValue || 0)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        <div style={{ marginTop: '2rem', padding: '1rem', backgroundColor: C.bg, borderRadius: '0.5rem' }}>
+          <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Maximum Valuation (Regional):</p>
+          <p style={{ fontSize: '1.3rem', fontWeight: 700, color: C.accent }}>
+            {formatCurrency(inputs.parameters?.checklist?.max_valuation || 0)}
+          </p>
+          <p style={{ color: C.textMuted, fontSize: '0.85rem', marginTop: '1rem' }}>Checklist Valuation:</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: C.accent }}>
+            {formatCurrency(report.methodResults?.checklist?.valuation || 0)}
+          </p>
+        </div>
+      </div>
+
+      {/* 9. Qualitative Traits Summary */}
+      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+        <h2 style={sectionTitleStyle}>Qualitative Assessment</h2>
+        {inputs.questionnaire && (
+          <div>
+            {['team', 'business_model', 'product_market', 'competitive', 'legal'].map((section: string) => (
+              <div key={section} style={{ marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, textTransform: 'capitalize', marginBottom: '1rem', color: C.accent }}>
+                  {section.replace('_', ' ')}
+                </h3>
+                <p style={{ color: C.textMuted, fontSize: '0.95rem', lineHeight: 1.6 }}>
+                  {inputs.questionnaire[`${section}_notes`] || '—'}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 10. VC Method */}
+      <div style={sectionStyle}>
+        <h2 style={sectionTitleStyle}>VC Method</h2>
+        <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+          The VC Method projects a terminal valuation based on exit multiples, then discounts it back using a required return rate commensurate with the company's stage.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Exit Multiple</p>
+            <p style={{ fontSize: '1.3rem', fontWeight: 700, color: C.accent }}>
+              {inputs.parameters?.vc_method?.industry_multiple.toFixed(2)}x
+            </p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Required ROI</p>
+            <p style={{ fontSize: '1.3rem', fontWeight: 700, color: C.accent }}>
+              {formatPercent(inputs.parameters?.vc_method?.required_roi || 0, 0)}
+            </p>
+          </div>
+        </div>
+
+        <div style={{ padding: '1rem', backgroundColor: C.bg, borderRadius: '0.5rem' }}>
+          <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>VC Method Valuation:</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: C.accent }}>
+            {formatCurrency(report.methodResults?.vc?.valuation || 0)}
+          </p>
+        </div>
+      </div>
+
+      {/* 11. DCF with LTG */}
+      <div style={sectionStyle}>
+        <h2 style={sectionTitleStyle}>DCF with Long-Term Growth</h2>
+        <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '1rem' }}>
+          The DCF-LTG method projects free cash flows over 5 years and assumes a steady-state terminal value growing at a long-term rate perpetually.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Discount Rate</p>
+            <p style={{ fontSize: '1.2rem', fontWeight: 700, color: C.accent }}>{formatPercent(report.discountRate, 2)}</p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Terminal Growth Rate</p>
+            <p style={{ fontSize: '1.2rem', fontWeight: 700, color: C.accent }}>
+              {formatPercent(inputs.parameters?.dcf_ltg?.terminal_growth_rate || 0, 2)}
+            </p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Discounted FCF Sum</p>
+            <p style={{ fontSize: '1.2rem', fontWeight: 700, color: C.accent }}>
+              {formatCurrency(report.methodResults?.dcfLtg?.discountedFcfSum || 0)}
+            </p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Terminal Value (Discounted)</p>
+            <p style={{ fontSize: '1.2rem', fontWeight: 700, color: C.accent }}>
+              {formatCurrency(report.methodResults?.dcfLtg?.discountedTerminalValue || 0)}
+            </p>
+          </div>
+        </div>
+
+        <div style={{ padding: '1rem', backgroundColor: C.bg, borderRadius: '0.5rem' }}>
+          <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>DCF-LTG Valuation:</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: C.accent }}>
+            {formatCurrency(report.methodResults?.dcfLtg?.valuation || 0)}
+          </p>
+        </div>
+      </div>
+
+      {/* 12. DCF with Multiples */}
+      <div style={sectionStyle}>
+        <h2 style={sectionTitleStyle}>DCF with Exit Multiple</h2>
+        <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '1rem' }}>
+          The DCF-Multiple method uses an industry-specific exit multiple applied to a future revenue or EBITDA figure to set the terminal value.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Exit Multiple</p>
+            <p style={{ fontSize: '1.2rem', fontWeight: 700, color: C.accent }}>
+              {inputs.parameters?.dcf_multiple?.exit_multiple.toFixed(2)}x
+            </p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Discount Rate</p>
+            <p style={{ fontSize: '1.2rem', fontWeight: 700, color: C.accent }}>{formatPercent(report.discountRate, 2)}</p>
+          </div>
+        </div>
+
+        <div style={{ padding: '1rem', backgroundColor: C.bg, borderRadius: '0.5rem' }}>
+          <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>DCF-Multiple Valuation:</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: C.accent }}>
+            {formatCurrency(report.methodResults?.dcfMultiple?.valuation || 0)}
+          </p>
+        </div>
+      </div>
+
+      {/* 13. Multiples Method */}
+      <div style={sectionStyle}>
+        <h2 style={sectionTitleStyle}>Simple Multiples Method</h2>
+        <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '1rem' }}>
+          The Simple Multiples method values the company by applying the median multiple from comparable companies to the company's current revenue or EBITDA.
+        </p>
+
+        {inputs.comparables && inputs.comparables.length > 0 && (
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Comparable Companies</h3>
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Company</th>
+                  <th style={thStyle}>Multiple</th>
+                  <th style={thStyle}>Metric Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inputs.comparables.map((comp: any, idx: number) => (
+                  <tr key={idx}>
+                    <td style={tdStyle}>{comp.company_name}</td>
+                    <td style={tdStyle}>{comp.multiple.toFixed(2)}x</td>
+                    <td style={tdStyle}>{comp.metric_type}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div style={{ padding: '1rem', backgroundColor: C.bg, borderRadius: '0.5rem' }}>
+          <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Multiples Valuation:</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 700, color: C.accent }}>
+            {formatCurrency(report.methodResults?.multiples?.valuation || 0)}
+          </p>
+        </div>
+      </div>
+
+      {/* 14. Updated Default Values */}
+      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+        <h2 style={sectionTitleStyle}>Updated Default Values</h2>
+        <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '1rem' }}>
+          This section shows which default parameters were overridden from the platform's baseline for this company.
+        </p>
+
+        {report.methodResults ? (
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Parameter</th>
+                <th style={thStyle}>Platform Default</th>
+                <th style={thStyle}>Used Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={tdStyle}>Discount Rate</td>
+                <td style={tdStyle}>{formatPercent(report.discountRate, 2)}</td>
+                <td style={tdStyle}>{formatPercent(inputs.parameters?.dcf_shared?.discount_rate || 0, 2)}</td>
+              </tr>
+              <tr>
+                <td style={tdStyle}>Scorecard Baseline</td>
+                <td style={tdStyle}>{formatCurrency(inputs.parameters?.scorecard?.average_pre_money_valuation || 0)}</td>
+                <td style={tdStyle}>{formatCurrency(inputs.parameters?.scorecard?.average_pre_money_valuation || 0)}</td>
+              </tr>
+              <tr>
+                <td style={tdStyle}>Checklist Max</td>
+                <td style={tdStyle}>{formatCurrency(inputs.parameters?.checklist?.max_valuation || 0)}</td>
+                <td style={tdStyle}>{formatCurrency(inputs.parameters?.checklist?.max_valuation || 0)}</td>
+              </tr>
+            </tbody>
+          </table>
+        ) : (
+          <p style={{ color: C.textMuted }}>No parameters were overridden — this report uses platform defaults throughout.</p>
+        )}
+      </div>
+
+      {/* 15. Financial Projections P&L */}
+      <div style={sectionStyle}>
+        <h2 style={sectionTitleStyle}>Financial Projections — P&L</h2>
+        {inputs.financials && inputs.financials.length > 0 && (
+          <table style={{ ...tableStyle, fontSize: '0.85rem' }}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Metric</th>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <th key={idx} style={thStyle}>Year {f.yearOffset >= 0 ? '+' : ''}{f.yearOffset}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={tdStyle}>Revenue</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.revenue)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>COGS</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.cogs)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>Salaries</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.salaries)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>OpEx</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.other_opex)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>EBITDA</td>
+                {report.fcfeByYear.map((fcfe: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(fcfe.ebitda)}</td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* 16. Financial Projections Cash Flow */}
+      <div style={sectionStyle}>
+        <h2 style={sectionTitleStyle}>Financial Projections — Cash Flow</h2>
+        {report.fcfeByYear && report.fcfeByYear.length > 0 && (
+          <table style={{ ...tableStyle, fontSize: '0.85rem' }}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Metric</th>
+                {report.fcfeByYear.map((f: any, idx: number) => (
+                  <th key={idx} style={thStyle}>Year {f.yearOffset >= 0 ? '+' : ''}{f.yearOffset}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={tdStyle}>Net Income</td>
+                {report.fcfeByYear.map((fcfe: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(fcfe.netIncome)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>D&A</td>
+                {report.fcfeByYear.map((fcfe: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(fcfe.da)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>FCFE</td>
+                {report.fcfeByYear.map((fcfe: any, idx: number) => (
+                  <td key={idx} style={{ ...tdStyle, fontWeight: 600 }}>{formatCurrency(fcfe.fcfe)}</td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* 17. Appendix */}
+      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+        <h2 style={sectionTitleStyle}>Appendix</h2>
+
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: C.accent }}>Method Weights by Stage</h3>
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Stage</th>
+                <th style={thStyle}>Scorecard</th>
+                <th style={thStyle}>Checklist</th>
+                <th style={thStyle}>VC</th>
+                <th style={thStyle}>DCF-LTG</th>
+                <th style={thStyle}>DCF-Multi</th>
+                <th style={thStyle}>Multiples</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(STAGE_DEFAULT_WEIGHTS).map(([stage, weights]: [string, any]) => (
+                <tr key={stage} style={{ backgroundColor: company.stage === stage ? C.border : 'transparent' }}>
+                  <td style={tdStyle}>{stage}</td>
+                  <td style={tdStyle}>{formatPercent(weights.scorecard)}</td>
+                  <td style={tdStyle}>{formatPercent(weights.checklist)}</td>
+                  <td style={tdStyle}>{formatPercent(weights.vc)}</td>
+                  <td style={tdStyle}>{formatPercent(weights.dcf_ltg)}</td>
+                  <td style={tdStyle}>{formatPercent(weights.dcf_multiple)}</td>
+                  <td style={tdStyle}>{formatPercent(weights.multiples)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: C.bg, borderRadius: '0.5rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: C.accent }}>Data Sources</h3>
+          <p style={{ color: C.textMuted, fontSize: '0.85rem', lineHeight: 1.6 }}>
+            Country pre-money/max valuation baselines: Equidam Parameters Update, Feb 2026, derived from 30 months of real transaction data.
+            Discount rate: CAPM (risk-free rate from Trading Economics, beta from Damodaran/NYU Stern, equity risk premium from Damodaran).
+            Industry multiples: Equidam TRBC published data (July 2026) and Damodaran unlevered beta (Jan 2026).
+          </p>
+        </div>
+
+        <div style={{ padding: '1rem', backgroundColor: C.bg, borderRadius: '0.5rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: C.accent }}>Disclaimer</h3>
+          <p style={{ color: C.textMuted, fontSize: '0.85rem', lineHeight: 1.6 }}>
+            This valuation is illustrative and based on the data provided. It should not be considered financial advice.
+            Consult with professional advisors before making investment decisions. All assumptions and data are subject to change.
+          </p>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ textAlign: 'center', color: C.textMuted, fontSize: '0.8rem', marginTop: '3rem' }}>
+        <p>Report generated on {new Date(report.generatedAt).toLocaleDateString()}</p>
       </div>
     </div>
   );
