@@ -14,6 +14,7 @@ import { computeDcfShared } from './dcf';
 import { computeSimpleMultiples, ComparableCompany } from './simpleMultiples';
 import { deriveScorecardCriteriaScores, deriveChecklistCriteriaScores } from './scoring';
 import { buildDefaultParameters } from './defaults';
+import { SCORECARD_CRITERIA_WEIGHTS, CHECKLIST_CRITERIA_WEIGHTS } from './referenceData';
 
 export async function computeValuation(
   profile: CompanyProfile,
@@ -32,15 +33,27 @@ export async function computeValuation(
 
   // Scorecard result
   const scorecardScores = questionnaire ? deriveScorecardCriteriaScores(questionnaire) : {};
+  const scorecardCriteria: Record<string, { weight: number; score: number }> = Object.fromEntries(
+    Object.entries(scorecardScores).map(([key, score]) => [
+      key,
+      { weight: SCORECARD_CRITERIA_WEIGHTS[key as keyof typeof SCORECARD_CRITERIA_WEIGHTS] || 0, score },
+    ])
+  );
   const scorecardResult = computeScorecard(
-    scorecardScores as Record<string, { weight: number; score: number }>,
+    scorecardCriteria,
     parameters.scorecard.average_pre_money_valuation
   );
 
   // Checklist result
   const checklistScores = questionnaire ? deriveChecklistCriteriaScores(questionnaire) : {};
+  const checklistCriteria: Record<string, { weight: number; score: number }> = Object.fromEntries(
+    Object.entries(checklistScores).map(([key, score]) => [
+      key,
+      { weight: CHECKLIST_CRITERIA_WEIGHTS[key as keyof typeof CHECKLIST_CRITERIA_WEIGHTS] || 0, score },
+    ])
+  );
   const checklistResult = computeChecklist(
-    checklistScores as Record<string, { weight: number; score: number }>,
+    checklistCriteria,
     parameters.checklist.max_valuation
   );
 
@@ -54,9 +67,11 @@ export async function computeValuation(
   );
 
   // DCF LTG result
+  const lastFcfeYear = forecastFcfeYears[forecastFcfeYears.length - 1];
+  const survivalRateIndexLtg = lastFcfeYear ? lastFcfeYear.yearOffset - 1 : 0;
   const terminalValueLtg =
-    (forecastFcfeYears[forecastFcfeYears.length - 1]?.fcfe || 0) *
-    parameters.dcf_ltg.survival_rates[4] *
+    (lastFcfeYear?.fcfe || 0) *
+    (parameters.dcf_ltg.survival_rates[survivalRateIndexLtg] || 0) *
     (1 + parameters.dcf_ltg.terminal_growth_rate) /
     (discountRate - parameters.dcf_ltg.terminal_growth_rate);
 
@@ -69,9 +84,13 @@ export async function computeValuation(
   );
 
   // DCF Multiple result
-  const lastYearFinancial = financials.find((f) => f.yearOffset === -1);
-  const lastYearRevenue = lastYearFinancial?.revenue || 0;
-  const terminalValueMultiple = lastYearRevenue * parameters.dcf_multiple.exit_multiple;
+  const lastForecastFinancial = financials.find((f) => f.yearOffset === lastFcfeYear?.yearOffset);
+  const lastForecastRevenue = lastForecastFinancial?.revenue || 0;
+  const survivalRateIndexMultiple = lastFcfeYear ? lastFcfeYear.yearOffset - 1 : 0;
+  const terminalValueMultiple =
+    lastForecastRevenue *
+    parameters.dcf_multiple.exit_multiple *
+    (parameters.dcf_multiple.survival_rates[survivalRateIndexMultiple] || 0);
 
   const dcfMultipleResult = computeDcfShared(
     forecastFcfeYears,

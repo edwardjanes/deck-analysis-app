@@ -16,13 +16,14 @@ export function computeDcfShared(
     discountedFcfSum += (fcfeYear.fcfe * survivalRate) / discount;
   }
 
-  // Discount terminal value: TV / (1+DR)^n × (1 - ID)
+  // Discount terminal value: TV / (1+DR)^n
   const finalYearOffset = fcfeYears[fcfeYears.length - 1]?.yearOffset || 3;
   const discountFactor = Math.pow(1 + discountRate, finalYearOffset);
   const discountedTerminalValue = terminalValue / discountFactor;
-  const illiquidityAdjustedTerminalValue = discountedTerminalValue * (1 - illiquidityDiscount);
 
-  const valuation = discountedFcfSum + illiquidityAdjustedTerminalValue + nonOperatingCash;
+  // Apply illiquidity discount to combined discounted cash flows + terminal value
+  const valuation = (discountedFcfSum + discountedTerminalValue) * (1 - illiquidityDiscount) + nonOperatingCash;
+  const illiquidityAdjustedTerminalValue = discountedTerminalValue * (1 - illiquidityDiscount);
 
   return {
     discountedFcfSum,
