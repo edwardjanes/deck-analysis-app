@@ -87,6 +87,18 @@ function scoreOpportunitySize(answers: QuestionnaireAnswers): number {
     score += growth > 0.2 ? 1.0 : growth > 0.1 ? 0.75 : growth > 0.05 ? 0.5 : 0.25;
     count++;
   }
+  if (answers.recurring_revenue !== undefined) {
+    score += answers.recurring_revenue ? 0.75 : 0.4;
+    count++;
+  }
+  if (answers.has_customers !== undefined) {
+    score += answers.has_customers ? 0.75 : 0.25;
+    count++;
+  }
+  if (answers.product_market_fit !== undefined) {
+    score += answers.product_market_fit ? 1.0 : 0.25;
+    count++;
+  }
 
   return count > 0 ? Math.min(score / count, 1.0) : 0;
 }
@@ -123,12 +135,24 @@ function scoreProductStrength(answers: QuestionnaireAnswers): number {
             : 0;
     count++;
   }
-  if (answers.has_patents || answers.has_ip) {
+  // Use graded IP protection stage if available, fall back to boolean logic
+  if (answers.ip_protection_stage) {
+    const ipScore = { none: 0.1, pending: 0.5, granted: 0.85, enforced: 1.0 }[answers.ip_protection_stage as string];
+    if (ipScore !== undefined) {
+      score += ipScore;
+      count++;
+    }
+  } else if (answers.has_patents || answers.has_ip) {
     score += (answers.has_patents || answers.has_ip) ? 0.75 : 0.25;
     count++;
   }
+  // Legal risks reduce score (penalty, not a separate criterion)
+  if (answers.legal_risks) {
+    score -= 0.25;
+  }
+  // Note: business_model_type is collected by UI but intentionally not scored — no defensible ranking (SaaS vs Marketplace, etc)
 
-  return count > 0 ? Math.min(score / count, 1.0) : 0;
+  return count > 0 ? Math.max(0, Math.min(score / count, 1.0)) : 0;
 }
 
 function scoreStrategicPartnerships(answers: QuestionnaireAnswers): number {

@@ -118,6 +118,14 @@ export async function POST(
       method_weights: weights || defaultParams.method_weights,
     };
 
+    // Merge missing fields into questionnaire: capital_needed from transaction, last_year_revenue from financials
+    const lastActualYear = (financials || []).find((f: any) => f.yearOffset === -1);
+    const enrichedQuestionnaire = questionnaire?.answers ? {
+      ...questionnaire.answers,
+      capital_needed: questionnaire.answers.capital_needed ?? transaction?.capital_needed,
+      last_year_revenue: questionnaire.answers.last_year_revenue ?? lastActualYear?.revenue,
+    } : null;
+
     // Compute valuation
     const report = await computeValuation(
       {
@@ -127,7 +135,7 @@ export async function POST(
         stage: company.stage,
       },
       financials || [],
-      questionnaire?.answers || null,
+      enrichedQuestionnaire,
       params_with_weights
     );
 
@@ -141,7 +149,7 @@ export async function POST(
           inputs: {
             company,
             financials,
-            questionnaire: questionnaire?.answers,
+            questionnaire: enrichedQuestionnaire,
             parameters: params_with_weights,
             capTable,
             fundingRounds,
