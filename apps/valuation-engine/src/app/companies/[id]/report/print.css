@@ -5,7 +5,10 @@
     box-sizing: border-box;
   }
 
+  html,
   body {
+    width: 100%;
+    height: 100%;
     background: white;
     color: #000;
     font-family: 'Fira Sans', 'Inter', system-ui, sans-serif;
@@ -17,6 +20,13 @@
     margin: 2cm;
   }
 
+  /* Section page breaks */
+  div[style*="breakBefore: page"] {
+    page-break-before: always;
+  }
+
+  /* Prevent section orphans/widows */
+  div[style*="breakInside: avoid"],
   div[style*="padding: 2rem"] {
     page-break-inside: avoid;
   }
@@ -25,34 +35,90 @@
   h2,
   h3 {
     page-break-after: avoid;
+    orphans: 3;
+    widows: 3;
   }
 
+  /* Tables stay on one page when possible */
   table {
     page-break-inside: avoid;
+    width: 100%;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
   }
 
   tr {
     page-break-inside: avoid;
   }
 
-  button {
+  /* SVG charts in print */
+  svg {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+
+  /* Hide interactive elements */
+  button,
+  [role="button"] {
     display: none;
   }
 
-  nav {
+  nav,
+  [role="navigation"] {
     display: none;
   }
 
-  /* Ensure dark theme colors convert to grayscale for print */
-  [style*="background"] {
-    background: white !important;
+  /* Force white backgrounds for print */
+  div[style*="backgroundColor"] {
+    background-color: white !important;
   }
 
-  [style*="color"] {
+  div[style*="background: white"] {
+    background-color: white !important;
+  }
+
+  /* Convert to black text for contrast */
+  [style*="color: #"] {
     color: #000 !important;
   }
 
-  [style*="border"] {
-    border-color: #ccc !important;
+  [style*="color: rgb"] {
+    color: #000 !important;
+  }
+
+  /* Ensure readable borders */
+  [style*="border:"] {
+    border-color: #999 !important;
+  }
+
+  [style*="borderBottom:"] {
+    border-bottom-color: #999 !important;
+  }
+
+  [style*="borderTop:"] {
+    border-top-color: #999 !important;
+  }
+
+  /* Paragraph spacing */
+  p {
+    orphans: 2;
+    widows: 2;
+    margin: 0.5rem 0;
+  }
+
+  /* Prevent excessive blank space */
+  .page {
+    page-break-after: always;
+  }
+
+  /* Remove container padding for more content per page */
+  div[style*="padding: 2rem"][style*="minHeight"] {
+    padding: 1rem;
   }
 }

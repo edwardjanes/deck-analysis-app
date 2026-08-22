@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import ReportClient from './ReportClient';
+import '../print.css';
 
 export default async function ReportPage({
   params,
