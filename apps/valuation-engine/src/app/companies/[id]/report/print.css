@@ -20,17 +20,18 @@
     margin: 2cm;
   }
 
-  /* Section page breaks */
-  div[style*="breakBefore: page"] {
+  /* Major section page breaks */
+  .print-section-break {
     page-break-before: always;
   }
 
-  /* Prevent section orphans/widows */
-  div[style*="breakInside: avoid"],
-  div[style*="padding: 2rem"] {
+  /* Prevent inner sections from breaking */
+  div[style*="padding: 2rem"],
+  div[style*="marginTop: 2rem"] {
     page-break-inside: avoid;
   }
 
+  /* Prevent orphan/widow text */
   h1,
   h2,
   h3 {
@@ -39,7 +40,13 @@
     widows: 3;
   }
 
-  /* Tables stay on one page when possible */
+  p {
+    orphans: 2;
+    widows: 2;
+    margin: 0.5rem 0;
+  }
+
+  /* Tables stay intact */
   table {
     page-break-inside: avoid;
     width: 100%;
@@ -57,13 +64,18 @@
     page-break-inside: avoid;
   }
 
-  /* SVG charts in print */
+  /* SVG charts */
   svg {
     max-width: 100%;
     page-break-inside: avoid;
   }
 
-  /* Hide interactive elements */
+  /* Force print-appropriate styling */
+  div {
+    background-color: white;
+  }
+
+  /* Hide navigation */
   button,
   [role="button"] {
     display: none;
@@ -74,51 +86,22 @@
     display: none;
   }
 
-  /* Force white backgrounds for print */
-  div[style*="backgroundColor"] {
+  /* Dark backgrounds → white, text → black for readability */
+  [style*="backgroundColor"] {
     background-color: white !important;
   }
 
-  div[style*="background: white"] {
+  [style*="background:"] {
     background-color: white !important;
   }
 
-  /* Convert to black text for contrast */
-  [style*="color: #"] {
-    color: #000 !important;
-  }
-
-  [style*="color: rgb"] {
-    color: #000 !important;
-  }
-
-  /* Ensure readable borders */
-  [style*="border:"] {
+  /* Ensure borders print cleanly */
+  [style*="border"] {
     border-color: #999 !important;
   }
 
-  [style*="borderBottom:"] {
-    border-bottom-color: #999 !important;
-  }
-
-  [style*="borderTop:"] {
-    border-top-color: #999 !important;
-  }
-
-  /* Paragraph spacing */
-  p {
-    orphans: 2;
-    widows: 2;
-    margin: 0.5rem 0;
-  }
-
-  /* Prevent excessive blank space */
-  .page {
-    page-break-after: always;
-  }
-
-  /* Remove container padding for more content per page */
-  div[style*="padding: 2rem"][style*="minHeight"] {
-    padding: 1rem;
+  /* All text black for print */
+  [style*="color:"] {
+    color: #000 !important;
   }
 }

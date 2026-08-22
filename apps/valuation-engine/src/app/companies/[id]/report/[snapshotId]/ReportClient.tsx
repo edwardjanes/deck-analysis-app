@@ -62,7 +62,6 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
 
   const coverPageStyle: React.CSSProperties = {
     ...sectionStyle,
-    breakBefore: 'page',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -193,7 +192,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       </div>
 
       {/* 1. Cover Page */}
-      <div style={coverPageStyle}>
+      <div className="print-section-break" style={coverPageStyle}>
         <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Valuation Report</h1>
         <h2 style={{ fontSize: '1.8rem', color: C.accent, marginBottom: '2rem' }}>{company.name}</h2>
         <p style={{ fontSize: '1rem', marginBottom: '3rem' }}>
@@ -208,7 +207,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       </div>
 
       {/* 2. About This Report */}
-      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+      <div className="print-section-break" style={sectionStyle}>
         <h2 style={sectionTitleStyle}>About This Report</h2>
         <p style={{ lineHeight: 1.7, fontSize: '0.95rem', color: C.textMuted }}>
           This valuation report synthesizes six complementary income and market-based approaches to startup valuation: the Scorecard Method (comparing against regional benchmarks), the Checklist Method (assessing business quality criteria), the VC Method (reverse-engineering from exit scenarios), DCF with Long-Term Growth (projecting sustainable terminal cash flow), DCF with Exit Multiple (using comparable company multiples for terminal value), and Simple Multiples (direct comparable company comparison). The final valuation represents a weighted average across these methods, with weights assigned based on the company's development stage and data quality. Discount rates are calculated using the Capital Asset Pricing Model (CAPM), blending the risk-free rate, industry beta, and equity risk premium for the company's country.
@@ -216,7 +215,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       </div>
 
       {/* 3. Company Summary */}
-      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+      <div className="print-section-break" style={sectionStyle}>
         <h2 style={sectionTitleStyle}>Company Summary</h2>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
@@ -302,7 +301,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       </div>
 
       {/* 4. Forecasts Summary */}
-      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+      <div className="print-section-break" style={sectionStyle}>
         <h2 style={sectionTitleStyle}>Forecasts Summary</h2>
 
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', marginTop: '2rem' }}>Revenue & Costs Forecast</h3>
@@ -381,7 +380,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       </div>
 
       {/* 6. Valuation Summary (Enhanced) */}
-      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+      <div className="print-section-break" style={sectionStyle}>
         <h2 style={sectionTitleStyle}>Valuation Summary</h2>
 
         <div style={gridStyle}>
@@ -507,7 +506,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       </div>
 
       {/* 9. Qualitative Traits Summary */}
-      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+      <div className="print-section-break" style={sectionStyle}>
         <h2 style={sectionTitleStyle}>Qualitative Assessment</h2>
         {inputs.questionnaire && (
           <div>
@@ -699,7 +698,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       </div>
 
       {/* 14. Updated Default Values */}
-      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+      <div className="print-section-break" style={sectionStyle}>
         <h2 style={sectionTitleStyle}>Updated Default Values</h2>
         <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '1rem' }}>
           This section shows which default parameters were overridden from the platform's baseline for this company.
@@ -1029,7 +1028,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       </div>
 
       {/* 17. Appendix */}
-      <div style={{ ...sectionStyle, breakBefore: 'page' }}>
+      <div className="print-section-break" style={sectionStyle}>
         <h2 style={sectionTitleStyle}>Appendix</h2>
 
         <div style={{ marginBottom: '2rem' }}>
