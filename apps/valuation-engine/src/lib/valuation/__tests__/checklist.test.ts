@@ -5,7 +5,7 @@ it("reproduces NovaCloud Checklist valuation: $4,555,423", () => {
   const criteria = {
     team: { weight: 0.30, score: 0.55 },
     idea: { weight: 0.20, score: 0.55 },
-    product_ip: { weight: 0.15, score: 0.0556 },
+    product_ip: { weight: 0.15, score: 0.055556 },
     relationships: { weight: 0.15, score: 0.50 },
     operating_stage: { weight: 0.20, score: 0.05 },
   };
