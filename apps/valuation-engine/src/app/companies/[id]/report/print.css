@@ -20,9 +20,10 @@
     margin: 2cm;
   }
 
-  /* Major section page breaks */
+  /* Major section page breaks + white backgrounds */
   .print-section-break {
     page-break-before: always;
+    background-color: white !important;
   }
 
   /* Prevent inner sections from breaking */
@@ -70,9 +71,9 @@
     page-break-inside: avoid;
   }
 
-  /* Force print-appropriate styling */
-  div {
-    background-color: white;
+  /* Force white backgrounds on any element with dark inline background */
+  [style*="background-color"] {
+    background-color: white !important;
   }
 
   /* Hide navigation */
