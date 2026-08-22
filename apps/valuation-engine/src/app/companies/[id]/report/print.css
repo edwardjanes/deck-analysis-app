@@ -1,0 +1,58 @@
+@media print {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background: white;
+    color: #000;
+    font-family: 'Fira Sans', 'Inter', system-ui, sans-serif;
+    line-height: 1.5;
+  }
+
+  @page {
+    size: A4;
+    margin: 2cm;
+  }
+
+  div[style*="padding: 2rem"] {
+    page-break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+
+  table {
+    page-break-inside: avoid;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+
+  button {
+    display: none;
+  }
+
+  nav {
+    display: none;
+  }
+
+  /* Ensure dark theme colors convert to grayscale for print */
+  [style*="background"] {
+    background: white !important;
+  }
+
+  [style*="color"] {
+    color: #000 !important;
+  }
+
+  [style*="border"] {
+    border-color: #ccc !important;
+  }
+}

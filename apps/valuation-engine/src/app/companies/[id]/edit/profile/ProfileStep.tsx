@@ -1,0 +1,196 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { C, FONT_SANS } from '@/lib/theme';
+
+interface ProfileStepProps {
+  company: any;
+  onUpdate?: (data: any) => void;
+}
+
+const STAGES = ['idea', 'development', 'startup', 'expansion', 'growth', 'maturity'];
+const INDUSTRIES = [
+  'SaaS',
+  'Fintech',
+  'AI_ML',
+  'Marketplace',
+  'Ecommerce',
+  'Healthtech',
+  'Biotech',
+  'Hardware',
+  'Deeptech',
+  'Cleantech',
+  'MobileApp',
+  'Gaming',
+  'EdTech',
+  'Logistics',
+  'PropTech',
+  'Media',
+];
+
+export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
+  const [formData, setFormData] = useState({
+    name: company.name || '',
+    country: company.country || '',
+    industry: company.industry || '',
+    stage: company.stage || 'development',
+    description: company.description || '',
+    founders_count: company.founders_count || 1,
+    employees_count: company.employees_count || 1,
+    website: company.website || '',
+  });
+
+  useEffect(() => {
+    if (onUpdate) {
+      onUpdate(formData);
+    }
+  }, [formData]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'number' ? parseInt(value) || 0 : value,
+    }));
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '0.75rem',
+    borderRadius: '0.375rem',
+    border: `1px solid ${C.border}`,
+    backgroundColor: C.bg,
+    color: C.text,
+    fontSize: '0.9rem',
+    fontFamily: FONT_SANS,
+    marginBottom: '1rem',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    marginBottom: '0.5rem',
+    fontSize: '0.9rem',
+    fontWeight: 500,
+    color: C.text,
+  };
+
+  const gridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '2rem',
+  };
+
+  const sectionStyle: React.CSSProperties = {
+    marginBottom: '2rem',
+  };
+
+  const sectionTitleStyle: React.CSSProperties = {
+    fontSize: '1.1rem',
+    fontWeight: 600,
+    marginBottom: '1rem',
+    color: C.accent,
+  };
+
+  return (
+    <div>
+      <div style={sectionStyle}>
+        <h3 style={sectionTitleStyle}>Basic Information</h3>
+        <label style={labelStyle}>Company Name *</label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Enter company name"
+          style={inputStyle}
+        />
+
+        <label style={labelStyle}>Website</label>
+        <input
+          type="url"
+          name="website"
+          value={formData.website}
+          onChange={handleChange}
+          placeholder="https://example.com"
+          style={inputStyle}
+        />
+
+        <label style={labelStyle}>Description</label>
+        <textarea
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          placeholder="Brief overview of what your company does"
+          rows={4}
+          style={{ ...inputStyle, resize: 'none' }}
+        />
+      </div>
+
+      <div style={sectionStyle}>
+        <h3 style={sectionTitleStyle}>Company Profile</h3>
+        <div style={gridStyle}>
+          <div>
+            <label style={labelStyle}>Country *</label>
+            <input
+              type="text"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              placeholder="e.g., Germany, United States"
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Industry *</label>
+            <select name="industry" value={formData.industry} onChange={handleChange} style={inputStyle}>
+              <option value="">Select an industry</option>
+              {INDUSTRIES.map((ind) => (
+                <option key={ind} value={ind}>
+                  {ind}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Stage *</label>
+            <select name="stage" value={formData.stage} onChange={handleChange} style={inputStyle}>
+              {STAGES.map((s) => (
+                <option key={s} value={s}>
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Founders</label>
+            <input
+              type="number"
+              name="founders_count"
+              value={formData.founders_count}
+              onChange={handleChange}
+              min="1"
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Employees</label>
+            <input
+              type="number"
+              name="employees_count"
+              value={formData.employees_count}
+              onChange={handleChange}
+              min="1"
+              style={inputStyle}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div style={{ color: C.textMuted, fontSize: '0.85rem' }}>* Required fields</div>
+    </div>
+  );
+}
