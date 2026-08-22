@@ -32,7 +32,7 @@ export async function computeValuation(
   const discountRate = parameters.dcf_shared.discount_rate;
 
   // Scorecard result
-  const scorecardScores = questionnaire ? deriveScorecardCriteriaScores(questionnaire) : {};
+  const scorecardScores: Record<string, number> = questionnaire ? deriveScorecardCriteriaScores(questionnaire) : {};
   const scorecardCriteria: Record<string, { weight: number; score: number }> = Object.fromEntries(
     Object.entries(scorecardScores).map(([key, score]) => [
       key,
@@ -45,7 +45,7 @@ export async function computeValuation(
   );
 
   // Checklist result
-  const checklistScores = questionnaire ? deriveChecklistCriteriaScores(questionnaire) : {};
+  const checklistScores: Record<string, number> = questionnaire ? deriveChecklistCriteriaScores(questionnaire) : {};
   const checklistCriteria: Record<string, { weight: number; score: number }> = Object.fromEntries(
     Object.entries(checklistScores).map(([key, score]) => [
       key,
