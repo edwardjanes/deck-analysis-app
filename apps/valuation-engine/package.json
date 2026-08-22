@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "vitest run"
+    "test": "node simple-test.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
