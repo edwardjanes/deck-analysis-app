@@ -43,7 +43,8 @@ const COUNTRY_NAME_TO_CODE: Record<string, keyof typeof COUNTRIES> = {
 
 export function buildDefaultParameters(
   profile: CompanyProfile,
-  financials: FinancialYear[]
+  financials: FinancialYear[],
+  balanceSheet?: { non_operating_cash?: number }
 ): UpdatedValuationParameters {
   // Look up country data from reference data
   const normalizedCountry = (profile.country || '').toLowerCase().trim();
@@ -125,7 +126,7 @@ export function buildDefaultParameters(
     dcf_shared: {
       discount_rate: discountRate,
       illiquidity_discount: ILLIQUIDITY_DISCOUNT_DEFAULT,
-      non_operating_cash: 0,
+      non_operating_cash: balanceSheet?.non_operating_cash ?? 0,
     },
 
     // DCF LTG parameters

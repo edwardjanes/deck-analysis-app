@@ -67,6 +67,40 @@ export async function POST(
       .eq('company_id', params.id)
       .single()).data;
 
+    // Fetch cap table
+    const capTable = (await supabase
+      .from('valuation_cap_table')
+      .select('*')
+      .eq('company_id', params.id)
+      .order('order_index')).data;
+
+    // Fetch funding rounds
+    const fundingRounds = (await supabase
+      .from('valuation_funding_rounds')
+      .select('*')
+      .eq('company_id', params.id)
+      .order('closed_date')).data;
+
+    // Fetch comparables
+    const comparables = (await supabase
+      .from('valuation_comparables')
+      .select('*')
+      .eq('company_id', params.id)).data;
+
+    // Fetch transaction data
+    const transaction = (await supabase
+      .from('valuation_transaction')
+      .select('*')
+      .eq('company_id', params.id)
+      .single()).data;
+
+    // Fetch balance sheet
+    const balanceSheet = (await supabase
+      .from('valuation_balance_sheet')
+      .select('*')
+      .eq('company_id', params.id)
+      .single()).data;
+
     // Build parameters with weights override
     const defaultParams = buildDefaultParameters(
       {
@@ -75,7 +109,8 @@ export async function POST(
         industry: company.industry,
         stage: company.stage,
       },
-      financials || []
+      financials || [],
+      balanceSheet
     );
 
     const params_with_weights = {
@@ -108,6 +143,11 @@ export async function POST(
             financials,
             questionnaire: questionnaire?.answers,
             parameters: params_with_weights,
+            capTable,
+            fundingRounds,
+            comparables,
+            transaction,
+            balanceSheet,
           },
           outputs: report,
           is_current: true,
