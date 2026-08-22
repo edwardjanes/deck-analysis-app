@@ -10,12 +10,16 @@ export interface FinancialYear {
   capex: number; debt: number; fundraisingPlan: number;
 }
 
-export interface FcfeYear { 
+export interface FcfeYear {
   yearOffset: number;
-  ebitda: number; 
-  ebit: number; 
-  netIncome: number; 
-  fcfe: number; 
+  ebitda: number;
+  ebit: number;
+  ebt: number;
+  netIncome: number;
+  da: number;
+  deltaWc: number;
+  deltaDebt: number;
+  fcfe: number;
 }
 
 // --- Scorecard ---

@@ -241,8 +241,16 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
             <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.started_year}</p>
           </div>
           <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Incorporated</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.incorporated_year || '—'}</p>
+          </div>
+          <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Founders</p>
             <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.founders_count}</p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Founder Capital Committed</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.founders_committed_capital ? formatCurrency(company.founders_committed_capital) : '—'}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Employees</p>
@@ -251,6 +259,14 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Business Model</p>
             <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.business_model || '—'}</p>
+          </div>
+          <div>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Business Activity</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.business_activity || '—'}</p>
+          </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Description</p>
+            <p style={{ fontSize: '1rem', fontWeight: 500, lineHeight: 1.5 }}>{company.description || '—'}</p>
           </div>
         </div>
 
@@ -495,16 +511,52 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
         <h2 style={sectionTitleStyle}>Qualitative Assessment</h2>
         {inputs.questionnaire && (
           <div>
-            {['team', 'business_model', 'product_market', 'competitive', 'legal'].map((section: string) => (
-              <div key={section} style={{ marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, textTransform: 'capitalize', marginBottom: '1rem', color: C.accent }}>
-                  {section.replace('_', ' ')}
-                </h3>
-                <p style={{ color: C.textMuted, fontSize: '0.95rem', lineHeight: 1.6 }}>
-                  {inputs.questionnaire[`${section}_notes`] || '—'}
-                </p>
-              </div>
-            ))}
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: C.accent }}>Team</h3>
+              <table style={tableStyle}>
+                <tbody>
+                  <tr><td style={tdStyle}>Team Size</td><td style={tdStyle}>{inputs.questionnaire.team_size || '—'}</td></tr>
+                  <tr><td style={tdStyle}>Has CTO</td><td style={tdStyle}>{inputs.questionnaire.team_has_cto ? 'Yes' : 'No'}</td></tr>
+                  <tr><td style={tdStyle}>Has Business Lead</td><td style={tdStyle}>{inputs.questionnaire.team_has_business_lead ? 'Yes' : 'No'}</td></tr>
+                  <tr><td style={tdStyle}>Prior Exits</td><td style={tdStyle}>{inputs.questionnaire.team_prior_exits ? 'Yes' : 'No'}</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: C.accent }}>Business Model</h3>
+              <table style={tableStyle}>
+                <tbody>
+                  <tr><td style={tdStyle}>Business Model Type</td><td style={tdStyle}>{inputs.questionnaire.business_model_type || '—'}</td></tr>
+                  <tr><td style={tdStyle}>Recurring Revenue</td><td style={tdStyle}>{inputs.questionnaire.recurring_revenue ? 'Yes' : 'No'}</td></tr>
+                  <tr><td style={tdStyle}>TAM Size</td><td style={tdStyle}>{inputs.questionnaire.tam_size ? formatCurrency(inputs.questionnaire.tam_size) : '—'}</td></tr>
+                  <tr><td style={tdStyle}>Market Growth Rate</td><td style={tdStyle}>{inputs.questionnaire.market_growth_rate ? formatPercent(inputs.questionnaire.market_growth_rate) : '—'}</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: C.accent }}>Product & Market</h3>
+              <table style={tableStyle}>
+                <tbody>
+                  <tr><td style={tdStyle}>Product Status</td><td style={tdStyle}>{inputs.questionnaire.product_status || '—'}</td></tr>
+                  <tr><td style={tdStyle}>Has Customers</td><td style={tdStyle}>{inputs.questionnaire.has_customers ? 'Yes' : 'No'}</td></tr>
+                  <tr><td style={tdStyle}>Product-Market Fit</td><td style={tdStyle}>{inputs.questionnaire.product_market_fit ? 'Yes' : 'No'}</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: C.accent }}>IP & Legal</h3>
+              <table style={tableStyle}>
+                <tbody>
+                  <tr><td style={tdStyle}>Has Patents</td><td style={tdStyle}>{inputs.questionnaire.has_patents ? 'Yes' : 'No'}</td></tr>
+                  <tr><td style={tdStyle}>Has IP</td><td style={tdStyle}>{inputs.questionnaire.has_ip ? 'Yes' : 'No'}</td></tr>
+                  <tr><td style={tdStyle}>IP Protection Stage</td><td style={tdStyle}>{inputs.questionnaire.ip_protection_stage || '—'}</td></tr>
+                  <tr><td style={tdStyle}>Legal Risks</td><td style={tdStyle}>{inputs.questionnaire.legal_risks ? 'Yes' : 'No'}</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
@@ -520,7 +572,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Exit Multiple</p>
             <p style={{ fontSize: '1.3rem', fontWeight: 700, color: C.accent }}>
-              {inputs.parameters?.vc_method?.industry_multiple.toFixed(2)}x
+              {(inputs.parameters?.vc_method?.industry_multiple ?? 0).toFixed(2)}x
             </p>
           </div>
           <div>
@@ -590,7 +642,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem' }}>Exit Multiple</p>
             <p style={{ fontSize: '1.2rem', fontWeight: 700, color: C.accent }}>
-              {inputs.parameters?.dcf_multiple?.exit_multiple.toFixed(2)}x
+              {(inputs.parameters?.dcf_multiple?.exit_multiple ?? 0).toFixed(2)}x
             </p>
           </div>
           <div>
@@ -629,7 +681,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                 {inputs.comparables.map((comp: any, idx: number) => (
                   <tr key={idx}>
                     <td style={tdStyle}>{comp.company_name}</td>
-                    <td style={tdStyle}>{comp.multiple.toFixed(2)}x</td>
+                    <td style={tdStyle}>{(comp.multiple ?? 0).toFixed(2)}x</td>
                     <td style={tdStyle}>{comp.metric_type}</td>
                   </tr>
                 ))}
@@ -653,36 +705,44 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           This section shows which default parameters were overridden from the platform's baseline for this company.
         </p>
 
-        {report.methodResults ? (
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Parameter</th>
-                <th style={thStyle}>Platform Default</th>
-                <th style={thStyle}>Used Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={tdStyle}>Discount Rate</td>
-                <td style={tdStyle}>{formatPercent(report.discountRate, 2)}</td>
-                <td style={tdStyle}>{formatPercent(inputs.parameters?.dcf_shared?.discount_rate || 0, 2)}</td>
-              </tr>
-              <tr>
-                <td style={tdStyle}>Scorecard Baseline</td>
-                <td style={tdStyle}>{formatCurrency(inputs.parameters?.scorecard?.average_pre_money_valuation || 0)}</td>
-                <td style={tdStyle}>{formatCurrency(inputs.parameters?.scorecard?.average_pre_money_valuation || 0)}</td>
-              </tr>
-              <tr>
-                <td style={tdStyle}>Checklist Max</td>
-                <td style={tdStyle}>{formatCurrency(inputs.parameters?.checklist?.max_valuation || 0)}</td>
-                <td style={tdStyle}>{formatCurrency(inputs.parameters?.checklist?.max_valuation || 0)}</td>
-              </tr>
-            </tbody>
-          </table>
-        ) : (
-          <p style={{ color: C.textMuted }}>No parameters were overridden — this report uses platform defaults throughout.</p>
-        )}
+        {(() => {
+          const defaultParams = buildDefaultParameters(
+            {
+              name: company.name,
+              country: company.country,
+              industry: company.industry,
+              stage: company.stage,
+            },
+            inputs.financials || [],
+            inputs.balanceSheet
+          );
+          const diff = diffParameters(inputs.parameters, defaultParams);
+
+          if (Object.keys(diff).length === 0) {
+            return <p style={{ color: C.textMuted }}>No parameters were overridden — this report uses platform defaults throughout.</p>;
+          }
+
+          return (
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Parameter</th>
+                  <th style={thStyle}>Platform Default</th>
+                  <th style={thStyle}>Used Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(diff).map(([key, value]: [string, any]) => (
+                  <tr key={key}>
+                    <td style={tdStyle}>{key}</td>
+                    <td style={tdStyle}>{typeof value.default === 'number' ? (value.default > 10 ? formatCurrency(value.default) : formatPercent(value.default, 2)) : String(value.default)}</td>
+                    <td style={tdStyle}>{typeof value.current === 'number' ? (value.current > 10 ? formatCurrency(value.current) : formatPercent(value.current, 2)) : String(value.current)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          );
+        })()}
       </div>
 
       {/* 15. Financial Projections P&L */}
@@ -723,11 +783,68 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                   <td key={idx} style={tdStyle}>{formatCurrency(f.other_opex)}</td>
                 ))}
               </tr>
-              <tr>
+              <tr style={{ fontWeight: 600 }}>
                 <td style={tdStyle}>EBITDA</td>
                 {report.fcfeByYear.map((fcfe: any, idx: number) => (
                   <td key={idx} style={tdStyle}>{formatCurrency(fcfe.ebitda)}</td>
                 ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>EBITDA Margin</td>
+                {inputs.financials.map((f: any, idx: number) => {
+                  const ebitda = report.fcfeByYear[inputs.financials.indexOf(f)]?.ebitda || 0;
+                  return <td key={idx} style={tdStyle}>{f.revenue ? formatPercent(ebitda / f.revenue) : '—'}</td>;
+                })}
+              </tr>
+              <tr>
+                <td style={tdStyle}>D&A</td>
+                {report.fcfeByYear.map((fcfe: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(fcfe.da)}</td>
+                ))}
+              </tr>
+              <tr style={{ fontWeight: 600 }}>
+                <td style={tdStyle}>EBIT</td>
+                {report.fcfeByYear.map((fcfe: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(fcfe.ebit)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>EBIT Margin</td>
+                {inputs.financials.map((f: any, idx: number) => {
+                  const ebit = report.fcfeByYear[inputs.financials.indexOf(f)]?.ebit || 0;
+                  return <td key={idx} style={tdStyle}>{f.revenue ? formatPercent(ebit / f.revenue) : '—'}</td>;
+                })}
+              </tr>
+              <tr>
+                <td style={tdStyle}>Interest</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.interest)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>EBT</td>
+                {report.fcfeByYear.map((fcfe: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(fcfe.ebt)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>Taxes</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.taxes)}</td>
+                ))}
+              </tr>
+              <tr style={{ fontWeight: 600 }}>
+                <td style={tdStyle}>Net Profit</td>
+                {report.fcfeByYear.map((fcfe: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(fcfe.netIncome)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>Net Margin</td>
+                {inputs.financials.map((f: any, idx: number) => {
+                  const netIncome = report.fcfeByYear[inputs.financials.indexOf(f)]?.netIncome || 0;
+                  return <td key={idx} style={tdStyle}>{f.revenue ? formatPercent(netIncome / f.revenue) : '—'}</td>;
+                })}
               </tr>
             </tbody>
           </table>
@@ -761,9 +878,27 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                 ))}
               </tr>
               <tr>
+                <td style={tdStyle}>ΔWorking Capital</td>
+                {report.fcfeByYear.map((fcfe: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(fcfe.deltaWc)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>Capex</td>
+                {inputs.financials && inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.capex || 0)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>ΔDebt</td>
+                {report.fcfeByYear.map((fcfe: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(fcfe.deltaDebt)}</td>
+                ))}
+              </tr>
+              <tr style={{ fontWeight: 600 }}>
                 <td style={tdStyle}>FCFE</td>
                 {report.fcfeByYear.map((fcfe: any, idx: number) => (
-                  <td key={idx} style={{ ...tdStyle, fontWeight: 600 }}>{formatCurrency(fcfe.fcfe)}</td>
+                  <td key={idx} style={tdStyle}>{formatCurrency(fcfe.fcfe)}</td>
                 ))}
               </tr>
             </tbody>

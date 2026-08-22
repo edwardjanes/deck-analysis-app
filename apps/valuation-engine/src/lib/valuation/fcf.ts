@@ -47,7 +47,11 @@ export function deriveFcfeByYear(years: FinancialYear[]): FcfeYear[] {
       yearOffset: current.yearOffset,
       ebitda,
       ebit,
+      ebt,
       netIncome,
+      da: totalDa,
+      deltaWc,
+      deltaDebt,
       fcfe,
     });
   }
