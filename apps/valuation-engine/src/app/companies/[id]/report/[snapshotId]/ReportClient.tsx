@@ -716,9 +716,74 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
             inputs.financials || [],
             inputs.balanceSheet
           );
-          const diff = diffParameters(inputs.parameters, defaultParams);
 
-          if (Object.keys(diff).length === 0) {
+          // Build a list of meaningful leaf fields to compare
+          const fields: { label: string; current: number; default: number; format: 'currency' | 'percent' }[] = [];
+
+          if (inputs.parameters?.dcf_shared?.discount_rate !== defaultParams.dcf_shared.discount_rate) {
+            fields.push({
+              label: 'Discount Rate',
+              current: inputs.parameters?.dcf_shared?.discount_rate || 0,
+              default: defaultParams.dcf_shared.discount_rate,
+              format: 'percent',
+            });
+          }
+
+          if (inputs.parameters?.vc_method?.industry_multiple !== defaultParams.vc_method.industry_multiple) {
+            fields.push({
+              label: 'VC Method Exit Multiple',
+              current: inputs.parameters?.vc_method?.industry_multiple || 0,
+              default: defaultParams.vc_method.industry_multiple,
+              format: 'currency',
+            });
+          }
+
+          if (inputs.parameters?.dcf_multiple?.exit_multiple !== defaultParams.dcf_multiple.exit_multiple) {
+            fields.push({
+              label: 'DCF Multiple Exit Multiple',
+              current: inputs.parameters?.dcf_multiple?.exit_multiple || 0,
+              default: defaultParams.dcf_multiple.exit_multiple,
+              format: 'currency',
+            });
+          }
+
+          if (inputs.parameters?.scorecard?.average_pre_money_valuation !== defaultParams.scorecard.average_pre_money_valuation) {
+            fields.push({
+              label: 'Scorecard Average Pre-Money',
+              current: inputs.parameters?.scorecard?.average_pre_money_valuation || 0,
+              default: defaultParams.scorecard.average_pre_money_valuation,
+              format: 'currency',
+            });
+          }
+
+          if (inputs.parameters?.checklist?.max_valuation !== defaultParams.checklist.max_valuation) {
+            fields.push({
+              label: 'Checklist Maximum Valuation',
+              current: inputs.parameters?.checklist?.max_valuation || 0,
+              default: defaultParams.checklist.max_valuation,
+              format: 'currency',
+            });
+          }
+
+          if (inputs.parameters?.dcf_ltg?.terminal_growth_rate !== defaultParams.dcf_ltg.terminal_growth_rate) {
+            fields.push({
+              label: 'DCF Terminal Growth Rate',
+              current: inputs.parameters?.dcf_ltg?.terminal_growth_rate || 0,
+              default: defaultParams.dcf_ltg.terminal_growth_rate,
+              format: 'percent',
+            });
+          }
+
+          if (inputs.parameters?.dcf_shared?.illiquidity_discount !== defaultParams.dcf_shared.illiquidity_discount) {
+            fields.push({
+              label: 'Illiquidity Discount',
+              current: inputs.parameters?.dcf_shared?.illiquidity_discount || 0,
+              default: defaultParams.dcf_shared.illiquidity_discount,
+              format: 'percent',
+            });
+          }
+
+          if (fields.length === 0) {
             return <p style={{ color: C.textMuted }}>No parameters were overridden — this report uses platform defaults throughout.</p>;
           }
 
@@ -732,11 +797,11 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(diff).map(([key, value]: [string, any]) => (
-                  <tr key={key}>
-                    <td style={tdStyle}>{key}</td>
-                    <td style={tdStyle}>{typeof value.default === 'number' ? (value.default > 10 ? formatCurrency(value.default) : formatPercent(value.default, 2)) : String(value.default)}</td>
-                    <td style={tdStyle}>{typeof value.current === 'number' ? (value.current > 10 ? formatCurrency(value.current) : formatPercent(value.current, 2)) : String(value.current)}</td>
+                {fields.map((field, idx) => (
+                  <tr key={idx}>
+                    <td style={tdStyle}>{field.label}</td>
+                    <td style={tdStyle}>{field.format === 'percent' ? formatPercent(field.default, 2) : formatCurrency(field.default)}</td>
+                    <td style={tdStyle}>{field.format === 'percent' ? formatPercent(field.current, 2) : formatCurrency(field.current)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -854,12 +919,12 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       {/* 16. Financial Projections Cash Flow */}
       <div style={sectionStyle}>
         <h2 style={sectionTitleStyle}>Financial Projections — Cash Flow</h2>
-        {report.fcfeByYear && report.fcfeByYear.length > 0 && (
+        {report.fcfeByYear && report.fcfeByYear.length > 0 && inputs.financials && (
           <table style={{ ...tableStyle, fontSize: '0.85rem' }}>
             <thead>
               <tr>
                 <th style={thStyle}>Metric</th>
-                {report.fcfeByYear.map((f: any, idx: number) => (
+                {inputs.financials.map((f: any, idx: number) => (
                   <th key={idx} style={thStyle}>Year {f.yearOffset >= 0 ? '+' : ''}{f.yearOffset}</th>
                 ))}
               </tr>
@@ -884,8 +949,33 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                 ))}
               </tr>
               <tr>
+                <td style={tdStyle}>Working Capital</td>
+                {inputs.financials.map((f: any, idx: number) => {
+                  const wc = (f.receivables || 0) + (f.inventory || 0) - (f.payables || 0);
+                  return <td key={idx} style={tdStyle}>{formatCurrency(wc)}</td>;
+                })}
+              </tr>
+              <tr>
+                <td style={tdStyle}>Receivables</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.receivables || 0)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>Inventory</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.inventory || 0)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>Payables</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.payables || 0)}</td>
+                ))}
+              </tr>
+              <tr>
                 <td style={tdStyle}>Capex</td>
-                {inputs.financials && inputs.financials.map((f: any, idx: number) => (
+                {inputs.financials.map((f: any, idx: number) => (
                   <td key={idx} style={tdStyle}>{formatCurrency(f.capex || 0)}</td>
                 ))}
               </tr>
@@ -895,11 +985,43 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                   <td key={idx} style={tdStyle}>{formatCurrency(fcfe.deltaDebt)}</td>
                 ))}
               </tr>
+              <tr>
+                <td style={tdStyle}>Debt (Year-end)</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.debt || 0)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td style={tdStyle}>Equity Fundraising</td>
+                {inputs.financials.map((f: any, idx: number) => (
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.fundraisingPlan || 0)}</td>
+                ))}
+              </tr>
               <tr style={{ fontWeight: 600 }}>
                 <td style={tdStyle}>FCFE</td>
                 {report.fcfeByYear.map((fcfe: any, idx: number) => (
                   <td key={idx} style={tdStyle}>{formatCurrency(fcfe.fcfe)}</td>
                 ))}
+              </tr>
+              <tr style={{ fontWeight: 600 }}>
+                <td style={tdStyle}>Free Cash Flow (FCFE + Fundraising)</td>
+                {inputs.financials.map((f: any, idx: number) => {
+                  const fcfe = report.fcfeByYear[inputs.financials.indexOf(f)]?.fcfe || 0;
+                  const freeCF = fcfe + (f.fundraisingPlan || 0);
+                  return <td key={idx} style={tdStyle}>{formatCurrency(freeCF)}</td>;
+                })}
+              </tr>
+              <tr style={{ color: C.textMuted, fontStyle: 'italic' }}>
+                <td style={tdStyle}>Cash Balance (Illustrative)</td>
+                {inputs.financials.map((f: any, idx: number) => {
+                  let cashBalance = inputs.balanceSheet?.cash_and_equivalents || 0;
+                  for (let i = 0; i <= idx; i++) {
+                    const fcfe = report.fcfeByYear[i]?.fcfe || 0;
+                    const freeCF = fcfe + (inputs.financials[i]?.fundraisingPlan || 0);
+                    cashBalance += freeCF;
+                  }
+                  return <td key={idx} style={tdStyle}>{formatCurrency(cashBalance)}</td>;
+                })}
               </tr>
             </tbody>
           </table>
