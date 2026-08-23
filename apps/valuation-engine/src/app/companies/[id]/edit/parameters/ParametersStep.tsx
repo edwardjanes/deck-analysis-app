@@ -2,23 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import { C, FONT_SANS, FONT_MONO } from '@/lib/theme';
+import { STAGE_DEFAULT_WEIGHTS } from '@/lib/valuation/referenceData';
 
 interface ParametersStepProps {
   company: any;
+  stage?: string;
   onUpdate?: (data: any) => void;
   onGenerateReport?: () => void;
   isLoading?: boolean;
 }
 
-export default function ParametersStep({ company, onUpdate, onGenerateReport, isLoading }: ParametersStepProps) {
-  const [weights, setWeights] = useState({
-    scorecard: 0.30,
-    checklist: 0.30,
-    vc: 0.16,
-    dcf_ltg: 0.12,
-    dcf_multiple: 0.12,
-    multiples: 0.0,
-  });
+export default function ParametersStep({ company, stage, onUpdate, onGenerateReport, isLoading }: ParametersStepProps) {
+  const getDefaultWeights = () => {
+    if (!stage) return STAGE_DEFAULT_WEIGHTS.development;
+    const normalized = stage.toLowerCase();
+    return STAGE_DEFAULT_WEIGHTS[normalized as keyof typeof STAGE_DEFAULT_WEIGHTS] || STAGE_DEFAULT_WEIGHTS.development;
+  };
+
+  const [weights, setWeights] = useState(getDefaultWeights());
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     if (onUpdate) {
@@ -26,8 +28,20 @@ export default function ParametersStep({ company, onUpdate, onGenerateReport, is
     }
   }, [weights]);
 
+  useEffect(() => {
+    if (!isDirty) {
+      setWeights(getDefaultWeights());
+    }
+  }, [stage, isDirty]);
+
   const handleWeightChange = (method: string, value: number) => {
+    setIsDirty(true);
     setWeights((prev) => ({ ...prev, [method]: value }));
+  };
+
+  const handleResetToDefaults = () => {
+    setWeights(getDefaultWeights());
+    setIsDirty(false);
   };
 
   const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
@@ -132,10 +146,33 @@ export default function ParametersStep({ company, onUpdate, onGenerateReport, is
   return (
     <div style={containerStyle}>
       <div style={sectionStyle}>
-        <h3 style={sectionTitleStyle}>Valuation Method Weights</h3>
-        <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-          Adjust the weight of each valuation method. Weights must sum to 100%.
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div>
+            <h3 style={sectionTitleStyle}>Valuation Method Weights</h3>
+            <p style={{ color: C.textMuted, fontSize: '0.9rem', marginTop: '-1rem' }}>
+              Adjust the weight of each valuation method. Weights must sum to 100%.
+            </p>
+          </div>
+          {isDirty && (
+            <button
+              onClick={handleResetToDefaults}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                border: `1px solid ${C.accent}`,
+                backgroundColor: 'transparent',
+                color: C.accent,
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              ↻ Reset to Defaults
+            </button>
+          )}
+        </div>
 
         {[
           { key: 'scorecard', label: 'Scorecard' },

@@ -79,6 +79,8 @@ export default function WizardShell({ company }: WizardShellProps) {
           financials: wizardData.financials,
           questionnaire: wizardData.questionnaire,
           weights: wizardData.parameters.method_weights,
+          captable: wizardData.captable,
+          comparables: wizardData.comparables,
         }),
       });
 
@@ -189,7 +191,7 @@ export default function WizardShell({ company }: WizardShellProps) {
       case 'comparables':
         return <ComparablesStep company={wizardData.comparables} onUpdate={(data) => updateWizardData('comparables', data)} />;
       case 'parameters':
-        return <ParametersStep company={wizardData.parameters} onUpdate={(data) => updateWizardData('parameters', data)} onGenerateReport={handleGenerateReport} isLoading={isLoading} />;
+        return <ParametersStep company={wizardData.parameters} stage={wizardData.profile.stage} onUpdate={(data) => updateWizardData('parameters', data)} onGenerateReport={handleGenerateReport} isLoading={isLoading} />;
       default:
         return null;
     }

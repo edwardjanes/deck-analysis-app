@@ -39,7 +39,7 @@ export async function POST(
   }
 
   try {
-    const { weights, company: bodyCompany, financials: bodyFinancials, questionnaire: bodyQuestionnaire } = await request.json();
+    const { weights, company: bodyCompany, financials: bodyFinancials, questionnaire: bodyQuestionnaire, captable: bodyCaptable, comparables: bodyComparables } = await request.json();
 
     // Use provided data or fetch from DB
     const company = bodyCompany || (await supabase
@@ -67,12 +67,24 @@ export async function POST(
       .eq('company_id', params.id)
       .single()).data;
 
-    // Fetch cap table
-    const capTable = (await supabase
+    // Use provided cap table or fetch from DB
+    let capTable = bodyCaptable?.shareholders || (await supabase
       .from('valuation_cap_table')
       .select('*')
       .eq('company_id', params.id)
       .order('order_index')).data;
+
+    // Persist cap table if provided in body
+    if (bodyCaptable?.shareholders && bodyCaptable.shareholders.length > 0) {
+      await supabase.from('valuation_cap_table').delete().eq('company_id', params.id);
+      const capTableRows = bodyCaptable.shareholders.map((shareholder: any, index: number) => ({
+        company_id: params.id,
+        shareholder_name: shareholder.name,
+        share_percent: shareholder.percentage,
+        order_index: index,
+      }));
+      await supabase.from('valuation_cap_table').insert(capTableRows);
+    }
 
     // Fetch funding rounds
     const fundingRounds = (await supabase
@@ -81,11 +93,26 @@ export async function POST(
       .eq('company_id', params.id)
       .order('closed_date')).data;
 
-    // Fetch comparables
-    const comparables = (await supabase
+    // Use provided comparables or fetch from DB
+    let comparables = bodyComparables?.companies || (await supabase
       .from('valuation_comparables')
       .select('*')
       .eq('company_id', params.id)).data;
+
+    // Persist comparables if provided in body
+    if (bodyComparables?.companies && bodyComparables.companies.length > 0) {
+      await supabase.from('valuation_comparables').delete().eq('company_id', params.id);
+      const comparableRows = bodyComparables.companies.map((comp: any) => ({
+        company_id: params.id,
+        company_name: comp.name,
+        multiple: comp.multiple,
+        metric_type: comp.metricType || 'revenue',
+        date_observed: new Date().toISOString().split('T')[0],
+        source: comp.source || 'wizard',
+        gathered_by: user.id,
+      }));
+      await supabase.from('valuation_comparables').insert(comparableRows);
+    }
 
     // Fetch transaction data
     const transaction = (await supabase
@@ -100,6 +127,26 @@ export async function POST(
       .select('*')
       .eq('company_id', params.id)
       .single()).data;
+
+    // Update canonical company record if body provided new profile data
+    if (bodyCompany) {
+      await supabase
+        .from('valuation_companies')
+        .update({
+          name: bodyCompany.name,
+          country: bodyCompany.country,
+          industry: bodyCompany.industry,
+          stage: bodyCompany.stage,
+          founders_count: bodyCompany.founders_count,
+          employees_count: bodyCompany.employees_count,
+          business_model: bodyCompany.business_model,
+          business_description: bodyCompany.business_description,
+          started_year: bodyCompany.started_year,
+          incorporated_year: bodyCompany.incorporated_year,
+        })
+        .eq('id', params.id)
+        .eq('owner_id', user.id);
+    }
 
     // Build parameters with weights override
     const defaultParams = buildDefaultParameters(

@@ -1,8 +1,8 @@
 # Valuation Engine — Claude Development Log
 
 **Project:** Equidam-style startup valuation engine  
-**Status:** 🟢 MVP Complete, End-to-End Testing Phase  
-**Last Updated:** 2026-08-21  
+**Status:** 🟢 MVP Complete, Phase 0-2 Implementation Done, Vercel Build Fixed  
+**Last Updated:** 2026-08-23  
 **User Email:** edward@sourcecapital.co.uk
 
 ---
@@ -76,7 +76,36 @@ Building a Next.js application that replicates Equidam's startup valuation metho
 - [x] Snapshot API accepts data in POST body OR fetches from DB
 - [x] Enables testing without database writes (MVP mode)
 
-### ✅ Bug Fixes (This Session)
+### ✅ Phase 0: Questionnaire Wiring (Aug 23)
+- [x] Added 4 missing UI fields to QuestionnaireStep.tsx:
+  - competitors_count (Business Model tab)
+  - has_competitive_advantage (Business Model tab)
+  - partnerships_count (Business Model tab)
+  - has_strategic_investors (Business Model tab)
+- [x] Updated QuestionnaireAnswers type with all 20 fields
+- [x] Added scoring-regression.test.ts: validates UI ↔ scoring field sync
+- [x] Merged capital_needed and last_year_revenue from external sources (snapshot/route.ts enrichment)
+- [x] Updated scoring functions to use all collected questionnaire fields
+
+### ✅ Phase 2: Benchmark Data & Survival Rates (Aug 23)
+- [x] Part 1: Updated 7 countries' seed pre-money/checklist valuations
+  - US, GB, FR, NL, IE, SE, CH sourced from PitchBook-NVCA/BBB 2025 reports
+- [x] Part 2: Added per-country 6-year survival curves (16 countries)
+  - Sourced from Eurostat, BLS, ONS, StatCan, INSEE, IBGE, GUS/PARP
+  - 8 countries without adequate data fall back to global default (IL, AE, SG, HK, IN, CN, ZA, NG)
+- [x] Part 3: Fixed survival-rates wiring bug in dcf.ts
+  - computeDcfShared() now accepts survivalRates parameter (was hardcoded to SURVIVAL_RATES)
+  - Both DCF-LTG and DCF-Multiple now use correct country-specific curves
+- [x] Germany correction: Reverted Germany curve to NovaCloud-validated default
+  - SURVIVAL_RATES (88.69/79.45/71.64/64.87/58.91/53.57%) is Germany-specific
+  - Destatis alternative caused ~30% understatement in DCF values
+
+### ✅ Recovery & Build Fix (Aug 23)
+- [x] Recovered accidental deletion of 228 deck-analysis-app files (commit de259d0)
+- [x] Added postcss.config.mjs to prevent Vercel build failure
+  - Stops Next.js from walking up to root config that requires tailwindcss
+
+### ✅ Earlier Bug Fixes
 - [x] Fixed tsconfig.json (removed "next" plugin causing 20+ min hangs)
 - [x] Fixed handle_new_user() trigger (wrapped INSERT in error handler)
 - [x] Fixed home page redirect (added server-side logic)
@@ -86,17 +115,38 @@ Building a Next.js application that replicates Equidam's startup valuation metho
 
 ---
 
-## Current Status: MVP Ready for Validation Testing
+## Current Status: MVP + Phase 0-2 Complete, Vercel Deployment Ready
 
 **What Works End-to-End:**
 1. Sign up/login ✅
 2. Create company ✅
-3. Fill 6-step wizard ✅
+3. Fill 6-step wizard with all questionnaire fields ✅
 4. Generate report with all 6 method valuations ✅
 5. View snapshot-based report ✅
 6. Export PDF ✅
+7. Per-country survival-rate adjustments in DCF calculations ✅
 
-**Unit Tests:** All 3 passing (Scorecard, Checklist, Weights)
+**Unit Tests:** All 6 passing
+- ✅ Scorecard ($5,310,193 validated)
+- ✅ Checklist ($4,555,423 validated)
+- ✅ Weights
+- ✅ FCF (with NOL carryforward)
+- ✅ Compute orchestrator
+- ✅ Scoring regression (UI ↔ scoring sync)
+
+**Commits:** (Latest → Earliest)
+- d2e2194 — Add local postcss.config (Vercel build fix)
+- e050ce0 — Revert Germany survival curve (NovaCloud validation)
+- de259d0 — Restore deck-analysis-app + Phase 2 implementation
+- 3d25c12 — Original Phase 2 push (with accidental deletions)
+- 27c5713 — Earlier Phase 2 attempt
+- fb46b17 — Phase 0 Part 3-4 (UI fields + regression test)
+- a0f6133 — Phase 0 Part 1-2 (data source merging)
+
+**Deployment Status:**
+- Vercel project configured: `apps/valuation-engine` (Root Directory)
+- Latest build should succeed (postcss.config fix applied)
+- All production environment variables required (see .env.local.example)
 
 ---
 

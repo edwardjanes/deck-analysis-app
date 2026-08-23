@@ -13,6 +13,7 @@ interface ReportClientProps {
 
 export default function ReportClient({ snapshot, company }: ReportClientProps) {
   const { outputs: report, inputs } = snapshot;
+  const snapshotCompany = inputs.company || company;
 
   const handlePrint = () => {
     window.print();
@@ -185,7 +186,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
     <div style={containerStyle}>
       {/* Navigation */}
       <div style={navStyle}>
-        <h1 style={titleStyle}>{company.name} Valuation Report</h1>
+        <h1 style={titleStyle}>{snapshotCompany.name} Valuation Report</h1>
         <button onClick={handlePrint} style={buttonStyle}>
           📄 Export PDF
         </button>
@@ -194,7 +195,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       {/* 1. Cover Page */}
       <div className="print-section-break" style={coverPageStyle}>
         <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Valuation Report</h1>
-        <h2 style={{ fontSize: '1.8rem', color: C.accent, marginBottom: '2rem' }}>{company.name}</h2>
+        <h2 style={{ fontSize: '1.8rem', color: C.accent, marginBottom: '2rem' }}>{snapshotCompany.name}</h2>
         <p style={{ fontSize: '1rem', marginBottom: '3rem' }}>
           As of {new Date(snapshot.created_at).toLocaleDateString()}
         </p>
@@ -221,51 +222,51 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Company Name</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.name}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.name}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Stage</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.stage.charAt(0).toUpperCase() + company.stage.slice(1)}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.stage.charAt(0).toUpperCase() + snapshotCompany.stage.slice(1)}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Industry</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.industry}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.industry}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Country</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.country}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.country}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Founded</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.started_year}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.started_year}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Incorporated</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.incorporated_year || '—'}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.incorporated_year || '—'}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Founders</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.founders_count}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.founders_count}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Founder Capital Committed</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.founders_committed_capital ? formatCurrency(company.founders_committed_capital) : '—'}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.founders_committed_capital ? formatCurrency(snapshotCompany.founders_committed_capital) : '—'}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Employees</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.employees_count}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.employees_count}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Business Model</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.business_model || '—'}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.business_model || '—'}</p>
           </div>
           <div>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Business Activity</p>
-            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{company.business_activity || '—'}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{snapshotCompany.business_activity || '—'}</p>
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
             <p style={{ color: C.textMuted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>Description</p>
-            <p style={{ fontSize: '1rem', fontWeight: 500, lineHeight: 1.5 }}>{company.description || '—'}</p>
+            <p style={{ fontSize: '1rem', fontWeight: 500, lineHeight: 1.5 }}>{snapshotCompany.description || '—'}</p>
           </div>
         </div>
 
@@ -707,10 +708,10 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
         {(() => {
           const defaultParams = buildDefaultParameters(
             {
-              name: company.name,
-              country: company.country,
-              industry: company.industry,
-              stage: company.stage,
+              name: snapshotCompany.name,
+              country: snapshotCompany.country,
+              industry: snapshotCompany.industry,
+              stage: snapshotCompany.stage,
             },
             inputs.financials || [],
             inputs.balanceSheet
@@ -1047,7 +1048,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
             </thead>
             <tbody>
               {Object.entries(STAGE_DEFAULT_WEIGHTS).map(([stage, weights]: [string, any]) => (
-                <tr key={stage} style={{ backgroundColor: company.stage === stage ? C.border : 'transparent' }}>
+                <tr key={stage} style={{ backgroundColor: snapshotCompany.stage === stage ? C.border : 'transparent' }}>
                   <td style={tdStyle}>{stage}</td>
                   <td style={tdStyle}>{formatPercent(weights.scorecard)}</td>
                   <td style={tdStyle}>{formatPercent(weights.checklist)}</td>

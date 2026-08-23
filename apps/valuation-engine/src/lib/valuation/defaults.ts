@@ -110,8 +110,7 @@ export function buildDefaultParameters(
 
     // Scorecard parameters
     scorecard: {
-      average_pre_money_valuation:
-        countryData.avg_seed_pre_money * (1 + Math.log(lastYearRevenue / 10_000) * 0.1),
+      average_pre_money_valuation: countryData.avg_seed_pre_money,
     },
 
     // Checklist parameters
