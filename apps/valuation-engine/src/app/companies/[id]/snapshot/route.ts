@@ -39,7 +39,7 @@ export async function POST(
   }
 
   try {
-    const { weights, company: bodyCompany, financials: bodyFinancials, questionnaire: bodyQuestionnaire, captable: bodyCaptable, comparables: bodyComparables } = await request.json();
+    const { weights, company: bodyCompany, financials: bodyFinancials, questionnaire: bodyQuestionnaire, captable: bodyCaptable, comparables: bodyComparables, balanceSheet: bodyBalanceSheet } = await request.json();
 
     // Use provided data or fetch from DB
     const company = bodyCompany || (await supabase
@@ -106,6 +106,7 @@ export async function POST(
         company_name: c.companyName,
         multiple: c.multiple,
         metric_type: c.metricType || 'revenue',
+        source: c.source || 'wizard',
       }));
       // Persist normalized comparables
       await supabase.from('valuation_comparables').delete().eq('company_id', params.id);
@@ -113,7 +114,6 @@ export async function POST(
         company_id: params.id,
         ...row,
         date_observed: new Date().toISOString().split('T')[0],
-        source: 'wizard',
         gathered_by: user.id,
       }));
       await supabase.from('valuation_comparables').insert(comparableRows);
@@ -134,15 +134,29 @@ export async function POST(
       .single()).data;
 
     // Fetch balance sheet
-    const balanceSheet = (await supabase
+    let balanceSheet = (await supabase
       .from('valuation_balance_sheet')
       .select('*')
       .eq('company_id', params.id)
       .single()).data;
 
+    // Upsert balance sheet if provided in body
+    if (bodyBalanceSheet) {
+      const { data: upserted } = await supabase
+        .from('valuation_balance_sheet')
+        .upsert({
+          company_id: params.id,
+          non_operating_cash: bodyBalanceSheet.non_operating_cash ?? 0,
+          cash_and_equivalents: bodyBalanceSheet.cash_and_equivalents ?? 0,
+        }, { onConflict: 'company_id' })
+        .select()
+        .single();
+      balanceSheet = upserted || balanceSheet;
+    }
+
     // Update canonical company record if body provided new profile data
     if (bodyCompany) {
-      await supabase
+      const { error: companyUpdateError } = await supabase
         .from('valuation_companies')
         .update({
           name: bodyCompany.name,
@@ -152,12 +166,17 @@ export async function POST(
           founders_count: bodyCompany.founders_count,
           employees_count: bodyCompany.employees_count,
           business_model: bodyCompany.business_model,
-          business_description: bodyCompany.business_description,
+          business_activity: bodyCompany.business_activity,
+          description: bodyCompany.description,
           started_year: bodyCompany.started_year,
           incorporated_year: bodyCompany.incorporated_year,
+          founders_committed_capital: bodyCompany.founders_committed_capital,
         })
         .eq('id', params.id)
         .eq('owner_id', user.id);
+      if (companyUpdateError) {
+        console.error('Company profile update error:', companyUpdateError);
+      }
     }
 
     // Build parameters with weights override

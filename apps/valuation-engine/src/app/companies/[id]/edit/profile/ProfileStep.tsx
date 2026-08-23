@@ -65,6 +65,11 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
     founders_count: company.founders_count || 1,
     employees_count: company.employees_count || 1,
     website: company.website || '',
+    business_model: company.business_model || '',
+    business_activity: company.business_activity || '',
+    started_year: company.started_year || new Date().getFullYear(),
+    incorporated_year: company.incorporated_year || new Date().getFullYear(),
+    founders_committed_capital: company.founders_committed_capital || 0,
   });
 
   useEffect(() => {
@@ -211,6 +216,69 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
               value={formData.employees_count}
               onChange={handleChange}
               min="1"
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Business Model</label>
+            <input
+              type="text"
+              name="business_model"
+              value={formData.business_model}
+              onChange={handleChange}
+              placeholder="e.g. SaaS subscription"
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Business Activity</label>
+            <input
+              type="text"
+              name="business_activity"
+              value={formData.business_activity}
+              onChange={handleChange}
+              placeholder="e.g. Cloud computing services"
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Founded Year</label>
+            <input
+              type="number"
+              name="started_year"
+              value={formData.started_year}
+              onChange={handleChange}
+              min="1900"
+              max={new Date().getFullYear()}
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Incorporated Year</label>
+            <input
+              type="number"
+              name="incorporated_year"
+              value={formData.incorporated_year}
+              onChange={handleChange}
+              min="1900"
+              max={new Date().getFullYear()}
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Founders' Committed Capital</label>
+            <input
+              type="number"
+              name="founders_committed_capital"
+              value={formData.founders_committed_capital}
+              onChange={handleChange}
+              min="0"
+              placeholder="0"
               style={inputStyle}
             />
           </div>

@@ -46,12 +46,17 @@ export default function FinancialsStep({ company, onUpdate }: FinancialsStepProp
   );
 
   const [activeTab, setActiveTab] = useState<'income' | 'balance'>('income');
+  const [nonOperatingCash, setNonOperatingCash] = useState(0);
+  const [cashAndEquivalents, setCashAndEquivalents] = useState(0);
 
   useEffect(() => {
     if (onUpdate) {
-      onUpdate(financials);
+      onUpdate({
+        financials,
+        balanceSheet: { non_operating_cash: nonOperatingCash, cash_and_equivalents: cashAndEquivalents },
+      });
     }
-  }, [financials]);
+  }, [financials, nonOperatingCash, cashAndEquivalents]);
 
   const handleCellChange = (yearOffset: number, field: keyof FinancialRow, value: number) => {
     setFinancials((prev) =>
@@ -180,6 +185,53 @@ export default function FinancialsStep({ company, onUpdate }: FinancialsStepProp
 
   const renderBalanceTab = () => (
     <div style={scrollContainerStyle}>
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: C.accent }}>Cash & Equivalents</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 500 }}>
+              Cash & Equivalents (Base Year)
+            </label>
+            <input
+              type="number"
+              value={cashAndEquivalents}
+              onChange={(e) => setCashAndEquivalents(parseFloat(e.target.value) || 0)}
+              placeholder="0"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                borderRadius: '0.375rem',
+                border: `1px solid ${C.border}`,
+                backgroundColor: C.bg,
+                color: C.text,
+                fontFamily: FONT_MONO,
+              }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 500 }}>
+              Non-Operating Cash (Base Year)
+            </label>
+            <input
+              type="number"
+              value={nonOperatingCash}
+              onChange={(e) => setNonOperatingCash(parseFloat(e.target.value) || 0)}
+              placeholder="0"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                borderRadius: '0.375rem',
+                border: `1px solid ${C.border}`,
+                backgroundColor: C.bg,
+                color: C.text,
+                fontFamily: FONT_MONO,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: C.accent }}>Per-Year Cash Flow</h3>
       <table style={tableStyle}>
         <thead>
           <tr>

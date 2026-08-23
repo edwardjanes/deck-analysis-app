@@ -20,6 +20,7 @@ interface WizardData {
   profile: any;
   questionnaire: any;
   financials: any[];
+  balanceSheet: any;
   captable: any;
   comparables: any;
   parameters: any;
@@ -34,6 +35,7 @@ export default function WizardShell({ company }: WizardShellProps) {
     profile: company || {},
     questionnaire: { answers: {} },
     financials: Array.from({ length: 7 }, (_, i) => ({ yearOffset: i - 1, revenue: 0 })),
+    balanceSheet: { non_operating_cash: 0, cash_and_equivalents: 0 },
     captable: { shareholders: [] },
     comparables: { companies: [] },
     parameters: { method_weights: {} },
@@ -79,6 +81,7 @@ export default function WizardShell({ company }: WizardShellProps) {
           financials: wizardData.financials,
           questionnaire: wizardData.questionnaire,
           weights: wizardData.parameters.method_weights,
+          balanceSheet: wizardData.balanceSheet,
           captable: wizardData.captable,
           comparables: wizardData.comparables,
         }),
@@ -185,7 +188,12 @@ export default function WizardShell({ company }: WizardShellProps) {
       case 'questionnaire':
         return <QuestionnaireStep company={wizardData.questionnaire} onUpdate={(data) => updateWizardData('questionnaire', data)} />;
       case 'financials':
-        return <FinancialsStep company={wizardData.financials} onUpdate={(data) => updateWizardData('financials', data)} />;
+        return <FinancialsStep company={wizardData.financials} onUpdate={(data) => {
+          updateWizardData('financials', data.financials);
+          if (data.balanceSheet) {
+            setWizardData((prev) => ({ ...prev, balanceSheet: data.balanceSheet }));
+          }
+        }} />;
       case 'captable':
         return <CapTableStep company={wizardData.captable} onUpdate={(data) => updateWizardData('captable', data)} />;
       case 'comparables':

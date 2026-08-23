@@ -845,7 +845,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
               <tr>
                 <td style={tdStyle}>OpEx</td>
                 {inputs.financials.map((f: any, idx: number) => (
-                  <td key={idx} style={tdStyle}>{formatCurrency(f.other_opex)}</td>
+                  <td key={idx} style={tdStyle}>{formatCurrency(f.otherOpex)}</td>
                 ))}
               </tr>
               <tr style={{ fontWeight: 600 }}>
