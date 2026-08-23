@@ -96,8 +96,12 @@ export const SURVIVAL_RATES_BY_COUNTRY: Partial<Record<keyof typeof COUNTRIES, n
   US: [0.79, 0.69, 0.62, 0.56, 0.51, 0.4645],
   // Source: ONS Business Demography, UK: 2024.
   GB: [0.91, 0.75, 0.63, 0.50, 0.384, 0.2949],
-  // Source: IfM Bonn / Statistisches Bundesamt business register, 2017 cohort.
-  DE: [0.74, 0.626, 0.530, 0.448, 0.381, 0.3240],
+  // DE deliberately excluded: SURVIVAL_RATES (the "global default" below) IS Germany's real curve --
+  // it was reverse-engineered from the NovaCloud sample report, whose appendix confirms these exact
+  // figures (88.69/79.45/71.64/64.87/58.91/53.57%) are Equidam's actual Germany output, not a generic
+  // default. A Destatis-sourced alternative curve was tried here and rejected: it produced DCF-LTG and
+  // DCF-Multiple values ~30% below the validated NovaCloud benchmark. Falls through to SURVIVAL_RATES,
+  // which is correct for Germany specifically.
   // Source: INSEE Analyses, 2010 creation cohort tracked to 2015. Fully sourced, no interpolation.
   FR: [0.906, 0.801, 0.712, 0.638, 0.604, 0.5718],
   // Source: secondary press citing EU-startup survival research; only Y1 and Y5 anchors are sourced,
