@@ -44,7 +44,7 @@ export default function ParametersStep({ company, stage, onUpdate, onGenerateRep
     setIsDirty(false);
   };
 
-  const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+  const totalWeight = Object.values(weights).reduce((a: number, b: number) => a + b, 0);
   const isValid = Math.abs(totalWeight - 1.0) < 0.001;
 
   const containerStyle: React.CSSProperties = {
