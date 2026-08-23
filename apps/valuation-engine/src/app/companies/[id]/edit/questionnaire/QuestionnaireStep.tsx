@@ -19,6 +19,10 @@ export default function QuestionnaireStep({ company, onUpdate }: QuestionnaireSt
     team_prior_exits: false,
     business_model_type: '',
     recurring_revenue: false,
+    competitors_count: 0,
+    has_competitive_advantage: false,
+    partnerships_count: 0,
+    has_strategic_investors: false,
     tam_size: 0,
     market_growth_rate: 0,
     product_status: 'mvp' as 'idea' | 'mvp' | 'beta' | 'revenue_generating',
@@ -187,6 +191,54 @@ export default function QuestionnaireStep({ company, onUpdate }: QuestionnaireSt
             style={checkboxStyle}
           />
           Has recurring revenue
+        </label>
+      </div>
+
+      <div style={fieldStyle}>
+        <label style={labelStyle}>Number of Direct Competitors</label>
+        <input
+          type="number"
+          min="0"
+          value={answers.competitors_count}
+          onChange={(e) => handleChange('competitors_count', parseInt(e.target.value) || 0)}
+          placeholder="e.g., 5"
+          style={inputStyle}
+        />
+      </div>
+
+      <div style={fieldStyle}>
+        <label style={checkboxLabelStyle}>
+          <input
+            type="checkbox"
+            checked={answers.has_competitive_advantage}
+            onChange={(e) => handleChange('has_competitive_advantage', e.target.checked)}
+            style={checkboxStyle}
+          />
+          Has a clear competitive advantage
+        </label>
+      </div>
+
+      <div style={fieldStyle}>
+        <label style={labelStyle}>Number of Strategic Partnerships</label>
+        <input
+          type="number"
+          min="0"
+          value={answers.partnerships_count}
+          onChange={(e) => handleChange('partnerships_count', parseInt(e.target.value) || 0)}
+          placeholder="e.g., 3"
+          style={inputStyle}
+        />
+      </div>
+
+      <div style={fieldStyle}>
+        <label style={checkboxLabelStyle}>
+          <input
+            type="checkbox"
+            checked={answers.has_strategic_investors}
+            onChange={(e) => handleChange('has_strategic_investors', e.target.checked)}
+            style={checkboxStyle}
+          />
+          Has strategic/named investors on the cap table
         </label>
       </div>
     </div>

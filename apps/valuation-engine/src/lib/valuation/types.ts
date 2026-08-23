@@ -147,19 +147,30 @@ export interface CompanyProfile {
 
 // --- Questionnaire Answers ---
 export interface QuestionnaireAnswers {
+  // Team tab
   team_size?: number;
   team_has_cto?: boolean;
   team_has_business_lead?: boolean;
   team_prior_exits?: boolean;
-  tam_size?: number;
-  market_growth_rate?: number;
+  // Business Model tab
+  business_model_type?: string;
+  recurring_revenue?: boolean;
   competitors_count?: number;
   has_competitive_advantage?: boolean;
-  product_status?: 'idea' | 'mvp' | 'beta' | 'revenue_generating';
-  has_patents?: boolean;
-  has_ip?: boolean;
   partnerships_count?: number;
   has_strategic_investors?: boolean;
+  // Product & Market tab
+  tam_size?: number;
+  market_growth_rate?: number;
+  product_status?: 'idea' | 'mvp' | 'beta' | 'revenue_generating';
+  has_customers?: boolean;
+  product_market_fit?: boolean;
+  // IP & Legal tab
+  has_patents?: boolean;
+  has_ip?: boolean;
+  ip_protection_stage?: string;
+  legal_risks?: boolean;
+  // Merged from external sources (snapshot/route.ts enrichment)
   capital_needed?: number;
   last_year_revenue?: number;
   [key: string]: unknown;
