@@ -1,17 +1,17 @@
 import { DcfResult, FcfeYear } from "./types";
-import { SURVIVAL_RATES } from "./referenceData";
 
 export function computeDcfShared(
   fcfeYears: FcfeYear[],
   terminalValue: number,
   discountRate: number,
   illiquidityDiscount: number,
-  nonOperatingCash: number = 0
+  nonOperatingCash: number = 0,
+  survivalRates: number[] = [0.8869, 0.7945, 0.7164, 0.6487, 0.5891, 0.5357]
 ): DcfResult {
   // Sum discounted cash flows: Σ[t=1..n] (FCFE_t × SurvivalRate_t) / (1+DR)^t
   let discountedFcfSum = 0;
   for (const fcfeYear of fcfeYears) {
-    const survivalRate = SURVIVAL_RATES[fcfeYear.yearOffset - 1] ?? SURVIVAL_RATES[SURVIVAL_RATES.length - 1] ?? 0.5;
+    const survivalRate = survivalRates[fcfeYear.yearOffset - 1] ?? survivalRates[survivalRates.length - 1] ?? 0.5;
     const discount = Math.pow(1 + discountRate, fcfeYear.yearOffset);
     discountedFcfSum += (fcfeYear.fcfe * survivalRate) / discount;
   }

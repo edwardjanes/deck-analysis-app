@@ -11,6 +11,8 @@ import {
   VC_REQUIRED_ROI,
   ILLIQUIDITY_DISCOUNT_DEFAULT,
   LTG_GROWTH_RATE_DEFAULT,
+  SURVIVAL_RATES,
+  SURVIVAL_RATES_BY_COUNTRY,
 } from './referenceData';
 
 const COUNTRY_NAME_TO_CODE: Record<string, keyof typeof COUNTRIES> = {
@@ -57,6 +59,9 @@ export function buildDefaultParameters(
     risk_free_rate: countryRef.riskFree10Y,
     equity_risk_premium: countryRef.equityRiskPremium,
   };
+
+  // Use country-specific survival rates if available, fall back to global default
+  const survivalRates = SURVIVAL_RATES_BY_COUNTRY[countryKey] || SURVIVAL_RATES;
 
   // Look up industry data from reference data
   const industryKey = (Object.keys(INDUSTRIES) as (keyof typeof INDUSTRIES)[]).find(
@@ -132,13 +137,13 @@ export function buildDefaultParameters(
     // DCF LTG parameters
     dcf_ltg: {
       terminal_growth_rate: LTG_GROWTH_RATE_DEFAULT,
-      survival_rates: [0.8869, 0.7945, 0.7164, 0.6487, 0.5891, 0.5357],
+      survival_rates: survivalRates,
     },
 
     // DCF Multiple parameters
     dcf_multiple: {
       exit_multiple: industryData.revenue_multiple,
-      survival_rates: [0.8869, 0.7945, 0.7164, 0.6487, 0.5891, 0.5357],
+      survival_rates: survivalRates,
     },
 
     // Simple Multiples parameters

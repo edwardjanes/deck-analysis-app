@@ -80,7 +80,8 @@ export async function computeValuation(
     terminalValueLtg,
     discountRate,
     parameters.dcf_shared.illiquidity_discount,
-    parameters.dcf_shared.non_operating_cash
+    parameters.dcf_shared.non_operating_cash,
+    parameters.dcf_ltg.survival_rates
   );
 
   // DCF Multiple result
@@ -97,7 +98,8 @@ export async function computeValuation(
     terminalValueMultiple,
     discountRate,
     parameters.dcf_shared.illiquidity_discount,
-    parameters.dcf_shared.non_operating_cash
+    parameters.dcf_shared.non_operating_cash,
+    parameters.dcf_multiple.survival_rates
   );
 
   // Simple Multiples result

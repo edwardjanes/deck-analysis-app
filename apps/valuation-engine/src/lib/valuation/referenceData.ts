@@ -1,22 +1,32 @@
-// Reference data sourced from public sources (Damodaran/NYU Stern, Equidam's published industry multiples) as of Aug 2026.
-// NOT Equidam's proprietary/internal data — Equidam doesn't publish theirs. All values are editable by the user.
-// Country avgSeedPreMoney is still illustrative except DE (validated against the NovaCloud reference report).
+// Reference data sourced from public sources (Damodaran/NYU Stern, Equidam's published industry multiples,
+// PitchBook-NVCA, British Business Bank) as of Aug 2026. NOT Equidam's proprietary/internal data.
+// All values are editable by the user.
+//
+// Country avgSeedPreMoney / checklistMaxValuation sourcing status:
+//   - DE: validated against a real Equidam sample report (avg + max both real).
+//   - US, GB, FR, NL, IE, SE, CH: avg sourced from PitchBook-NVCA/BBB/PitchBook-Europe 2025 reports
+//     (FR/NL/IE/SE/CH are regional, not country-specific figures -- finest grain publicly available).
+//     checklistMaxValuation for these 7 is a PROXY: DE's validated max/avg ratio (2.155x) applied to
+//     each country's avg -- no public source publishes a "max valuation" figure for any country.
+//   - All other countries: still illustrative, no adequate public source found despite searching
+//     PitchBook, Carta, CVCA, LAVCA, Partech Africa, MAGNiTT, and others -- do not treat as benchmarked.
+//
 // Sources: Risk-free rates from Trading Economics (10Y govn't bond yields, Aug 21 2026);
 //          Equity risk premiums from Damodaran/NYU Stern "Country Default Spreads" (Jan 2026 update);
 //          Industry beta from Damodaran unlevered beta (Jan 2026 update);
-//          Industry multiples from Equidam published TRBC data (Feb–July 2026).
+//          Industry multiples from Equidam published TRBC data (Feb-July 2026).
 
 export const COUNTRIES = {
-  US: { avgSeedPreMoney: 6590000,  checklistMaxValuation: 15000000, riskFree10Y: 0.047, equityRiskPremium: 0.0446, corporateTaxRate: 0.2557 },
-  GB: { avgSeedPreMoney: 5531000,  checklistMaxValuation: 12919000, riskFree10Y: 0.051, equityRiskPremium: 0.0501, corporateTaxRate: 0.2500 },
+  US: { avgSeedPreMoney: 7700000,  checklistMaxValuation: 16600000, riskFree10Y: 0.047, equityRiskPremium: 0.0446, corporateTaxRate: 0.2557 },
+  GB: { avgSeedPreMoney: 7100000,  checklistMaxValuation: 15300000, riskFree10Y: 0.051, equityRiskPremium: 0.0501, corporateTaxRate: 0.2500 },
   DE: { avgSeedPreMoney: 6107000,  checklistMaxValuation: 13161000, riskFree10Y: 0.033, equityRiskPremium: 0.0423, corporateTaxRate: 0.3006 },
-  FR: { avgSeedPreMoney: 6446000,  checklistMaxValuation: 12576000, riskFree10Y: 0.041, equityRiskPremium: 0.0501, corporateTaxRate: 0.3613 },
-  NL: { avgSeedPreMoney: 5721000,  checklistMaxValuation: 12705000, riskFree10Y: 0.033, equityRiskPremium: 0.0423, corporateTaxRate: 0.2580 },
-  IE: { avgSeedPreMoney: 6469000,  checklistMaxValuation: 15209000, riskFree10Y: 0.034, equityRiskPremium: 0.0501, corporateTaxRate: 0.1250 },
+  FR: { avgSeedPreMoney: 5940000,  checklistMaxValuation: 12800000, riskFree10Y: 0.041, equityRiskPremium: 0.0501, corporateTaxRate: 0.3613 },
+  NL: { avgSeedPreMoney: 5940000,  checklistMaxValuation: 12800000, riskFree10Y: 0.033, equityRiskPremium: 0.0423, corporateTaxRate: 0.2580 },
+  IE: { avgSeedPreMoney: 6050000,  checklistMaxValuation: 13040000, riskFree10Y: 0.034, equityRiskPremium: 0.0501, corporateTaxRate: 0.1250 },
   ES: { avgSeedPreMoney: 4586000,  checklistMaxValuation: 9991000,  riskFree10Y: 0.037, equityRiskPremium: 0.0578, corporateTaxRate: 0.2500 },
   IT: { avgSeedPreMoney: 3919000,  checklistMaxValuation: 7277000,  riskFree10Y: 0.041, equityRiskPremium: 0.0669, corporateTaxRate: 0.2781 },
-  SE: { avgSeedPreMoney: 4961000,  checklistMaxValuation: 9070000,  riskFree10Y: 0.030, equityRiskPremium: 0.0423, corporateTaxRate: 0.2060 },
-  CH: { avgSeedPreMoney: 6604000,  checklistMaxValuation: 14860000, riskFree10Y: 0.004, equityRiskPremium: 0.0423, corporateTaxRate: 0.1961 },
+  SE: { avgSeedPreMoney: 7340000,  checklistMaxValuation: 15820000, riskFree10Y: 0.030, equityRiskPremium: 0.0423, corporateTaxRate: 0.2060 },
+  CH: { avgSeedPreMoney: 8210000,  checklistMaxValuation: 17690000, riskFree10Y: 0.004, equityRiskPremium: 0.0423, corporateTaxRate: 0.1961 },
   IL: { avgSeedPreMoney: 6624000,  checklistMaxValuation: 15263000, riskFree10Y: 0.038, equityRiskPremium: 0.0630, corporateTaxRate: 0.2300 },
   AE: { avgSeedPreMoney: 6542000,  checklistMaxValuation: 13400000, riskFree10Y: 0.052, equityRiskPremium: 0.0487, corporateTaxRate: 0.0900 },
   SG: { avgSeedPreMoney: 5961000,  checklistMaxValuation: 15020000, riskFree10Y: 0.024, equityRiskPremium: 0.0423, corporateTaxRate: 0.1700 },
@@ -74,6 +84,50 @@ export const STAGE_DEFAULT_WEIGHTS = {
 } as const;
 
 export const SURVIVAL_RATES = [0.8869, 0.7945, 0.7164, 0.6487, 0.5891, 0.5357];
+
+// Per-country 6-year survival curves. Year 6 in every row is MODELED (year-5 x the year-4-to-5 decay
+// ratio) since no source publishes a 6-year figure -- years 1-5 are sourced as noted, or a documented
+// interpolation between two sourced anchor years where the full curve wasn't published.
+// Countries not listed here have no adequate public cohort-survival data found (Israel, UAE, Singapore,
+// Hong Kong, India, China, South Africa, Nigeria) -- they fall back to SURVIVAL_RATES (the prior global
+// default) until real data is found; do not fabricate curves for them.
+export const SURVIVAL_RATES_BY_COUNTRY: Partial<Record<keyof typeof COUNTRIES, number[]>> = {
+  // Source: PitchBook-NVCA context aside -- these are Census Bureau BDS / BLS BED framework figures.
+  US: [0.79, 0.69, 0.62, 0.56, 0.51, 0.4645],
+  // Source: ONS Business Demography, UK: 2024.
+  GB: [0.91, 0.75, 0.63, 0.50, 0.384, 0.2949],
+  // Source: IfM Bonn / Statistisches Bundesamt business register, 2017 cohort.
+  DE: [0.74, 0.626, 0.530, 0.448, 0.381, 0.3240],
+  // Source: INSEE Analyses, 2010 creation cohort tracked to 2015. Fully sourced, no interpolation.
+  FR: [0.906, 0.801, 0.712, 0.638, 0.604, 0.5718],
+  // Source: secondary press citing EU-startup survival research; only Y1 and Y5 anchors are sourced,
+  // Y2-4 geometrically interpolated between them.
+  NL: [0.92, 0.8015, 0.6983, 0.6084, 0.53, 0.4618],
+  // Source: CSO Ireland, "Business in Ireland 2023 -- Insights on the Lifecycle of Businesses". Fully sourced.
+  IE: [0.798, 0.635, 0.598, 0.556, 0.476, 0.4075],
+  // Source: INE, Demografia Armonizada de Empresas 2023.
+  ES: [0.85, 0.712, 0.597, 0.50, 0.419, 0.3511],
+  // Source: Equidam's own methodology page (ISTAT-based) for Y1-3; Y4-5 extrapolated at the same decay ratio.
+  IT: [0.761, 0.622, 0.526, 0.4449, 0.375, 0.3167],
+  // Source: cross-country Eurostat-based microenterprise survival study, 2013-2018 cohorts; Y5 anchor,
+  // other years assumed from the same study's shape.
+  SE: [0.93, 0.875, 0.823, 0.775, 0.73, 0.6876],
+  // Source: BFS (Federal Statistical Office) / kmu.admin.ch, 2022 -> 2018 cohorts.
+  CH: [0.84, 0.726, 0.639, 0.573, 0.514, 0.4611],
+  // Source: METI/SME Agency White Paper 2023 -- Y5 is the real widely-cited figure, earlier years assumed shape.
+  JP: [0.97, 0.93, 0.89, 0.85, 0.807, 0.7662],
+  // Source: Statistics Korea (2010-2018 cohort, individual/self-employed businesses).
+  KR: [0.78, 0.592, 0.45, 0.374, 0.31, 0.2570],
+  // Source: StatCan Entrepreneurship Indicators Database -- Y1/Y2 sourced, Y3-5 extrapolated.
+  CA: [0.906, 0.729, 0.587, 0.472, 0.380, 0.3059],
+  // Source: IBGE, 2017 formal-business cohort. Fully sourced.
+  BR: [0.762, 0.596, 0.494, 0.423, 0.379, 0.3396],
+  // Source: ABS Counts of Australian Businesses -- Y1/Y4 sourced, Y2/Y3/Y5 interpolated/extrapolated.
+  AU: [0.77, 0.675, 0.592, 0.52, 0.456, 0.3999],
+  // Source: GUS/PARP, 2011 cohort (Report on the State of the SME Sector in Poland). Fully sourced.
+  PL: [0.86, 0.70, 0.54, 0.47, 0.44, 0.4119],
+};
+
 export const ILLIQUIDITY_DISCOUNT_DEFAULT = 0.25;
 export const LTG_GROWTH_RATE_DEFAULT = 0.025;
 export const LTG_GROWTH_RATE_MIN = 0.001;
