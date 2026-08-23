@@ -67,24 +67,30 @@ export async function POST(
       .eq('company_id', params.id)
       .single()).data;
 
-    // Use provided cap table or fetch from DB
-    let capTable = bodyCaptable?.shareholders || (await supabase
-      .from('valuation_cap_table')
-      .select('*')
-      .eq('company_id', params.id)
-      .order('order_index')).data;
-
-    // Persist cap table if provided in body
+    // Normalize cap table: wizard shape { name, sharePercent } → DB shape { shareholder_name, share_percent }
+    let capTableNormalized: any[] = [];
     if (bodyCaptable?.shareholders && bodyCaptable.shareholders.length > 0) {
+      capTableNormalized = bodyCaptable.shareholders.map((s: any, i: number) => ({
+        shareholder_name: s.name,
+        share_percent: s.sharePercent,
+        order_index: i,
+      }));
+      // Persist normalized cap table
       await supabase.from('valuation_cap_table').delete().eq('company_id', params.id);
-      const capTableRows = bodyCaptable.shareholders.map((shareholder: any, index: number) => ({
+      const capTableRows = capTableNormalized.map((row: any) => ({
         company_id: params.id,
-        shareholder_name: shareholder.name,
-        share_percent: shareholder.percentage,
-        order_index: index,
+        ...row,
       }));
       await supabase.from('valuation_cap_table').insert(capTableRows);
+    } else {
+      // Fetch from DB (already in DB column shape)
+      capTableNormalized = (await supabase
+        .from('valuation_cap_table')
+        .select('*')
+        .eq('company_id', params.id)
+        .order('order_index')).data || [];
     }
+    const capTable = capTableNormalized;
 
     // Fetch funding rounds
     const fundingRounds = (await supabase
@@ -93,26 +99,32 @@ export async function POST(
       .eq('company_id', params.id)
       .order('closed_date')).data;
 
-    // Use provided comparables or fetch from DB
-    let comparables = bodyComparables?.companies || (await supabase
-      .from('valuation_comparables')
-      .select('*')
-      .eq('company_id', params.id)).data;
-
-    // Persist comparables if provided in body
+    // Normalize comparables: wizard shape { companyName, metricType } → DB shape { company_name, metric_type }
+    let comparablesNormalized: any[] = [];
     if (bodyComparables?.companies && bodyComparables.companies.length > 0) {
+      comparablesNormalized = bodyComparables.companies.map((c: any) => ({
+        company_name: c.companyName,
+        multiple: c.multiple,
+        metric_type: c.metricType || 'revenue',
+      }));
+      // Persist normalized comparables
       await supabase.from('valuation_comparables').delete().eq('company_id', params.id);
-      const comparableRows = bodyComparables.companies.map((comp: any) => ({
+      const comparableRows = comparablesNormalized.map((row: any) => ({
         company_id: params.id,
-        company_name: comp.name,
-        multiple: comp.multiple,
-        metric_type: comp.metricType || 'revenue',
+        ...row,
         date_observed: new Date().toISOString().split('T')[0],
-        source: comp.source || 'wizard',
+        source: 'wizard',
         gathered_by: user.id,
       }));
       await supabase.from('valuation_comparables').insert(comparableRows);
+    } else {
+      // Fetch from DB (already in DB column shape)
+      comparablesNormalized = (await supabase
+        .from('valuation_comparables')
+        .select('*')
+        .eq('company_id', params.id)).data || [];
     }
+    const comparables = comparablesNormalized;
 
     // Fetch transaction data
     const transaction = (await supabase
@@ -163,6 +175,12 @@ export async function POST(
     const params_with_weights = {
       ...defaultParams,
       method_weights: weights || defaultParams.method_weights,
+      comparables: comparables.map((c: any) => ({
+        name: c.company_name,
+        metric: c.multiple,
+        multiple: c.multiple,
+        metricType: c.metric_type || 'revenue',
+      })),
     };
 
     // Merge missing fields into questionnaire: capital_needed from transaction, last_year_revenue from financials
