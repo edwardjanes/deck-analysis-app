@@ -72,7 +72,7 @@ export async function POST(
     if (bodyCaptable?.shareholders && bodyCaptable.shareholders.length > 0) {
       capTableNormalized = bodyCaptable.shareholders.map((s: any, i: number) => ({
         shareholder_name: s.name,
-        share_percent: s.sharePercent,
+        share_percent: s.sharePercent / 100,
         order_index: i,
       }));
       // Persist normalized cap table
