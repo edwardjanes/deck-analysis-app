@@ -142,7 +142,7 @@ export async function POST(
 
     // Upsert balance sheet if provided in body
     if (bodyBalanceSheet) {
-      const { data: upserted } = await supabase
+      const { data: upserted, error: balanceSheetUpsertError } = await supabase
         .from('valuation_balance_sheet')
         .upsert({
           company_id: params.id,
@@ -151,6 +151,9 @@ export async function POST(
         }, { onConflict: 'company_id' })
         .select()
         .single();
+      if (balanceSheetUpsertError) {
+        console.error('Balance sheet upsert error:', balanceSheetUpsertError);
+      }
       balanceSheet = upserted || balanceSheet;
     }
 
