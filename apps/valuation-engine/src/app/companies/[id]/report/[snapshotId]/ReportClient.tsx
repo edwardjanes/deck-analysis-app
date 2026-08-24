@@ -675,6 +675,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                   <th style={thStyle}>Company</th>
                   <th style={thStyle}>Multiple</th>
                   <th style={thStyle}>Metric Type</th>
+                  <th style={thStyle}>Source</th>
                 </tr>
               </thead>
               <tbody>
@@ -683,6 +684,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                     <td style={tdStyle}>{comp.company_name}</td>
                     <td style={tdStyle}>{(comp.multiple ?? 0).toFixed(2)}x</td>
                     <td style={tdStyle}>{comp.metric_type}</td>
+                    <td style={tdStyle}>{comp.source || '—'}</td>
                   </tr>
                 ))}
               </tbody>
