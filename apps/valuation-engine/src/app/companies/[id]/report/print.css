@@ -1,12 +1,18 @@
 @media print {
   * {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
 
   html,
   body {
+    width: 100%;
+    height: 100%;
     background: white;
+    color: #000;
+    font-family: 'Fira Sans', 'Inter', system-ui, sans-serif;
+    line-height: 1.5;
   }
 
   @page {
@@ -14,75 +20,89 @@
     margin: 2cm;
   }
 
-  /* Print always renders the light palette, regardless of the viewer's OS theme */
-  :root {
-    --bg: #F6F7F9 !important;
-    --paper: #FFFFFF !important;
-    --paper-alt: #EEF1F4 !important;
-    --ink: #14181F !important;
-    --ink-muted: #5B6472 !important;
-    --ink-faint: #94A0AF !important;
-    --border: #E1E5EA !important;
-    --border-strong: #C7CEDA !important;
-    --accent: #0F8C7A !important;
-    --accent-ink: #FFFFFF !important;
-    --accent-soft: #E4F3F0 !important;
-    --gold: #C08A2E !important;
-    --gold-soft: #F7EDDA !important;
+  /* Major section page breaks + white backgrounds */
+  .print-section-break {
+    page-break-before: always;
+    background-color: white !important;
   }
 
-  /* Hide chrome that has no place on the page */
-  .rpt-topbar,
-  .rpt-rail,
-  .rpt-export-btn {
-    display: none !important;
-  }
-
-  .rpt-shell {
-    display: block !important;
-    max-width: none !important;
-  }
-
-  .rpt-book {
-    padding: 0 !important;
-    gap: 0 !important;
-  }
-
-  /* One report-page per printed page */
-  .rpt-page {
-    box-shadow: none !important;
-    border: none !important;
-    border-radius: 0 !important;
-    page-break-after: always;
+  /* Prevent inner sections from breaking */
+  div[style*="padding: 2rem"],
+  div[style*="marginTop: 2rem"] {
     page-break-inside: avoid;
-    max-width: none !important;
-  }
-  .rpt-page:last-of-type {
-    page-break-after: auto;
   }
 
-  h1, h2, h3 {
+  /* Prevent orphan/widow text */
+  h1,
+  h2,
+  h3 {
     page-break-after: avoid;
     orphans: 3;
     widows: 3;
   }
+
   p {
     orphans: 2;
     widows: 2;
+    margin: 0.5rem 0;
   }
 
+  /* Tables stay intact */
   table {
     page-break-inside: avoid;
+    width: 100%;
   }
+
   thead {
     display: table-header-group;
   }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
   tr {
     page-break-inside: avoid;
   }
 
+  /* SVG charts */
   svg {
     max-width: 100%;
     page-break-inside: avoid;
+  }
+
+  /* Force white backgrounds on any element with dark inline background */
+  [style*="background-color"] {
+    background-color: white !important;
+  }
+
+  /* Hide navigation */
+  button,
+  [role="button"] {
+    display: none;
+  }
+
+  nav,
+  [role="navigation"] {
+    display: none;
+  }
+
+  /* Dark backgrounds → white, text → black for readability */
+  [style*="backgroundColor"] {
+    background-color: white !important;
+  }
+
+  [style*="background:"] {
+    background-color: white !important;
+  }
+
+  /* Ensure borders print cleanly */
+  [style*="border"] {
+    border-color: #999 !important;
+  }
+
+  /* All text black for print */
+  [style*="color:"] {
+    color: #000 !important;
   }
 }

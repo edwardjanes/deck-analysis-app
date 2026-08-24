@@ -160,7 +160,7 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
             <div className="rpt-kicker">Overview</div>
             <h2 className="rpt-title">About This Report</h2>
             <p className="rpt-lede" style={{ marginBottom: 0 }}>
-              This valuation report synthesizes six complementary income and market-based approaches to startup valuation.
+              This valuation report synthesizes six complementary income and market-based approaches to startup valuation: the Scorecard Method (comparing against regional benchmarks), the Checklist Method (assessing business quality criteria), the VC Method (reverse-engineering from exit scenarios), DCF with Long-Term Growth (projecting sustainable terminal cash flow), DCF with Exit Multiple (using comparable company multiples for terminal value), and Simple Multiples (direct comparable company comparison). The final valuation represents a weighted average across these methods, with weights assigned based on the company&apos;s development stage and data quality. Discount rates are calculated using the Capital Asset Pricing Model (CAPM), blending the risk-free rate, industry beta, and equity risk premium for the company&apos;s country.
             </p>
           </section>
 
@@ -175,6 +175,25 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
               <Field label="Stage" value={stageLabel} />
               <Field label="Industry" value={snapshotCompany.industry} />
               <Field label="Country" value={snapshotCompany.country} />
+              <Field label="Founded" value={snapshotCompany.started_year} />
+              <Field label="Incorporated" value={snapshotCompany.incorporated_year} />
+              <Field label="Founders" value={snapshotCompany.founders_count} />
+              <Field
+                label="Founder Capital Committed"
+                value={
+                  snapshotCompany.founders_committed_capital
+                    ? formatCurrency(snapshotCompany.founders_committed_capital)
+                    : null
+                }
+                numeric
+              />
+              <Field label="Employees" value={snapshotCompany.employees_count} />
+              <Field label="Business Model" value={snapshotCompany.business_model} />
+              <Field label="Business Activity" value={snapshotCompany.business_activity} />
+              <div className="rpt-field span-2">
+                <div className="rpt-field-label">Description</div>
+                <div className="rpt-field-value">{snapshotCompany.description || '–'}</div>
+              </div>
             </div>
 
             <div className="rpt-section-h">Latest Operating Performance</div>
@@ -194,6 +213,20 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                   <tr>
                     <td>EBITDA</td>
                     <td className="num">{formatCurrency(lastYearEbitda)}</td>
+                  </tr>
+                  <tr>
+                    <td>EBITDA Margin</td>
+                    <td className="num">
+                      {lastYearRevenue > 0 ? formatPercent(lastYearEbitda / lastYearRevenue) : '–'}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Cash in Hand</td>
+                    <td className="num">
+                      {inputs.balanceSheet?.cash_and_equivalents
+                        ? formatCurrency(inputs.balanceSheet.cash_and_equivalents)
+                        : '–'}
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -225,20 +258,98 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                 ]}
               />
             </div>
+
+            <div className="rpt-section-block">
+              <div className="rpt-section-h">FCFE Forecast</div>
+              <ReportChart
+                categories={(report.fcfeByYear || [])
+                  .filter((f: any) => f.yearOffset >= 1)
+                  .map((f: any) => `Year +${f.yearOffset}`)}
+                series={[
+                  {
+                    name: 'FCFE',
+                    values: (report.fcfeByYear || [])
+                      .filter((f: any) => f.yearOffset >= 1)
+                      .map((f: any) => f.fcfe ?? null),
+                    color: 'var(--cat-3)',
+                  },
+                ]}
+              />
+            </div>
           </section>
 
           {/* Funding & ownership */}
           <section id="funding-ownership" className="rpt-page">
             <div className="rpt-kicker">Overview</div>
             <h2 className="rpt-title">Funding Rounds &amp; Ownership</h2>
-            <p className="rpt-lede">Funding history and cap table snapshot.</p>
+
+            {inputs.fundingRounds && inputs.fundingRounds.length > 0 && (
+              <div className="rpt-section-block">
+                <div className="rpt-section-h">Funding History</div>
+                <div className="rpt-table-scroll">
+                  <table className="rpt-table">
+                    <thead>
+                      <tr>
+                        <th>Round</th>
+                        <th>Date</th>
+                        <th className="num">Investment</th>
+                        <th className="num">Post-Money / Cap</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {inputs.fundingRounds.map((round: any, idx: number) => (
+                        <tr key={idx}>
+                          <td>{round.round_name}</td>
+                          <td>
+                            {round.closed_date
+                              ? new Date(round.closed_date).toLocaleDateString()
+                              : '–'}
+                          </td>
+                          <td className="num">{formatCurrency(round.investment_amount)}</td>
+                          <td className="num">{formatCurrency(round.post_money_or_cap)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {inputs.capTable && inputs.capTable.length > 0 && (
+              <div className="rpt-section-block">
+                <div className="rpt-section-h">Cap Table</div>
+                <div className="rpt-table-scroll">
+                  <table className="rpt-table">
+                    <thead>
+                      <tr>
+                        <th>Shareholder</th>
+                        <th className="num">Ownership %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {inputs.capTable.map((shareholder: any, idx: number) => (
+                        <tr key={idx}>
+                          <td>{shareholder.shareholder_name}</td>
+                          <td className="num">{formatPercent(shareholder.share_percent)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {(!inputs.fundingRounds || inputs.fundingRounds.length === 0) &&
+              (!inputs.capTable || inputs.capTable.length === 0) && (
+                <p className="rpt-muted-dash">No funding or cap table data recorded.</p>
+              )}
           </section>
 
           {/* Valuation summary */}
           <section id="valuation-summary" className="rpt-page">
             <div className="rpt-kicker">Overview</div>
             <h2 className="rpt-title">Valuation Summary</h2>
-            <div className="rpt-sub">Weighted across all six methods for this company's stage</div>
+            <div className="rpt-sub">Weighted across all six methods for this company&apos;s stage</div>
 
             <div className="rpt-kpi-row">
               <div className="rpt-kpi emph">
@@ -254,14 +365,80 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
                 <div className="rpt-kpi-value">{formatCurrency(report.highBound)}</div>
               </div>
             </div>
+
+            <div className="rpt-section-h">Method Comparison</div>
+            <ReportChart
+              categories={(report.perMethod || []).map((m: any) => m.method)}
+              series={[
+                {
+                  name: 'Valuation',
+                  values: (report.perMethod || []).map((m: any) => m.valuation ?? null),
+                },
+              ]}
+              height={190}
+            />
+            <div className="rpt-table-scroll">
+              <table className="rpt-table">
+                <thead>
+                  <tr>
+                    <th>Method</th>
+                    <th className="num">Valuation</th>
+                    <th className="num">Weight</th>
+                    <th className="num">Contribution</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(report.perMethod || []).map((method: any) => (
+                    <tr key={method.method}>
+                      <td>{method.method}</td>
+                      <td className="num">{formatCurrency(method.valuation)}</td>
+                      <td className="num">{formatPercent(method.weight)}</td>
+                      <td className="num">{formatCurrency(method.weightedContribution)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
 
           {/* Scorecard */}
           <section id="scorecard" className="rpt-page">
             <div className="rpt-kicker">Method</div>
             <h2 className="rpt-title">Scorecard Method</h2>
-            <p className="rpt-lede">Compares the company against industry benchmarks.</p>
+            <p className="rpt-lede">
+              Compares the company against industry benchmarks for factors like team strength, opportunity size, competitive position, product/IP, partnerships, and funding requirements.
+            </p>
+
+            {report.methodResults?.scorecard?.criteria && (
+              <div className="rpt-table-scroll" style={{ marginBottom: 24 }}>
+                <table className="rpt-table">
+                  <thead>
+                    <tr>
+                      <th>Criterion</th>
+                      <th className="num">Weight</th>
+                      <th className="num">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.methodResults.scorecard.criteria.map((c: any, idx: number) => (
+                      <tr key={idx}>
+                        <td>{c.key}</td>
+                        <td className="num">{formatPercent(c.weight)}</td>
+                        <td className="num">{c.score.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
             <div className="rpt-waterfall">
+              <div className="rpt-wf-row">
+                <span className="k">Regional Baseline (Average Pre-Money)</span>
+                <span className="v">
+                  {formatCurrency(inputs.parameters?.scorecard?.average_pre_money_valuation || 0)}
+                </span>
+              </div>
               <div className="rpt-wf-row">
                 <span className="k">Scorecard Valuation</span>
                 <span className="v">{formatCurrency(report.methodResults?.scorecard?.valuation || 0)}</span>
@@ -273,8 +450,40 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           <section id="checklist" className="rpt-page">
             <div className="rpt-kicker">Method</div>
             <h2 className="rpt-title">Checklist Method</h2>
-            <p className="rpt-lede">Assigns scores to five key dimensions.</p>
+            <p className="rpt-lede">
+              Assigns scores to five key dimensions – Team, Idea, Product/IP, Relationships, and Operating Stage. The weighted sum is capped at the maximum valuation for the company&apos;s region.
+            </p>
+
+            {report.methodResults?.checklist?.criteria && (
+              <div className="rpt-table-scroll" style={{ marginBottom: 24 }}>
+                <table className="rpt-table">
+                  <thead>
+                    <tr>
+                      <th>Criterion</th>
+                      <th className="num">Weight</th>
+                      <th className="num">Score</th>
+                      <th className="num">Achieved Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.methodResults.checklist.criteria.map((c: any, idx: number) => (
+                      <tr key={idx}>
+                        <td>{c.key}</td>
+                        <td className="num">{formatPercent(c.weight)}</td>
+                        <td className="num">{c.score.toFixed(2)}</td>
+                        <td className="num">{formatCurrency(c.achievedValue || 0)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
             <div className="rpt-waterfall">
+              <div className="rpt-wf-row">
+                <span className="k">Maximum Valuation (Regional)</span>
+                <span className="v">{formatCurrency(inputs.parameters?.checklist?.max_valuation || 0)}</span>
+              </div>
               <div className="rpt-wf-row">
                 <span className="k">Checklist Valuation</span>
                 <span className="v">{formatCurrency(report.methodResults?.checklist?.valuation || 0)}</span>
@@ -286,7 +495,23 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           <section id="vc-method" className="rpt-page">
             <div className="rpt-kicker">Method</div>
             <h2 className="rpt-title">VC Method</h2>
-            <p className="rpt-lede">Discounted cash flow approach for venture capital valuation.</p>
+            <p className="rpt-lede">
+              Projects a terminal valuation based on exit multiples, then discounts it back using a required return rate commensurate with the company&apos;s stage.
+            </p>
+
+            <div className="rpt-field-grid" style={{ marginBottom: 24 }}>
+              <Field
+                label="Exit Multiple"
+                value={`${(inputs.parameters?.vc_method?.industry_multiple ?? 0).toFixed(2)}x`}
+                numeric
+              />
+              <Field
+                label="Required ROI"
+                value={formatPercent(inputs.parameters?.vc_method?.required_roi || 0, 0)}
+                numeric
+              />
+            </div>
+
             <div className="rpt-waterfall">
               <div className="rpt-wf-row">
                 <span className="k">VC Method Valuation</span>
@@ -299,7 +524,29 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           <section id="dcf-ltg" className="rpt-page">
             <div className="rpt-kicker">Method</div>
             <h2 className="rpt-title">DCF with Long-Term Growth</h2>
-            <p className="rpt-lede">Projects free cash flows with perpetual growth assumption.</p>
+            <p className="rpt-lede">
+              Projects free cash flows over 5 years and assumes a steady-state terminal value growing at a long-term rate perpetually.
+            </p>
+
+            <div className="rpt-field-grid" style={{ marginBottom: 24 }}>
+              <Field label="Discount Rate" value={formatPercent(report.discountRate, 2)} numeric />
+              <Field
+                label="Terminal Growth Rate"
+                value={formatPercent(inputs.parameters?.dcf_ltg?.terminal_growth_rate || 0, 2)}
+                numeric
+              />
+              <Field
+                label="Discounted FCF Sum"
+                value={formatCurrency(report.methodResults?.dcfLtg?.discountedFcfSum || 0)}
+                numeric
+              />
+              <Field
+                label="Terminal Value (Discounted)"
+                value={formatCurrency(report.methodResults?.dcfLtg?.discountedTerminalValue || 0)}
+                numeric
+              />
+            </div>
+
             <div className="rpt-waterfall">
               <div className="rpt-wf-row">
                 <span className="k">DCF-LTG Valuation</span>
@@ -312,7 +559,19 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           <section id="dcf-multiple" className="rpt-page">
             <div className="rpt-kicker">Method</div>
             <h2 className="rpt-title">DCF with Exit Multiple</h2>
-            <p className="rpt-lede">Uses industry exit multiple for terminal value.</p>
+            <p className="rpt-lede">
+              Uses an industry-specific exit multiple applied to a future revenue or EBITDA figure to set the terminal value.
+            </p>
+
+            <div className="rpt-field-grid" style={{ marginBottom: 24 }}>
+              <Field
+                label="Exit Multiple"
+                value={`${(inputs.parameters?.dcf_multiple?.exit_multiple ?? 0).toFixed(2)}x`}
+                numeric
+              />
+              <Field label="Discount Rate" value={formatPercent(report.discountRate, 2)} numeric />
+            </div>
+
             <div className="rpt-waterfall">
               <div className="rpt-wf-row">
                 <span className="k">DCF-Multiple Valuation</span>
@@ -325,7 +584,35 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           <section id="multiples" className="rpt-page">
             <div className="rpt-kicker">Method</div>
             <h2 className="rpt-title">Simple Multiples Method</h2>
-            <p className="rpt-lede">Direct comparable company valuation approach.</p>
+            <p className="rpt-lede">
+              Values the company by applying the median multiple from comparable companies to the company&apos;s current revenue or EBITDA.
+            </p>
+
+            {inputs.comparables && inputs.comparables.length > 0 && (
+              <div className="rpt-table-scroll" style={{ marginBottom: 24 }}>
+                <table className="rpt-table">
+                  <thead>
+                    <tr>
+                      <th>Company</th>
+                      <th className="num">Multiple</th>
+                      <th>Metric Type</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inputs.comparables.map((comp: any, idx: number) => (
+                      <tr key={idx}>
+                        <td>{comp.company_name}</td>
+                        <td className="num">{(comp.multiple ?? 0).toFixed(2)}x</td>
+                        <td>{comp.metric_type}</td>
+                        <td>{comp.source || '–'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
             <div className="rpt-waterfall">
               <div className="rpt-wf-row">
                 <span className="k">Multiples Valuation</span>
@@ -338,46 +625,269 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
           <section id="qualitative" className="rpt-page">
             <div className="rpt-kicker gold">Detail</div>
             <h2 className="rpt-title">Qualitative Assessment</h2>
-            <p className="rpt-lede">Team, business model, market, and legal evaluation.</p>
+            {inputs.questionnaire && (
+              <div className="rpt-two-col">
+                <div>
+                  <div className="rpt-trait-group">
+                    <h4 style={{ color: 'var(--accent)', fontSize: 13, marginBottom: 10 }}>Team</h4>
+                    <TraitRow k="Team Size" v={inputs.questionnaire.team_size ?? '–'} />
+                    <TraitRow k="Has CTO" v={yn(inputs.questionnaire.team_has_cto)} />
+                    <TraitRow k="Has Business Lead" v={yn(inputs.questionnaire.team_has_business_lead)} />
+                    <TraitRow k="Prior Exits" v={yn(inputs.questionnaire.team_prior_exits)} />
+                  </div>
+                  <div className="rpt-trait-group">
+                    <h4 style={{ color: 'var(--accent)', fontSize: 13, marginBottom: 10 }}>Business Model</h4>
+                    <TraitRow k="Business Model Type" v={inputs.questionnaire.business_model_type || '–'} />
+                    <TraitRow k="Recurring Revenue" v={yn(inputs.questionnaire.recurring_revenue)} />
+                    <TraitRow
+                      k="TAM Size"
+                      v={inputs.questionnaire.tam_size ? formatCurrency(inputs.questionnaire.tam_size) : '–'}
+                    />
+                    <TraitRow
+                      k="Market Growth Rate"
+                      v={
+                        inputs.questionnaire.market_growth_rate
+                          ? formatPercent(inputs.questionnaire.market_growth_rate)
+                          : '–'
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="rpt-trait-group">
+                    <h4 style={{ color: 'var(--accent)', fontSize: 13, marginBottom: 10 }}>Product &amp; Market</h4>
+                    <TraitRow k="Product Status" v={inputs.questionnaire.product_status || '–'} />
+                    <TraitRow k="Has Customers" v={yn(inputs.questionnaire.has_customers)} />
+                    <TraitRow k="Product-Market Fit" v={yn(inputs.questionnaire.product_market_fit)} />
+                  </div>
+                  <div className="rpt-trait-group">
+                    <h4 style={{ color: 'var(--accent)', fontSize: 13, marginBottom: 10 }}>IP &amp; Legal</h4>
+                    <TraitRow k="Has Patents" v={yn(inputs.questionnaire.has_patents)} />
+                    <TraitRow k="Has IP" v={yn(inputs.questionnaire.has_ip)} />
+                    <TraitRow k="IP Protection Stage" v={inputs.questionnaire.ip_protection_stage || '–'} />
+                    <TraitRow k="Legal Risks" v={yn(inputs.questionnaire.legal_risks)} />
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Updated default values */}
           <section id="default-values" className="rpt-page">
             <div className="rpt-kicker gold">Detail</div>
             <h2 className="rpt-title">Updated Default Values</h2>
-            <p className="rpt-lede">Parameters overridden from the platform's baseline.</p>
+            <p className="rpt-lede">
+              Parameters overridden from the platform&apos;s baseline for this company.
+            </p>
+            <DefaultValuesTable snapshotCompany={snapshotCompany} inputs={inputs} />
           </section>
 
           {/* P&L */}
           <section id="pnl" className="rpt-page">
             <div className="rpt-kicker gold">Detail</div>
             <h2 className="rpt-title">Financial Projections – P&amp;L</h2>
-            <p className="rpt-lede">Full income statement projection by year.</p>
+            {inputs.financials && inputs.financials.length > 0 && (
+              <div className="rpt-table-scroll">
+                <table className="rpt-table">
+                  <thead>
+                    <tr>
+                      <th>Metric</th>
+                      {inputs.financials.map((f: any, idx: number) => (
+                        <th key={idx} className="num">
+                          Year {f.yearOffset >= 0 ? '+' : ''}
+                          {f.yearOffset}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <PnlRow label="Revenue" values={inputs.financials.map((f: any) => f.revenue)} />
+                    <PnlRow label="COGS" values={inputs.financials.map((f: any) => f.cogs)} />
+                    <PnlRow label="Salaries" values={inputs.financials.map((f: any) => f.salaries)} />
+                    <PnlRow label="OpEx" values={inputs.financials.map((f: any) => f.otherOpex)} />
+                    <PnlRow
+                      label="EBITDA"
+                      bold
+                      values={report.fcfeByYear.map((f: any) => f.ebitda)}
+                    />
+                    <tr>
+                      <td>EBITDA Margin</td>
+                      {inputs.financials.map((f: any, idx: number) => {
+                        const ebitda = report.fcfeByYear[idx]?.ebitda || 0;
+                        return (
+                          <td key={idx} className="num">
+                            {f.revenue ? formatPercent(ebitda / f.revenue) : '–'}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <PnlRow label="D&amp;A" values={report.fcfeByYear.map((f: any) => f.da)} />
+                    <PnlRow label="EBIT" bold values={report.fcfeByYear.map((f: any) => f.ebit)} />
+                    <tr>
+                      <td>EBIT Margin</td>
+                      {inputs.financials.map((f: any, idx: number) => {
+                        const ebit = report.fcfeByYear[idx]?.ebit || 0;
+                        return (
+                          <td key={idx} className="num">
+                            {f.revenue ? formatPercent(ebit / f.revenue) : '–'}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <PnlRow label="Interest" values={inputs.financials.map((f: any) => f.interest)} />
+                    <PnlRow label="EBT" values={report.fcfeByYear.map((f: any) => f.ebt)} />
+                    <PnlRow label="Taxes" values={inputs.financials.map((f: any) => f.taxes)} />
+                    <PnlRow
+                      label="Net Profit"
+                      bold
+                      values={report.fcfeByYear.map((f: any) => f.netIncome)}
+                    />
+                    <tr>
+                      <td>Net Margin</td>
+                      {inputs.financials.map((f: any, idx: number) => {
+                        const netIncome = report.fcfeByYear[idx]?.netIncome || 0;
+                        return (
+                          <td key={idx} className="num">
+                            {f.revenue ? formatPercent(netIncome / f.revenue) : '–'}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
 
           {/* Cash flow */}
           <section id="cash-flow" className="rpt-page">
             <div className="rpt-kicker gold">Detail</div>
             <h2 className="rpt-title">Financial Projections – Cash Flow</h2>
-            <p className="rpt-lede">Cash inflows and outflows including FCFE.</p>
+            {report.fcfeByYear && report.fcfeByYear.length > 0 && inputs.financials && (
+              <div className="rpt-table-scroll">
+                <table className="rpt-table">
+                  <thead>
+                    <tr>
+                      <th>Metric</th>
+                      {inputs.financials.map((f: any, idx: number) => (
+                        <th key={idx} className="num">
+                          Year {f.yearOffset >= 0 ? '+' : ''}
+                          {f.yearOffset}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <PnlRow label="Net Income" values={report.fcfeByYear.map((f: any) => f.netIncome)} />
+                    <PnlRow label="D&amp;A" values={report.fcfeByYear.map((f: any) => f.da)} />
+                    <PnlRow label="ΔWorking Capital" values={report.fcfeByYear.map((f: any) => f.deltaWc)} />
+                    <PnlRow
+                      label="Working Capital"
+                      values={inputs.financials.map(
+                        (f: any) => (f.receivables || 0) + (f.inventory || 0) - (f.payables || 0)
+                      )}
+                    />
+                    <PnlRow label="Receivables" values={inputs.financials.map((f: any) => f.receivables || 0)} />
+                    <PnlRow label="Inventory" values={inputs.financials.map((f: any) => f.inventory || 0)} />
+                    <PnlRow label="Payables" values={inputs.financials.map((f: any) => f.payables || 0)} />
+                    <PnlRow label="Capex" values={inputs.financials.map((f: any) => f.capex || 0)} />
+                    <PnlRow label="ΔDebt" values={report.fcfeByYear.map((f: any) => f.deltaDebt)} />
+                    <PnlRow label="Debt (Year-end)" values={inputs.financials.map((f: any) => f.debt || 0)} />
+                    <PnlRow
+                      label="Equity Fundraising"
+                      values={inputs.financials.map((f: any) => f.fundraisingPlan || 0)}
+                    />
+                    <PnlRow label="FCFE" bold values={report.fcfeByYear.map((f: any) => f.fcfe)} />
+                    <PnlRow
+                      label="Free Cash Flow (FCFE + Fundraising)"
+                      bold
+                      values={inputs.financials.map((f: any, idx: number) => {
+                        const fcfe = report.fcfeByYear[idx]?.fcfe || 0;
+                        return fcfe + (f.fundraisingPlan || 0);
+                      })}
+                    />
+                    <tr className="row-sub">
+                      <td>Cash Balance (Illustrative)</td>
+                      {inputs.financials.map((f: any, idx: number) => {
+                        let cashBalance = inputs.balanceSheet?.cash_and_equivalents || 0;
+                        for (let i = 0; i <= idx; i++) {
+                          const fcfe = report.fcfeByYear[i]?.fcfe || 0;
+                          const freeCF = fcfe + (inputs.financials[i]?.fundraisingPlan || 0);
+                          cashBalance += freeCF;
+                        }
+                        return (
+                          <td key={idx} className="num">
+                            {formatCurrency(cashBalance)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
 
           {/* Appendix: method weights */}
           <section id="method-weights" className="rpt-page">
             <div className="rpt-kicker gold">Appendix</div>
             <h2 className="rpt-title">Method Weights by Stage</h2>
-            <p className="rpt-lede">How each valuation method is weighted by company stage.</p>
+            <div className="rpt-table-scroll">
+              <table className="rpt-table">
+                <thead>
+                  <tr>
+                    <th>Stage</th>
+                    <th className="num">Scorecard</th>
+                    <th className="num">Checklist</th>
+                    <th className="num">VC</th>
+                    <th className="num">DCF-LTG</th>
+                    <th className="num">DCF-Multi</th>
+                    <th className="num">Multiples</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(STAGE_DEFAULT_WEIGHTS).map(([stage, weights]: [string, any]) => (
+                    <tr
+                      key={stage}
+                      style={
+                        snapshotCompany.stage === stage
+                          ? { background: 'var(--accent-soft)', fontWeight: 600 }
+                          : undefined
+                      }
+                    >
+                      <td>{stage}</td>
+                      <td className="num">{formatPercent(weights.scorecard)}</td>
+                      <td className="num">{formatPercent(weights.checklist)}</td>
+                      <td className="num">{formatPercent(weights.vc)}</td>
+                      <td className="num">{formatPercent(weights.dcf_ltg)}</td>
+                      <td className="num">{formatPercent(weights.dcf_multiple)}</td>
+                      <td className="num">{formatPercent(weights.multiples)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
 
           {/* Appendix: sources & disclaimer */}
           <section id="sources-disclaimer" className="rpt-page">
             <div className="rpt-kicker gold">Appendix</div>
             <h2 className="rpt-title">Data Sources &amp; Disclaimer</h2>
-            <div className="rpt-callout">
-              This valuation is illustrative and based on the data provided. It should not be
-              considered financial advice. Consult with professional advisors before making
-              investment decisions. All assumptions and data are subject to change.
+
+            <div className="rpt-section-block">
+              <div className="rpt-section-h">Data Sources</div>
+              <div className="rpt-callout">
+                Country pre-money/max valuation baselines: Equidam Parameters Update, Feb 2026, derived from 30 months of real transaction data. Discount rate: CAPM (risk-free rate from Trading Economics, beta from Damodaran/NYU Stern, equity risk premium from Damodaran). Industry multiples: Equidam TRBC published data (July 2026) and Damodaran unlevered beta (Jan 2026).
+              </div>
             </div>
+
+            <div className="rpt-section-block">
+              <div className="rpt-section-h">Disclaimer</div>
+              <div className="rpt-callout">
+                This valuation is illustrative and based on the data provided. It should not be considered financial advice. Consult with professional advisors before making investment decisions. All assumptions and data are subject to change.
+              </div>
+            </div>
+
             <div className="rpt-page-footer">
               <span>Source Capital Valuation Engine</span>
               <span>Report generated on {new Date(report.generatedAt).toLocaleDateString()}</span>
@@ -391,6 +901,10 @@ export default function ReportClient({ snapshot, company }: ReportClientProps) {
       </div>
     </div>
   );
+}
+
+function yn(v: any) {
+  return v ? 'Yes' : 'No';
 }
 
 function Field({
@@ -408,6 +922,153 @@ function Field({
       <div className={`rpt-field-value${numeric ? ' num' : ''}`}>
         {value === null || value === undefined || value === '' ? '–' : value}
       </div>
+    </div>
+  );
+}
+
+function TraitRow({ k, v }: { k: string; v: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: '5px 0',
+        borderBottom: '1px dashed var(--border)',
+        fontSize: 12.5,
+      }}
+    >
+      <span style={{ color: 'var(--ink-muted)' }}>{k}</span>
+      <span style={{ fontWeight: 600, textAlign: 'right' }}>{v}</span>
+    </div>
+  );
+}
+
+function PnlRow({
+  label,
+  values,
+  bold,
+}: {
+  label: string;
+  values: number[];
+  bold?: boolean;
+}) {
+  return (
+    <tr className={bold ? 'row-total' : undefined}>
+      <td>{label}</td>
+      {values.map((v, idx) => (
+        <td key={idx} className="num">
+          {formatCurrency(v || 0)}
+        </td>
+      ))}
+    </tr>
+  );
+}
+
+function DefaultValuesTable({ snapshotCompany, inputs }: { snapshotCompany: any; inputs: any }) {
+  const defaultParams = buildDefaultParameters(
+    {
+      name: snapshotCompany.name,
+      country: snapshotCompany.country,
+      industry: snapshotCompany.industry,
+      stage: snapshotCompany.stage,
+    },
+    inputs.financials || [],
+    inputs.balanceSheet
+  );
+
+  const fields: { label: string; current: number; default: number; format: 'currency' | 'percent' }[] = [];
+
+  if (inputs.parameters?.dcf_shared?.discount_rate !== defaultParams.dcf_shared.discount_rate) {
+    fields.push({
+      label: 'Discount Rate',
+      current: inputs.parameters?.dcf_shared?.discount_rate || 0,
+      default: defaultParams.dcf_shared.discount_rate,
+      format: 'percent',
+    });
+  }
+  if (inputs.parameters?.vc_method?.industry_multiple !== defaultParams.vc_method.industry_multiple) {
+    fields.push({
+      label: 'VC Method Exit Multiple',
+      current: inputs.parameters?.vc_method?.industry_multiple || 0,
+      default: defaultParams.vc_method.industry_multiple,
+      format: 'currency',
+    });
+  }
+  if (inputs.parameters?.dcf_multiple?.exit_multiple !== defaultParams.dcf_multiple.exit_multiple) {
+    fields.push({
+      label: 'DCF Multiple Exit Multiple',
+      current: inputs.parameters?.dcf_multiple?.exit_multiple || 0,
+      default: defaultParams.dcf_multiple.exit_multiple,
+      format: 'currency',
+    });
+  }
+  if (
+    inputs.parameters?.scorecard?.average_pre_money_valuation !==
+    defaultParams.scorecard.average_pre_money_valuation
+  ) {
+    fields.push({
+      label: 'Scorecard Average Pre-Money',
+      current: inputs.parameters?.scorecard?.average_pre_money_valuation || 0,
+      default: defaultParams.scorecard.average_pre_money_valuation,
+      format: 'currency',
+    });
+  }
+  if (inputs.parameters?.checklist?.max_valuation !== defaultParams.checklist.max_valuation) {
+    fields.push({
+      label: 'Checklist Maximum Valuation',
+      current: inputs.parameters?.checklist?.max_valuation || 0,
+      default: defaultParams.checklist.max_valuation,
+      format: 'currency',
+    });
+  }
+  if (inputs.parameters?.dcf_ltg?.terminal_growth_rate !== defaultParams.dcf_ltg.terminal_growth_rate) {
+    fields.push({
+      label: 'DCF Terminal Growth Rate',
+      current: inputs.parameters?.dcf_ltg?.terminal_growth_rate || 0,
+      default: defaultParams.dcf_ltg.terminal_growth_rate,
+      format: 'percent',
+    });
+  }
+  if (
+    inputs.parameters?.dcf_shared?.illiquidity_discount !== defaultParams.dcf_shared.illiquidity_discount
+  ) {
+    fields.push({
+      label: 'Illiquidity Discount',
+      current: inputs.parameters?.dcf_shared?.illiquidity_discount || 0,
+      default: defaultParams.dcf_shared.illiquidity_discount,
+      format: 'percent',
+    });
+  }
+
+  if (fields.length === 0) {
+    return <p className="rpt-muted-dash">No parameters were overridden – this report uses platform defaults throughout.</p>;
+  }
+
+  return (
+    <div className="rpt-table-scroll">
+      <table className="rpt-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th className="num">Platform Default</th>
+            <th className="num">Used Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {fields.map((field, idx) => (
+            <tr key={idx}>
+              <td>{field.label}</td>
+              <td className="num">
+                {field.format === 'percent' ? formatPercent(field.default, 2) : formatCurrency(field.default)}
+              </td>
+              <td className="num">
+                {field.format === 'percent' ? formatPercent(field.current, 2) : formatCurrency(field.current)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
