@@ -14,6 +14,7 @@ import {
   SURVIVAL_RATES,
   SURVIVAL_RATES_BY_COUNTRY,
 } from './referenceData';
+import { deriveFcfeByYear } from './fcf';
 
 const COUNTRY_NAME_TO_CODE: Record<string, keyof typeof COUNTRIES> = {
   'united states': 'US', 'usa': 'US', 'us': 'US',
@@ -92,6 +93,14 @@ export function buildDefaultParameters(
   const terminalFinancial = financials.find((f) => f.yearOffset === 5) || financials[financials.length - 1];
   const terminalRevenue = terminalFinancial?.revenue || lastYearRevenue;
 
+  // Terminal year EBITDA, derived the same way as the P&L/FCFE tables (revenue - cogs - salaries - otherOpex)
+  // so the VC Method's exit value is computed on the same basis the methodology specifies: EBITDA x an
+  // EBITDA multiple, not revenue x an EBITDA multiple.
+  const fcfeByYear = deriveFcfeByYear(financials);
+  const terminalFcfeYear =
+    fcfeByYear.find((f) => f.yearOffset === 5) || fcfeByYear[fcfeByYear.length - 1];
+  const terminalEbitda = terminalFcfeYear?.ebitda ?? 0;
+
   // Discount rate via CAPM
   const discountRate = countryData.risk_free_rate + industryData.beta * countryData.equity_risk_premium;
 
@@ -119,8 +128,10 @@ export function buildDefaultParameters(
     },
 
     // VC Method parameters
+    // terminal_metric_value is EBITDA (not revenue) — it's paired with an EBITDA multiple below,
+    // matching Equidam's methodology: Exit Value = terminal-year EBITDA x industry EBITDA multiple.
     vc_method: {
-      terminal_metric_value: terminalRevenue,
+      terminal_metric_value: terminalEbitda,
       industry_multiple: industryData.ebitda_multiple,
       required_roi: requiredRoi,
       projection_years: 5,
