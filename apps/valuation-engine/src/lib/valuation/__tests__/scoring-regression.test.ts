@@ -194,3 +194,27 @@ it("a below-average questionnaire produces a negative Scorecard delta (not clamp
   // old scoring rubric could never produce (it floored every criterion at "average").
   expect(weightedSum).toBeLessThan(0);
 });
+
+it("has_patents/has_ip fallback fires when ip_protection_stage is '' (the wizard's actual default), not just undefined", () => {
+  // QuestionnaireStep.tsx initializes ip_protection_stage to '' and only sets it to a real
+  // value once the user picks a dropdown option -- it is never `undefined` in practice. The
+  // fallback to has_patents/has_ip must still work in that common case, otherwise anyone who
+  // checks "has patents" / "has IP" but skips the dropdown gets no IP score contribution at all.
+  const withPatentsEmptyStage: QuestionnaireAnswers = {
+    ip_protection_stage: "",
+    has_patents: true,
+    has_ip: false,
+  };
+  const withoutPatentsEmptyStage: QuestionnaireAnswers = {
+    ip_protection_stage: "",
+    has_patents: false,
+    has_ip: false,
+  };
+
+  const scorecardWith = deriveScorecardCriteriaScores(withPatentsEmptyStage);
+  const scorecardWithout = deriveScorecardCriteriaScores(withoutPatentsEmptyStage);
+
+  // Falls back to the has_patents/has_ip booleans (60 for true, 35 for false) rather than
+  // treating '' as a real (unmatched) stage and silently contributing nothing.
+  expect(scorecardWith.product_ip).toBeGreaterThan(scorecardWithout.product_ip);
+});

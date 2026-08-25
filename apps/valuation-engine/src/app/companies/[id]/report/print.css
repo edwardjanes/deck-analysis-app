@@ -85,4 +85,27 @@
     max-width: 100%;
     page-break-inside: avoid;
   }
+
+  /* The P&L / Cash Flow tables have 8 columns (label + 7 forecast years) and rely on
+     .rpt-table-scroll's horizontal scrollbar on screen -- there's no scrolling in print,
+     so anything past the container edge was silently clipped instead of wrapping to a new
+     page. Shrink the page padding and table type size so the full table fits the printable
+     width instead of overflowing it. */
+  .rpt-page {
+    padding: 28px 24px !important;
+  }
+  .rpt-table-scroll {
+    overflow: visible !important;
+  }
+  .rpt-table {
+    font-size: 9.5px !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+  }
+  .rpt-table th,
+  .rpt-table td {
+    padding: 5px 5px !important;
+    white-space: normal !important;
+    word-break: break-word;
+  }
 }

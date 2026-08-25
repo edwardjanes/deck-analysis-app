@@ -134,7 +134,10 @@ function rawProductStrength(answers: QuestionnaireAnswers): number {
     );
   }
   // Prefer the graded IP protection stage when present; fall back to the has_patents/has_ip booleans.
-  if (answers.ip_protection_stage !== undefined) {
+  // NOTE: the wizard initializes this field to '' (not undefined) until the user picks a dropdown
+  // option, so we must treat '' the same as "not answered" -- otherwise the has_patents/has_ip
+  // fallback below can never run for anyone who leaves the dropdown untouched.
+  if (answers.ip_protection_stage) {
     const ipScore = { none: 25, pending: 50, granted: 75, enforced: 90 }[answers.ip_protection_stage as string];
     if (ipScore !== undefined) scores.push(ipScore);
   } else if (answers.has_patents !== undefined || answers.has_ip !== undefined) {
