@@ -4,206 +4,179 @@ import {
   QuestionnaireAnswers,
 } from './types';
 
+// ---------------------------------------------------------------------------
+// Sub-trait scoring: every raw* function below returns a score on a 1-100
+// scale, where 50 means "average" for that sub-trait -- neither a strength
+// nor a weakness. A genuinely weak answer scores below 50; a genuinely
+// strong one scores above it. There is no floor at "average or better".
+//
+// The two consumers below read these raw scores differently:
+//   - Scorecard needs a signed DELTA from average. Equidam's formula is
+//     valuation = avgPreMoneyValuation x (1 + Sum(weight x delta)), where
+//     delta is negative for below-average traits, positive for above --
+//     e.g. NovaCloud's own report scores its team exactly 0.000 (average).
+//     toScorecardDelta() maps 1-100 onto roughly -1..+1, with 50 -> 0.
+//   - Checklist needs a 0-100% "how close to the ideal" score. Equidam's
+//     formula is Sum(weight x percent x maxValuation) -- there's no
+//     negative side, a weak company just earns less of the maximum.
+//     toChecklistPercent() maps 1-100 onto 0.01..1.0 directly.
+//
+// NOTE: This rubric is ILLUSTRATIVE and an assumption -- Equidam's exact
+// sub-trait weighting and thresholds are proprietary and unpublished.
+// Users can override the resulting criterion scores directly in the UI.
+// ---------------------------------------------------------------------------
+
+function toScorecardDelta(raw: number): number {
+  const clamped = Math.max(1, Math.min(100, raw));
+  return (clamped - 50) / 50;
+}
+
+function toChecklistPercent(raw: number): number {
+  const clamped = Math.max(1, Math.min(100, raw));
+  return clamped / 100;
+}
+
 export function deriveScorecardCriteriaScores(
   answers: QuestionnaireAnswers
 ): Record<ScorecardCriterionKey, number> {
-  // NOTE: This rubric is ILLUSTRATIVE and an assumption.
-  // Equidam's exact sub-trait weighting is proprietary.
-  // Users can override these scores directly in the UI.
-
-  const team = scoreTeamStrength(answers);
-  const opportunity = scoreOpportunitySize(answers);
-  const competitive_env = scoreCompetitiveEnvironment(answers);
-  const product_ip = scoreProductStrength(answers);
-  const partnerships = scoreStrategicPartnerships(answers);
-  const funding_required = scoreFundingRequired(answers);
-
   return {
-    team,
-    opportunity,
-    competitive_env,
-    product_ip,
-    partnerships,
-    funding_required,
+    team: toScorecardDelta(rawTeamStrength(answers)),
+    opportunity: toScorecardDelta(rawOpportunitySize(answers)),
+    competitive_env: toScorecardDelta(rawCompetitiveEnvironment(answers)),
+    product_ip: toScorecardDelta(rawProductStrength(answers)),
+    partnerships: toScorecardDelta(rawStrategicPartnerships(answers)),
+    funding_required: toScorecardDelta(rawFundingRequired(answers)),
   };
 }
 
 export function deriveChecklistCriteriaScores(
   answers: QuestionnaireAnswers
 ): Record<ChecklistCriterionKey, number> {
-  // NOTE: This rubric is ILLUSTRATIVE and an assumption.
-  // Users can override these scores directly in the UI.
-
-  const team = scoreTeamQuality(answers);
-  const idea = scoreIdeaQuality(answers);
-  const product_ip = scoreProductIP(answers);
-  const relationships = scoreRelationships(answers);
-  const operating_stage = scoreOperatingStage(answers);
-
   return {
-    team,
-    idea,
-    product_ip,
-    relationships,
-    operating_stage,
+    team: toChecklistPercent(rawTeamStrength(answers)),
+    idea: toChecklistPercent(rawOpportunitySize(answers)),
+    product_ip: toChecklistPercent(rawProductStrength(answers)),
+    relationships: toChecklistPercent(rawStrategicPartnerships(answers)),
+    operating_stage: scoreOperatingStage(answers),
   };
 }
 
-function scoreTeamStrength(answers: QuestionnaireAnswers): number {
-  let score = 0;
-  let count = 0;
+// --- Raw (1-100, 50 = average) sub-trait scorers --------------------------
 
-  if (answers.team_size) {
-    score += answers.team_size >= 5 ? 0.5 : answers.team_size >= 3 ? 0.25 : 0;
-    count++;
-  }
-  if (answers.team_has_cto) {
-    score += answers.team_has_cto ? 0.5 : 0;
-    count++;
-  }
-  if (answers.team_has_business_lead) {
-    score += answers.team_has_business_lead ? 0.5 : 0;
-    count++;
-  }
-  if (answers.team_prior_exits) {
-    score += answers.team_prior_exits ? 0.75 : 0;
-    count++;
-  }
-
-  return count > 0 ? score / count : 0;
+function average(scores: number[]): number {
+  return scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 50;
 }
 
-function scoreOpportunitySize(answers: QuestionnaireAnswers): number {
-  let score = 0;
-  let count = 0;
+function rawTeamStrength(answers: QuestionnaireAnswers): number {
+  const scores: number[] = [];
 
-  if (answers.tam_size) {
-    const tam = answers.tam_size;
-    score += tam > 10_000_000_000 ? 1.0 : tam > 1_000_000_000 ? 0.75 : tam > 100_000_000 ? 0.5 : 0.25;
-    count++;
+  if (answers.team_size !== undefined) {
+    scores.push(answers.team_size >= 5 ? 75 : answers.team_size >= 3 ? 45 : 25);
   }
-  if (answers.market_growth_rate) {
+  if (answers.team_has_cto !== undefined) {
+    scores.push(answers.team_has_cto ? 65 : 35);
+  }
+  if (answers.team_has_business_lead !== undefined) {
+    scores.push(answers.team_has_business_lead ? 60 : 40);
+  }
+  if (answers.team_prior_exits !== undefined) {
+    // No prior exits is the common case for first-time founders -- neutral, not a red flag.
+    scores.push(answers.team_prior_exits ? 85 : 50);
+  }
+
+  return average(scores);
+}
+
+function rawOpportunitySize(answers: QuestionnaireAnswers): number {
+  const scores: number[] = [];
+
+  if (answers.tam_size !== undefined) {
+    const tam = answers.tam_size;
+    scores.push(tam > 10_000_000_000 ? 85 : tam > 1_000_000_000 ? 65 : tam > 100_000_000 ? 50 : 30);
+  }
+  if (answers.market_growth_rate !== undefined) {
     const growth = answers.market_growth_rate;
-    score += growth > 0.2 ? 1.0 : growth > 0.1 ? 0.75 : growth > 0.05 ? 0.5 : 0.25;
-    count++;
+    scores.push(growth > 0.2 ? 85 : growth > 0.1 ? 65 : growth > 0.05 ? 50 : 30);
   }
   if (answers.recurring_revenue !== undefined) {
-    score += answers.recurring_revenue ? 0.75 : 0.4;
-    count++;
+    scores.push(answers.recurring_revenue ? 65 : 40);
   }
   if (answers.has_customers !== undefined) {
-    score += answers.has_customers ? 0.75 : 0.25;
-    count++;
+    scores.push(answers.has_customers ? 65 : 30);
   }
   if (answers.product_market_fit !== undefined) {
-    score += answers.product_market_fit ? 1.0 : 0.25;
-    count++;
+    scores.push(answers.product_market_fit ? 80 : 30);
   }
 
-  return count > 0 ? Math.min(score / count, 1.0) : 0;
+  return average(scores);
 }
 
-function scoreCompetitiveEnvironment(answers: QuestionnaireAnswers): number {
-  let score = 0;
-  let count = 0;
+function rawCompetitiveEnvironment(answers: QuestionnaireAnswers): number {
+  const scores: number[] = [];
 
   if (answers.competitors_count !== undefined) {
-    score += answers.competitors_count <= 3 ? 0.75 : answers.competitors_count <= 10 ? 0.5 : 0.25;
-    count++;
+    scores.push(answers.competitors_count <= 3 ? 60 : answers.competitors_count <= 10 ? 50 : 35);
   }
-  if (answers.has_competitive_advantage) {
-    score += answers.has_competitive_advantage ? 0.75 : 0.25;
-    count++;
+  if (answers.has_competitive_advantage !== undefined) {
+    scores.push(answers.has_competitive_advantage ? 65 : 30);
   }
 
-  return count > 0 ? Math.min(score / count, 1.0) : 0;
+  return average(scores);
 }
 
-function scoreProductStrength(answers: QuestionnaireAnswers): number {
-  let score = 0;
-  let count = 0;
+function rawProductStrength(answers: QuestionnaireAnswers): number {
+  const scores: number[] = [];
 
-  if (answers.product_status) {
+  if (answers.product_status !== undefined) {
     const status = answers.product_status;
-    score +=
-      status === 'revenue_generating'
-        ? 1.0
-        : status === 'beta'
-          ? 0.5
-          : status === 'mvp'
-            ? 0.25
-            : 0;
-    count++;
+    scores.push(
+      status === 'revenue_generating' ? 85 : status === 'beta' ? 55 : status === 'mvp' ? 35 : 15
+    );
   }
-  // Use graded IP protection stage if available, fall back to boolean logic
-  if (answers.ip_protection_stage) {
-    const ipScore = { none: 0.1, pending: 0.5, granted: 0.85, enforced: 1.0 }[answers.ip_protection_stage as string];
-    if (ipScore !== undefined) {
-      score += ipScore;
-      count++;
-    }
-  } else if (answers.has_patents || answers.has_ip) {
-    score += (answers.has_patents || answers.has_ip) ? 0.75 : 0.25;
-    count++;
+  // Prefer the graded IP protection stage when present; fall back to the has_patents/has_ip booleans.
+  if (answers.ip_protection_stage !== undefined) {
+    const ipScore = { none: 25, pending: 50, granted: 75, enforced: 90 }[answers.ip_protection_stage as string];
+    if (ipScore !== undefined) scores.push(ipScore);
+  } else if (answers.has_patents !== undefined || answers.has_ip !== undefined) {
+    scores.push(answers.has_patents || answers.has_ip ? 60 : 35);
   }
-  // Legal risks reduce score (penalty, not a separate criterion)
-  if (answers.legal_risks) {
-    score -= 0.25;
-  }
-  // Note: business_model_type is collected by UI but intentionally not scored — no defensible ranking (SaaS vs Marketplace, etc)
 
-  return count > 0 ? Math.max(0, Math.min(score / count, 1.0)) : 0;
+  let raw = average(scores);
+  // Legal risk is a penalty applied on top of the averaged sub-signals, not a separate criterion.
+  if (answers.legal_risks) {
+    raw -= 15;
+  }
+  // Note: business_model_type is collected by the UI but intentionally not scored --
+  // no defensible ranking exists (SaaS vs Marketplace, etc).
+
+  return Math.max(1, Math.min(100, raw));
 }
 
-function scoreStrategicPartnerships(answers: QuestionnaireAnswers): number {
-  let score = 0;
-  let count = 0;
+function rawStrategicPartnerships(answers: QuestionnaireAnswers): number {
+  const scores: number[] = [];
 
   if (answers.partnerships_count !== undefined) {
-    score += answers.partnerships_count >= 3 ? 0.75 : answers.partnerships_count >= 1 ? 0.5 : 0.25;
-    count++;
+    scores.push(answers.partnerships_count >= 3 ? 65 : answers.partnerships_count >= 1 ? 50 : 35);
   }
-  if (answers.has_strategic_investors) {
-    score += answers.has_strategic_investors ? 0.75 : 0;
-    count++;
+  if (answers.has_strategic_investors !== undefined) {
+    scores.push(answers.has_strategic_investors ? 70 : 40);
   }
 
-  return count > 0 ? Math.min(score / count, 1.0) : 0;
+  return average(scores);
 }
 
-function scoreFundingRequired(answers: QuestionnaireAnswers): number {
-  let score = 0.5;
-  let count = 1;
+function rawFundingRequired(answers: QuestionnaireAnswers): number {
+  if (answers.capital_needed === undefined) return 50;
 
-  if (answers.capital_needed) {
-    const capital = answers.capital_needed;
-    const revenue = answers.last_year_revenue || 100_000;
-    const ratio = capital / revenue;
+  const capital = answers.capital_needed;
+  const revenue = answers.last_year_revenue || 100_000;
+  const ratio = capital / revenue;
 
-    if (ratio < 0.5) score += 0.5;
-    else if (ratio < 1.0) score += 0.25;
-    count++;
-  }
-
-  return count > 0 ? Math.min(score / count, 1.0) : 0.5;
+  return ratio < 0.5 ? 65 : ratio < 1.0 ? 50 : 35;
 }
 
-function scoreTeamQuality(answers: QuestionnaireAnswers): number {
-  return scoreTeamStrength(answers);
-}
-
-function scoreIdeaQuality(answers: QuestionnaireAnswers): number {
-  return scoreOpportunitySize(answers);
-}
-
-function scoreProductIP(answers: QuestionnaireAnswers): number {
-  return scoreProductStrength(answers);
-}
-
-function scoreRelationships(answers: QuestionnaireAnswers): number {
-  return scoreStrategicPartnerships(answers);
-}
-
+// Checklist-only criterion (no Scorecard counterpart) -- already a direct 0-1 "% of ideal",
+// which is the correct unit for Checklist, so it's untouched by the rescale above.
 function scoreOperatingStage(answers: QuestionnaireAnswers): number {
   if (answers.product_status) {
     const status = answers.product_status;

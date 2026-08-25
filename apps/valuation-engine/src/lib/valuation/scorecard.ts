@@ -22,7 +22,9 @@ export function computeScorecard(
 
   const sumWeightedScore = result.reduce((sum, c) => sum + c.contribution, 0);
   // Formula: Valuation = AvgPreMoneyValuation × (1 + Σ(weight_i × score_i))
-  const valuation = averagePreMoneyValuation * (1 + sumWeightedScore);
+  // score_i can be negative (below-average criterion), so clamp the result at 0 --
+  // a valuation can't go negative even if every criterion scores at its floor.
+  const valuation = Math.max(0, averagePreMoneyValuation * (1 + sumWeightedScore));
 
   return {
     criteria: result,

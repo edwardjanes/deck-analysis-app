@@ -135,16 +135,62 @@ it("QuestionnaireStep UI fields match scoring function reads", () => {
   expect(Object.keys(checklistScores)).toContain("relationships");
   expect(Object.keys(checklistScores)).toContain("operating_stage");
 
-  // Verify scores are numbers between 0 and 1
+  // Scorecard scores are a signed delta from average (roughly -1..+1, 0 = average) --
+  // NOT bounded to 0..1. A below-average trait must be able to produce a negative
+  // delta so the Scorecard valuation can land below the country average, not just
+  // at-or-above it.
   Object.values(scorecardScores).forEach((score) => {
     expect(typeof score).toBe("number");
-    expect(score).toBeGreaterThanOrEqual(0);
+    expect(score).toBeGreaterThanOrEqual(-1);
     expect(score).toBeLessThanOrEqual(1);
   });
 
+  // Checklist scores are a 0-100% "closeness to ideal" -- no negative side by design.
   Object.values(checklistScores).forEach((score) => {
     expect(typeof score).toBe("number");
     expect(score).toBeGreaterThanOrEqual(0);
     expect(score).toBeLessThanOrEqual(1);
   });
+});
+
+it("a below-average questionnaire produces a negative Scorecard delta (not clamped at 0)", () => {
+  const weakAnswers: QuestionnaireAnswers = {
+    team_size: 1,
+    team_has_cto: false,
+    team_has_business_lead: false,
+    team_prior_exits: false,
+    tam_size: 10_000_000,
+    market_growth_rate: 0.02,
+    competitors_count: 20,
+    has_competitive_advantage: false,
+    product_status: "idea",
+    has_patents: false,
+    has_ip: false,
+    partnerships_count: 0,
+    has_strategic_investors: false,
+    capital_needed: 2_000_000,
+    last_year_revenue: 500_000,
+  };
+
+  const scores = deriveScorecardCriteriaScores(weakAnswers);
+
+  // Team: size 1 (25), no CTO (35), no lead (40), no prior exits (50, neutral) -> avg 37.5 -> delta -0.25
+  expect(scores.team).toBeLessThan(0);
+  // Opportunity: small TAM, slow growth, no PMF/customers signalled -> below average
+  expect(scores.opportunity).toBeLessThan(0);
+  // 20 competitors, no competitive advantage -> below average
+  expect(scores.competitive_env).toBeLessThan(0);
+
+  const weightedSum =
+    0.3 * scores.team +
+    0.25 * scores.opportunity +
+    0.1 * scores.competitive_env +
+    0.15 * scores.product_ip +
+    0.1 * scores.partnerships +
+    0.1 * scores.funding_required;
+
+  // With this many below-average signals, the blended Scorecard adjustment should be
+  // negative -- i.e. this company should value BELOW the country average, which the
+  // old scoring rubric could never produce (it floored every criterion at "average").
+  expect(weightedSum).toBeLessThan(0);
 });
