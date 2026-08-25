@@ -46,11 +46,21 @@ export function ReportChart({
   const plotH = height - padT - padB;
 
   const allValues = series.flatMap((s) => s.values.filter((v): v is number => v != null));
-  const maxVal = Math.max(1, ...allValues);
+  // Include 0 in the range so an all-positive or all-negative series still gets a correct
+  // zero baseline, and so a mixed-sign series (e.g. FCFE going negative before turning
+  // positive) draws bars extending both up and down from that baseline instead of being
+  // clamped to a 1px sliver or pushed off the plot area.
+  const maxVal = Math.max(0, ...allValues);
+  const minVal = Math.min(0, ...allValues);
+  const range = Math.max(1, maxVal - minVal);
 
   const groupW = plotW / categories.length;
   const barGap = 4;
   const barW = Math.max(4, (groupW - barGap * (series.length + 1)) / series.length);
+
+  // Where "0" falls within the plot area, vertically. All bars are drawn relative to this,
+  // not to the bottom of the chart, so negative values extend downward from it correctly.
+  const zeroY = padT + plotH - ((0 - minVal) / range) * plotH;
 
   return (
     <div className="rpt-chart-wrap">
@@ -65,7 +75,7 @@ export function ReportChart({
         </div>
       )}
       <svg width="100%" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="chart">
-        <line x1={padL} y1={padT + plotH} x2={width - padR} y2={padT + plotH} stroke="var(--border)" strokeWidth={1} />
+        <line x1={padL} y1={zeroY} x2={width - padR} y2={zeroY} stroke="var(--border)" strokeWidth={1} />
         {categories.map((cat, ci) => {
           const groupX = padL + ci * groupW;
           return (
@@ -73,13 +83,14 @@ export function ReportChart({
               {series.map((s, si) => {
                 const v = s.values[ci];
                 if (v == null) return null;
-                const barH = (v / maxVal) * (plotH - 8);
+                const valueY = padT + plotH - ((v - minVal) / range) * plotH;
                 const x = groupX + barGap + si * (barW + barGap);
-                const y = padT + plotH - barH;
+                const y = Math.min(valueY, zeroY);
+                const barH = Math.max(Math.abs(valueY - zeroY), 1);
                 const color = s.color || CAT_COLORS[si % CAT_COLORS.length];
                 return (
                   <g key={s.name}>
-                    <rect x={x} y={y} width={barW} height={Math.max(barH, 1)} rx={2} fill={color} />
+                    <rect x={x} y={y} width={barW} height={barH} rx={2} fill={color} />
                   </g>
                 );
               })}
