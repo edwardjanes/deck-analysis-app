@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
+import posthog from "posthog-js";
 import { RecoveryAction } from "@/lib/errorHandler";
 
 const GREEN = "#03fb83";
@@ -204,6 +205,12 @@ export default function AnalysingPage() {
           stoppedRef.current = true;
           doneRef.current = true;
           setElapsed(TOTAL_SECONDS);
+          posthog.capture("analysis_completed", {
+            submission_id: id,
+            score: data.score,
+            verdict: data.verdict,
+            verdictType: data.verdict_type,
+          });
           setTimeout(() => router.push(`/investability-score/results/${id}`), 400);
         } else if (data.status === "error") {
           stoppedRef.current = true;

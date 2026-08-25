@@ -581,6 +581,9 @@ function ResultsPageInner() {
         setCreatedAt(d.created_at);
         setTimeout(() => setAnimated(true), 100);
         posthog.capture("results_viewed", { score: d.score, verdict_type: d.verdict_type, paid: d.paid });
+        if (!d.paid) {
+          posthog.capture("upgrade_viewed", { submission_id: d.id, score: d.score });
+        }
       })
       .catch(() => setLoading(false));
   }, [id]);

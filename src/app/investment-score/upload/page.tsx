@@ -101,6 +101,11 @@ export default function UploadPage() {
 
       sessionStorage.removeItem("deckscore-lead");
       posthog.capture("deck_uploaded", { business_name: businessName, country });
+      posthog.capture("deck_submitted", {
+        submission_id: data.id,
+        business_name: businessName,
+        country,
+      });
       router.push(`/investment-score/analysing/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
