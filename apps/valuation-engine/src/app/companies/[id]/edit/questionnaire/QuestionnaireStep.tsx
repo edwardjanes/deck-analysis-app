@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { C, FONT_SANS } from '@/lib/theme';
+import { ValidationIssue, fieldIssue } from '@/lib/valuation/validation';
 
 interface QuestionnaireStepProps {
   company: any;
   onUpdate?: (data: any) => void;
+  issues?: ValidationIssue[];
+  showErrors?: boolean;
 }
 
 type TabKey = 'team' | 'business_model' | 'product_market' | 'legal_ip';
 
-export default function QuestionnaireStep({ company, onUpdate }: QuestionnaireStepProps) {
+export default function QuestionnaireStep({ company, onUpdate, issues, showErrors }: QuestionnaireStepProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('team');
   const [answers, setAnswers] = useState({
     team_size: 0,
@@ -111,6 +114,31 @@ export default function QuestionnaireStep({ company, onUpdate }: QuestionnaireSt
     fontSize: '0.95rem',
   };
 
+  const errorTextStyle: React.CSSProperties = {
+    color: '#ef4444',
+    fontSize: '0.8rem',
+    marginTop: '0.4rem',
+  };
+  const warningTextStyle: React.CSSProperties = {
+    color: '#d9a441',
+    fontSize: '0.8rem',
+    marginTop: '0.4rem',
+  };
+
+  // Only surface an error/warning once the step has been "touched" (Next was blocked, or the step
+  // was revisited after that) -- matches the pattern used in ProfileStep/FinancialsStep.
+  const issueFor = (field: string) => (showErrors ? fieldIssue(issues, field) : undefined);
+  const inputStyleFor = (field: string): React.CSSProperties => {
+    const issue = issueFor(field);
+    if (!issue) return inputStyle;
+    return { ...inputStyle, border: `1px solid ${issue.severity === 'error' ? '#ef4444' : '#d9a441'}` };
+  };
+  const IssueMessage = ({ field }: { field: string }) => {
+    const issue = issueFor(field);
+    if (!issue) return null;
+    return <div style={issue.severity === 'error' ? errorTextStyle : warningTextStyle}>{issue.message}</div>;
+  };
+
   const renderTeamTab = () => (
     <div>
       <div style={fieldStyle}>
@@ -121,8 +149,9 @@ export default function QuestionnaireStep({ company, onUpdate }: QuestionnaireSt
           value={answers.team_size}
           onChange={(e) => handleChange('team_size', parseInt(e.target.value) || 0)}
           placeholder="Number of team members"
-          style={inputStyle}
+          style={inputStyleFor('team_size')}
         />
+        <IssueMessage field="team_size" />
       </div>
 
       <div style={fieldStyle}>
@@ -202,8 +231,9 @@ export default function QuestionnaireStep({ company, onUpdate }: QuestionnaireSt
           value={answers.competitors_count}
           onChange={(e) => handleChange('competitors_count', parseInt(e.target.value) || 0)}
           placeholder="e.g., 5"
-          style={inputStyle}
+          style={inputStyleFor('competitors_count')}
         />
+        <IssueMessage field="competitors_count" />
       </div>
 
       <div style={fieldStyle}>
@@ -226,8 +256,9 @@ export default function QuestionnaireStep({ company, onUpdate }: QuestionnaireSt
           value={answers.partnerships_count}
           onChange={(e) => handleChange('partnerships_count', parseInt(e.target.value) || 0)}
           placeholder="e.g., 3"
-          style={inputStyle}
+          style={inputStyleFor('partnerships_count')}
         />
+        <IssueMessage field="partnerships_count" />
       </div>
 
       <div style={fieldStyle}>
@@ -254,8 +285,9 @@ export default function QuestionnaireStep({ company, onUpdate }: QuestionnaireSt
           value={answers.tam_size}
           onChange={(e) => handleChange('tam_size', parseInt(e.target.value) || 0)}
           placeholder="Total addressable market in USD"
-          style={inputStyle}
+          style={inputStyleFor('tam_size')}
         />
+        <IssueMessage field="tam_size" />
       </div>
 
       <div style={fieldStyle}>
@@ -268,8 +300,9 @@ export default function QuestionnaireStep({ company, onUpdate }: QuestionnaireSt
           value={answers.market_growth_rate}
           onChange={(e) => handleChange('market_growth_rate', parseFloat(e.target.value) || 0)}
           placeholder="e.g., 0.15 for 15%"
-          style={inputStyle}
+          style={inputStyleFor('market_growth_rate')}
         />
+        <IssueMessage field="market_growth_rate" />
       </div>
 
       <div style={fieldStyle}>

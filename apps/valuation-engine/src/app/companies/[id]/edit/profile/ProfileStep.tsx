@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { C, FONT_SANS } from '@/lib/theme';
+import { ValidationIssue, fieldIssue } from '@/lib/valuation/validation';
 
 interface ProfileStepProps {
   company: any;
   onUpdate?: (data: any) => void;
+  issues?: ValidationIssue[];
+  showErrors?: boolean;
 }
 
 const STAGES = ['idea', 'development', 'startup', 'expansion', 'growth', 'maturity'];
@@ -55,7 +58,7 @@ const COUNTRIES = [
   'United States',
 ];
 
-export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
+export default function ProfileStep({ company, onUpdate, issues, showErrors }: ProfileStepProps) {
   const [formData, setFormData] = useState({
     name: company.name || '',
     country: company.country || '',
@@ -106,6 +109,21 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
     color: C.text,
   };
 
+  const errorTextStyle: React.CSSProperties = {
+    color: '#ef4444',
+    fontSize: '0.8rem',
+    marginTop: '-0.75rem',
+    marginBottom: '1rem',
+  };
+
+  // Only shows an error once the caller (WizardShell) has marked this step "touched" -- avoids
+  // greeting a blank form with a wall of "required" errors before the user has done anything.
+  const errorFor = (field: string) => (showErrors ? fieldIssue(issues, field) : undefined);
+  const inputStyleFor = (field: string): React.CSSProperties => {
+    const error = errorFor(field);
+    return error ? { ...inputStyle, border: '1px solid #ef4444' } : inputStyle;
+  };
+
   const gridStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
@@ -134,8 +152,9 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
           value={formData.name}
           onChange={handleChange}
           placeholder="Enter company name"
-          style={inputStyle}
+          style={inputStyleFor('name')}
         />
+        {errorFor('name') && <div style={errorTextStyle}>{errorFor('name')!.message}</div>}
 
         <label style={labelStyle}>Website</label>
         <input
@@ -163,7 +182,7 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
         <div style={gridStyle}>
           <div>
             <label style={labelStyle}>Country *</label>
-            <select name="country" value={formData.country} onChange={handleChange} style={inputStyle}>
+            <select name="country" value={formData.country} onChange={handleChange} style={inputStyleFor('country')}>
               <option value="">Select a country</option>
               {COUNTRIES.map((country) => (
                 <option key={country} value={country}>
@@ -171,11 +190,12 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
                 </option>
               ))}
             </select>
+            {errorFor('country') && <div style={errorTextStyle}>{errorFor('country')!.message}</div>}
           </div>
 
           <div>
             <label style={labelStyle}>Industry *</label>
-            <select name="industry" value={formData.industry} onChange={handleChange} style={inputStyle}>
+            <select name="industry" value={formData.industry} onChange={handleChange} style={inputStyleFor('industry')}>
               <option value="">Select an industry</option>
               {INDUSTRIES.map((ind) => (
                 <option key={ind} value={ind}>
@@ -183,17 +203,19 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
                 </option>
               ))}
             </select>
+            {errorFor('industry') && <div style={errorTextStyle}>{errorFor('industry')!.message}</div>}
           </div>
 
           <div>
             <label style={labelStyle}>Stage *</label>
-            <select name="stage" value={formData.stage} onChange={handleChange} style={inputStyle}>
+            <select name="stage" value={formData.stage} onChange={handleChange} style={inputStyleFor('stage')}>
               {STAGES.map((s) => (
                 <option key={s} value={s}>
                   {s.charAt(0).toUpperCase() + s.slice(1)}
                 </option>
               ))}
             </select>
+            {errorFor('stage') && <div style={errorTextStyle}>{errorFor('stage')!.message}</div>}
           </div>
 
           <div>
@@ -204,8 +226,9 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
               value={formData.founders_count}
               onChange={handleChange}
               min="1"
-              style={inputStyle}
+              style={inputStyleFor('founders_count')}
             />
+            {errorFor('founders_count') && <div style={errorTextStyle}>{errorFor('founders_count')!.message}</div>}
           </div>
 
           <div>
@@ -216,8 +239,9 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
               value={formData.employees_count}
               onChange={handleChange}
               min="1"
-              style={inputStyle}
+              style={inputStyleFor('employees_count')}
             />
+            {errorFor('employees_count') && <div style={errorTextStyle}>{errorFor('employees_count')!.message}</div>}
           </div>
 
           <div>
@@ -253,8 +277,9 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
               onChange={handleChange}
               min="1900"
               max={new Date().getFullYear()}
-              style={inputStyle}
+              style={inputStyleFor('started_year')}
             />
+            {errorFor('started_year') && <div style={errorTextStyle}>{errorFor('started_year')!.message}</div>}
           </div>
 
           <div>
@@ -266,8 +291,9 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
               onChange={handleChange}
               min="1900"
               max={new Date().getFullYear()}
-              style={inputStyle}
+              style={inputStyleFor('incorporated_year')}
             />
+            {errorFor('incorporated_year') && <div style={errorTextStyle}>{errorFor('incorporated_year')!.message}</div>}
           </div>
 
           <div>
@@ -279,8 +305,11 @@ export default function ProfileStep({ company, onUpdate }: ProfileStepProps) {
               onChange={handleChange}
               min="0"
               placeholder="0"
-              style={inputStyle}
+              style={inputStyleFor('founders_committed_capital')}
             />
+            {errorFor('founders_committed_capital') && (
+              <div style={errorTextStyle}>{errorFor('founders_committed_capital')!.message}</div>
+            )}
           </div>
         </div>
       </div>

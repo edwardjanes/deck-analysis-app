@@ -10,9 +10,12 @@ interface ParametersStepProps {
   onUpdate?: (data: any) => void;
   onGenerateReport?: () => void;
   isLoading?: boolean;
+  // True when the Profile, Questionnaire, or Financials step has an unresolved required-field error --
+  // clicking "Generate Report" in that state jumps back to the offending step instead of submitting.
+  blockedByOtherSteps?: boolean;
 }
 
-export default function ParametersStep({ company, stage, onUpdate, onGenerateReport, isLoading }: ParametersStepProps) {
+export default function ParametersStep({ company, stage, onUpdate, onGenerateReport, isLoading, blockedByOtherSteps }: ParametersStepProps) {
   const getDefaultWeights = () => {
     if (!stage) return STAGE_DEFAULT_WEIGHTS.development;
     const normalized = stage.toLowerCase();
@@ -220,13 +223,34 @@ export default function ParametersStep({ company, stage, onUpdate, onGenerateRep
         )}
       </div>
 
+      {blockedByOtherSteps && (
+        <div
+          style={{
+            backgroundColor: '#3a1a1a',
+            border: '1px solid #ef4444',
+            borderRadius: '0.5rem',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.5rem',
+            color: '#fca5a5',
+            fontSize: '0.9rem',
+          }}
+        >
+          Some required fields on an earlier step still need attention. Clicking "Generate Report" will
+          take you back to fix them.
+        </div>
+      )}
+
       <div style={sectionStyle}>
         <button
           onClick={onGenerateReport}
           disabled={isLoading || !isValid}
           style={buttonStyle}
         >
-          {isLoading ? '📊 Generating Report...' : '📊 Generate Valuation Report'}
+          {isLoading
+            ? '📊 Generating Report...'
+            : blockedByOtherSteps
+            ? '📊 Review Required Fields'
+            : '📊 Generate Valuation Report'}
         </button>
         <p style={{ color: C.textMuted, fontSize: '0.85rem', marginTop: '1rem', textAlign: 'center' }}>
           This will compute valuations using all methods and generate your report.

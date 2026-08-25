@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { computeValuation } from '@/lib/valuation/compute';
 import { buildDefaultParameters } from '@/lib/valuation/defaults';
+import { validateWizardData, hasBlockingIssues } from '@/lib/valuation/validation';
 
 export async function POST(
   request: NextRequest,
@@ -66,6 +67,29 @@ export async function POST(
       .select('answers')
       .eq('company_id', params.id)
       .single()).data;
+
+    // Defense-in-depth server-side validation: the wizard UI already blocks Next/Generate Report on
+    // these same rules (see validateWizardData in validation.ts, the single shared source of truth),
+    // but this route is reachable directly (any authenticated request, not just the wizard), so a
+    // crafted request bypassing the UI must not be able to persist a snapshot on nonsensical inputs
+    // (missing company name/country/industry, negative financials, an unmistakable growth-rate typo).
+    // Only validates fields actually present in this request/fetch -- doesn't invent requirements for
+    // a partial regenerate that intentionally omits a section.
+    const preValidationIssues = validateWizardData({
+      profile: company,
+      financials: financials || [],
+      balanceSheet: bodyBalanceSheet || {},
+      questionnaireAnswers: (bodyQuestionnaire || questionnaire)?.answers || {},
+    });
+    if (hasBlockingIssues(preValidationIssues)) {
+      return NextResponse.json(
+        {
+          error: 'Invalid valuation inputs',
+          issues: preValidationIssues.filter((i) => i.severity === 'error'),
+        },
+        { status: 400 }
+      );
+    }
 
     // Normalize cap table: wizard shape { name, sharePercent } → DB shape { shareholder_name, share_percent }
     let capTableNormalized: any[] = [];
