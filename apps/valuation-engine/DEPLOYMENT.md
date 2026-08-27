@@ -109,7 +109,7 @@ src/
 | File | Purpose |
 |------|---------|
 | `src/lib/valuation/types.ts` | Type definitions for all calculations |
-| `src/lib/valuation/referenceData.ts` | Illustrative country/industry defaults (user-editable) |
+| `src/lib/valuation/referenceData.ts` | Published-source country/industry parameters (user-editable) |
 | `src/lib/valuation/compute.ts` | Main orchestrator (takes inputs → outputs report) |
 | `src/app/companies/[id]/snapshot/route.ts` | API: generates + saves snapshot |
 | `src/app/dashboard/DashboardClient.tsx` | Home page with company list |

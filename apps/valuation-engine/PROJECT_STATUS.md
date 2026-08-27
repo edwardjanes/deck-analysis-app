@@ -47,7 +47,7 @@ A Next.js application that replicates Equidam's startup valuation methodology. U
 | Module | Purpose | Status |
 |--------|---------|--------|
 | `types.ts` | All interfaces | ✅ |
-| `referenceData.ts` | Country/industry defaults (illustrative, user-editable) | ✅ |
+| `referenceData.ts` | Country/industry parameters from published sources (user-editable) | ✅ |
 | `fcf.ts` | Free Cash Flow to Equity | ✅ |
 | `scorecard.ts` | **Validated**: $5,310,193 ✓ | ✅ |
 | `checklist.ts` | **Validated**: $4,555,423 ✓ | ✅ |
@@ -280,7 +280,7 @@ npm run test
 
 ## Known Limitations
 
-1. **Reference Data**: Country/industry defaults in `referenceData.ts` are **illustrative**, not Equidam's proprietary data. All values are marked as such and user-editable via parameters.
+1. **Reference Data**: Country/industry parameters in `referenceData.ts` are sourced from public/published data (Equidam published updates, PitchBook-NVCA, BBB, Damodaran) — not Equidam's proprietary internal data. Only DE is validated against a real sample report. User-editable via parameters.
 
 2. **Scorecard/Checklist Sub-Trait Rubric**: `scoring.ts` derives scores from questionnaire answers using an assumed rubric. Equidam's exact weighting is proprietary. Users can override individual criterion scores directly in the UI.
 
