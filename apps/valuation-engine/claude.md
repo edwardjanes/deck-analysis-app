@@ -40,7 +40,7 @@ Building a Next.js application that replicates Equidam's startup valuation metho
 
 ### ✅ Valuation Engine Core (14 Modules)
 - [x] **types.ts** — Type definitions for all inputs/outputs
-- [x] **referenceData.ts** — Illustrative country/industry defaults
+- [x] **referenceData.ts** — Real published-source country/industry parameters (Equidam published data, PitchBook-NVCA, BBB, Damodaran; 25 countries; DE validated against the real Equidam sample — see 257faac)
 - [x] **scorecard.ts** — ✓ Validated: $5,310,193 (NovaCloud reference)
 - [x] **checklist.ts** — ✓ Validated: $4,555,423 (NovaCloud reference)
 - [x] **vc.ts** — VC Method (exit value discounted by stage ROI)
@@ -65,7 +65,7 @@ Building a Next.js application that replicates Equidam's startup valuation metho
 ### ✅ Report Generation
 - [x] Snapshot API (`/companies/[id]/snapshot`) — Computes valuations, persists to DB
 - [x] Report view (`/companies/[id]/report/[snapshotId]`) — Displays 6 method results
-- [x] Executive summary (valuation ± 20% bounds)
+- [x] Executive summary (valuation low/high band: weighted × 0.904 / × 1.096, ~±9.6%, modeled on NovaCloud's own spread — fixed in 7a34217 after a ±20% regression)
 - [x] Method comparison table
 - [x] Key assumptions (discount rate, stage)
 - [x] PDF export via browser print dialog
@@ -267,7 +267,7 @@ Building a Next.js application that replicates Equidam's startup valuation metho
 
 ## Known Limitations
 
-1. **Reference Data:** Country/industry defaults are illustrative, not Equidam's proprietary Crunchbase/Damodaran data. Clearly labeled and user-editable.
+1. **Reference Data:** Country/industry parameters are sourced from public/published data (Equidam published parameter updates, PitchBook-NVCA, BBB, Damodaran) as of Aug 2026 — NOT Equidam's proprietary internal data. Only Germany is validated dollar-for-dollar against a real Equidam sample report; the other 24 countries run on newer, unverified-against-a-sample parameters. User-editable.
 
 2. **Scoring Rubric:** Sub-trait weighting derived from questionnaire is assumed; Equidam's exact rubric is proprietary. Users can override individual criterion scores.
 
@@ -425,7 +425,7 @@ This enforces database-level security: users see only their own data, admins can
 - Country table: seed pre-money valuations, risk-free rates, survival curves by year
 - Industry table: beta, revenue multiples, EBITDA multiples
 - Stage table: required ROI for VC method
-- **Clearly marked ILLUSTRATIVE—not Equidam's proprietary data**
+- **Sourced from public/published data (see file header) — NOT Equidam's proprietary internal data; DE validated against a real sample report**
 
 **Computing Pipeline**
 1. `defaults.ts` — `buildDefaultParameters()` derives default overrides from profile/financials

@@ -130,7 +130,7 @@ Output           (ValuationReportOutput)
 | Module | Responsibility | Output |
 |--------|----------------|--------|
 | `types.ts` | Type definitions | TypeScript interfaces |
-| `referenceData.ts` | Default tables (illustrative) | Country/industry/stage defaults |
+| `referenceData.ts` | Parameter tables from published sources (Equidam published data, PitchBook-NVCA, BBB, Damodaran; 25 countries, DE sample-validated) | Country/industry/stage parameters |
 | `defaults.ts` | Infer missing parameters from inputs | Default parameters object |
 | `scoring.ts` | Convert questionnaire → trait scores | Scoring object |
 | `fcf.ts` | Calculate FCFE per year | Annual cash flows |
@@ -351,7 +351,7 @@ CREATE POLICY "users can view own company's data"
 **Formula:** `Valuation = AvgPreMoneyValuation × (1 + Σ(weight_i × score_i))`
 
 **Components:**
-- `AvgPreMoneyValuation` — From referenceData (illustrative, user-editable)
+- `AvgPreMoneyValuation` — From referenceData (published-source parameters, user-editable)
 - `weight_i` — Sub-criteria weight (from SCORECARD_CRITERIA_WEIGHTS)
 - `score_i` — User questionnaire score (0–10 scale, derived by scoring.ts)
 
