@@ -16,6 +16,12 @@ export const maxDuration = 300; // 5 minutes — allows time for large deck anal
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAY_MS = [0, 65000, 65000]; // immediate, then wait 65s for rate-limit window to reset
 
+// Sonnet 4.6 published rates (per Anthropic API pricing, Aug 2026) — used only for
+// the cost-per-analysis log line below, not for billing. Update if the model or
+// its price changes.
+const CLAUDE_INPUT_COST_PER_MTOK = 3.0;
+const CLAUDE_OUTPUT_COST_PER_MTOK = 15.0;
+
 async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -130,6 +136,21 @@ export async function POST(
         system: DECK_ANALYSIS_SYSTEM_PROMPT,
         messages: [{ role: "user", content }],
       });
+
+      // Log real per-call token usage + estimated cost — this is the data point
+      // Track 12 step 1 needed and didn't have (no historical log existed before
+      // this). Cost is an estimate off current published Sonnet 4.6 rates, not
+      // an authoritative billing figure — cross-check against the Anthropic
+      // Console for the real number periodically.
+      const inputTokens = message.usage?.input_tokens ?? 0;
+      const outputTokens = message.usage?.output_tokens ?? 0;
+      const estimatedCostUsd =
+        (inputTokens / 1_000_000) * CLAUDE_INPUT_COST_PER_MTOK +
+        (outputTokens / 1_000_000) * CLAUDE_OUTPUT_COST_PER_MTOK;
+      console.log(
+        `[analyse] Claude usage for ${id}: input=${inputTokens} output=${outputTokens} tokens, ` +
+        `pageCount=${pageCount}, estCost=$${estimatedCostUsd.toFixed(4)} (attempt ${attempt})`
+      );
 
       // 7. Parse Claude's response
       const rawText =
