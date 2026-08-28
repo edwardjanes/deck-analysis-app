@@ -6,18 +6,12 @@ import { createSupabaseBrowserClient } from "@/lib/supabaseBrowser";
 const GREEN = "#03fb83";
 const LOGO = "https://raw.githubusercontent.com/edwardjanes/source-capital/0147b27fad891686f67559992e43319411f07ba4/logo.png";
 
-const BASE_NAV_LINKS = [
-  { href: "/crm/pipeline",  label: "Pipeline" },
-  { href: "/crm/projects",  label: "Raise Projects" },
-  { href: "/crm/investors", label: "Investor Database" },
+const NAV_LINKS = [
+  { href: "/crm/prospects", label: "Prospects" },
   { href: "/dashboard",     label: "← Dashboard" },
 ];
 
-const SC_ADMIN_LINKS = [
-  { href: "/crm/prospects", label: "Prospects" },
-];
-
-export default function CrmShell({ children, firstName, isScAdmin = false }: { children: React.ReactNode; firstName: string; isScAdmin?: boolean }) {
+export default function CrmShell({ children, firstName }: { children: React.ReactNode; firstName: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
@@ -47,7 +41,7 @@ export default function CrmShell({ children, firstName, isScAdmin = false }: { c
             <img src={LOGO} alt="Source Capital" style={{ height: "28px" }} />
           </a>
           <nav style={{ display: "flex", gap: "4px" }}>
-            {[...BASE_NAV_LINKS, ...(isScAdmin ? SC_ADMIN_LINKS : [])].map(({ href, label }) => {
+            {NAV_LINKS.map(({ href, label }) => {
               const active = pathname.startsWith(href) && href !== "/dashboard";
               return (
                 <a

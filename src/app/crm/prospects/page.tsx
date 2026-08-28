@@ -16,7 +16,7 @@ export default async function ProspectsPage() {
     .eq("id", user.id)
     .single();
 
-  if (!profile?.sc_admin) redirect("/crm/pipeline");
+  if (!profile?.sc_admin) redirect("/dashboard");
 
   const { data: prospects } = await supabaseAdmin
     .from("sc_prospects")

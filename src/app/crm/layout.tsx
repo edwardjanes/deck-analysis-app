@@ -13,19 +13,16 @@ export default async function CrmLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabaseAdmin
     .from("profiles")
-    .select("first_name, crm_access, sc_admin")
+    .select("first_name, sc_admin")
     .eq("id", user.id)
     .single();
 
-  if (!profile?.crm_access) {
-    redirect("/crm-upgrade");
+  if (!profile?.sc_admin) {
+    redirect("/dashboard");
   }
 
   return (
-    <CrmShell
-      firstName={profile?.first_name ?? user.email?.split("@")[0] ?? "there"}
-      isScAdmin={profile?.sc_admin ?? false}
-    >
+    <CrmShell firstName={profile?.first_name ?? user.email?.split("@")[0] ?? "there"}>
       {children}
     </CrmShell>
   );

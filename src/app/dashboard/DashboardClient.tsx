@@ -56,15 +56,10 @@ interface Props {
   analyses: Analysis[];
   userId: string;
   userEmail: string;
-  crmAccess: boolean;
-  pipelineStageCounts: Record<string, number>;
-  raiseCommitted: number;
-  raiseTarget: number;
 }
 
 export default function DashboardClient({
   firstName, plan, analysesUsed, analyses, userId, userEmail,
-  crmAccess, pipelineStageCounts, raiseCommitted, raiseTarget,
 }: Props) {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
@@ -147,7 +142,6 @@ export default function DashboardClient({
         <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
           {[
             { label: "Dashboard", href: "/dashboard" },
-            { label: "Investor CRM", href: "/crm" },
             { label: "Pricing", href: "https://sourcecapital.co.uk/pricing" },
             { label: "About", href: "https://sourcecapital.co.uk/about" },
             { label: "Contact", href: "https://sourcecapital.co.uk/contact" },
@@ -183,8 +177,6 @@ export default function DashboardClient({
           <div style={{ fontSize: "10px", fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 10px", marginBottom: "6px" }}>Main</div>
           <SidebarItem href="/dashboard" icon={<IconGrid />} label="Dashboard" active />
           <SidebarItem href="#" icon={<IconUpload />} label="Analyse Deck" onClick={() => setShowUploadForm(true)} />
-          <SidebarItem href="/crm/pipeline" icon={<IconPipeline />} label="Investor Pipeline" />
-          <SidebarItem href="/crm/projects" icon={<IconFolder />} label="Raise Projects" />
           <div style={{ height: "1px", background: C.border, margin: "10px 4px" }} />
           <div style={{ fontSize: "10px", fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.08em", padding: "0 10px", marginBottom: "6px" }}>Coming Soon</div>
           <SidebarItem href="#" icon={<IconDoc />} label="Documents" disabled />
@@ -223,14 +215,8 @@ export default function DashboardClient({
             </div>
           </div>
 
-          {/* Stats: raise progress + gauge + funnel */}
-          <StatsRow
-            analyses={analyses}
-            crmAccess={crmAccess}
-            pipelineStageCounts={pipelineStageCounts}
-            raiseCommitted={raiseCommitted}
-            raiseTarget={raiseTarget}
-          />
+          {/* Stats: score gauge + raise readiness */}
+          <StatsRow analyses={analyses} />
 
           {/* Upload area */}
           <div style={{
@@ -492,100 +478,19 @@ function SidebarItem({ href, icon, label, active, disabled, onClick }: {
 }
 
 // ── Stats section ─────────────────────────────────────────────────────────────
-function StatsRow({ analyses, crmAccess, pipelineStageCounts, raiseCommitted, raiseTarget }: {
-  analyses: Analysis[];
-  crmAccess: boolean;
-  pipelineStageCounts: Record<string, number>;
-  raiseCommitted: number;
-  raiseTarget: number;
-}) {
+function StatsRow({ analyses }: { analyses: Analysis[] }) {
   const latestScore = analyses.find(a => a.status === "complete" && a.score !== null)?.score ?? null;
-  const showProgress = crmAccess && (raiseCommitted > 0 || raiseTarget > 0);
-
-  if (latestScore === null && !crmAccess) return null;
 
   return (
     <div style={{ marginBottom: "28px" }}>
-      {showProgress && <BulletGauge committed={raiseCommitted} target={raiseTarget} />}
       <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
         {latestScore !== null && <ScoreGauge score={latestScore} />}
         <RaiseReadinessScore />
-        {crmAccess && <PipelineFunnelChart counts={pipelineStageCounts} />}
       </div>
     </div>
   );
 }
 
-// ── Bullet Gauge (raise progress) ─────────────────────────────────────────────
-function BulletGauge({ committed, target }: { committed: number; target: number }) {
-  if (target === 0 && committed === 0) return null;
-  const pct = target > 0 ? Math.min((committed / target) * 100, 100) : 0;
-  const remaining = Math.max(target - committed, 0);
-  const gradColor = pct >= 75 ? C.success : pct >= 40 ? C.warning : C.secondary;
-
-  return (
-    <div style={{
-      background: C.panel, border: `1px solid ${C.border}`, borderRadius: "14px",
-      padding: "20px 24px", marginBottom: "16px",
-      boxShadow: "0 1px 4px rgba(30,64,175,0.05)",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", flexWrap: "wrap", gap: "8px" }}>
-        <span style={{ fontSize: "11px", fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.07em" }}>Raise Progress</span>
-        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-          <span style={{ fontFamily: FONT_MONO, fontSize: "15px", fontWeight: 700, color: gradColor }}>
-            {fmtAmount(committed)}
-          </span>
-          {target > 0 && (
-            <span style={{ fontSize: "13px", color: C.textMuted }}>
-              of <span style={{ fontFamily: FONT_MONO, fontWeight: 600, color: C.text }}>{fmtAmount(target)}</span> target
-            </span>
-          )}
-          {remaining > 0 && target > 0 && (
-            <span style={{ fontSize: "12px", color: C.textFaint }}>· {fmtAmount(remaining)} to go</span>
-          )}
-          {pct >= 100 && (
-            <span style={{ fontSize: "11px", fontWeight: 700, color: C.success, background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", padding: "2px 10px", borderRadius: "20px" }}>Target reached</span>
-          )}
-        </div>
-      </div>
-      {/* Bullet track */}
-      <div style={{ position: "relative", height: "12px" }}>
-        {/* Background zones: red / yellow / green */}
-        <div style={{ position: "absolute", inset: 0, borderRadius: "8px", overflow: "hidden", display: "flex" }}>
-          <div style={{ flex: "0 0 30%", background: "rgba(239,68,68,0.12)" }} />
-          <div style={{ flex: "0 0 30%", background: "rgba(245,158,11,0.12)" }} />
-          <div style={{ flex: 1, background: "rgba(16,185,129,0.12)" }} />
-        </div>
-        {/* Fill bar */}
-        <div style={{
-          position: "absolute", left: 0, top: "2px", bottom: "2px",
-          width: `${pct}%`, borderRadius: "6px",
-          background: `linear-gradient(90deg, ${C.secondary}, ${gradColor})`,
-          boxShadow: `0 0 6px ${gradColor}55`,
-          transition: "width 0.6s ease",
-        }} />
-        {/* Target marker */}
-        {target > 0 && (
-          <div style={{
-            position: "absolute", top: "-3px", bottom: "-3px",
-            left: "100%", width: "2px",
-            background: C.text, borderRadius: "2px",
-            transform: "translateX(-1px)",
-          }}>
-            <div style={{ position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)", fontSize: "9px", fontWeight: 700, color: C.text, whiteSpace: "nowrap", fontFamily: FONT_MONO }}>
-              TARGET
-            </div>
-          </div>
-        )}
-      </div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "6px" }}>
-        <span style={{ fontSize: "12px", color: C.textMuted, fontFamily: FONT_MONO, fontWeight: 600 }}>{Math.round(pct)}%</span>
-      </div>
-    </div>
-  );
-}
-
-// ── Score Gauge ───────────────────────────────────────────────────────────────
 function ScoreGauge({ score }: { score: number }) {
   const color = scoreColor(score);
   const r = 38; const cx = 50; const cy = 50;
@@ -653,75 +558,6 @@ function RaiseReadinessScore() {
   );
 }
 
-// ── Pipeline Funnel (horizontal bars) ────────────────────────────────────────
-const FUNNEL_STAGES = [
-  { key: "researching",       label: "Researching",    color: "#9CA3AF" },
-  { key: "targeted",          label: "Targeted",       color: "#60A5FA" },
-  { key: "reached_out",       label: "Reached Out",    color: "#A78BFA" },
-  { key: "replied",           label: "Replied",        color: "#FB923C" },
-  { key: "meeting_scheduled", label: "Meeting Sched.", color: "#FACC15" },
-  { key: "meeting_completed", label: "Meeting Done",   color: "#4ADE80" },
-  { key: "due_diligence",     label: "Due Diligence",  color: "#22D3EE" },
-  { key: "term_sheet",        label: "Term Sheet",     color: "#03fb83" },
-  { key: "committed",         label: "Committed",      color: "#03fb83" },
-];
-
-function PipelineFunnelChart({ counts }: { counts: Record<string, number> }) {
-  const active = FUNNEL_STAGES.filter(s => (counts[s.key] ?? 0) > 0);
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  const maxCount = Math.max(...active.map(s => counts[s.key] ?? 0), 1);
-
-  return (
-    <div style={{
-      background: C.panel, border: `1px solid ${C.border}`, borderRadius: "14px",
-      padding: "20px 24px", flex: 1, minWidth: "280px",
-      boxShadow: "0 1px 4px rgba(30,64,175,0.05)",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
-        <span style={{ fontSize: "11px", fontWeight: 700, color: C.textFaint, textTransform: "uppercase", letterSpacing: "0.07em" }}>Pipeline Funnel</span>
-        <a href="/crm/pipeline" style={{ fontSize: "12px", color: C.secondary, fontWeight: 600, transition: "color 0.15s" }}
-          onMouseOver={e => (e.currentTarget.style.color = C.primary)}
-          onMouseOut={e => (e.currentTarget.style.color = C.secondary)}>
-          View all →
-        </a>
-      </div>
-      {total === 0 ? (
-        <div style={{ textAlign: "center", padding: "24px 0" }}>
-          <p style={{ fontSize: "13px", color: C.textFaint }}>No investors in pipeline yet.</p>
-          <a href="/crm/pipeline" style={{ fontSize: "13px", color: C.secondary, fontWeight: 600 }}>Add investors →</a>
-        </div>
-      ) : (
-        <>
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            {active.map(stage => {
-              const count = counts[stage.key] ?? 0;
-              const pct = (count / maxCount) * 100;
-              return (
-                <div key={stage.key} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{ width: "96px", fontSize: "11px", color: C.textMuted, flexShrink: 0, textAlign: "right", fontFamily: FONT_SANS }}>{stage.label}</div>
-                  <div style={{ flex: 1, background: C.panelAlt, borderRadius: "4px", height: "18px", overflow: "hidden" }}>
-                    <div style={{
-                      height: "100%", borderRadius: "4px",
-                      width: `${pct}%`,
-                      background: `${stage.color}33`,
-                      border: `1px solid ${stage.color}66`,
-                      transition: "width 0.4s ease",
-                      display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: "6px",
-                    }}>
-                      <span style={{ fontSize: "10px", fontWeight: 700, color: stage.color, fontFamily: FONT_MONO }}>{count}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div style={{ marginTop: "8px", fontSize: "11px", color: C.textFaint, textAlign: "right", fontFamily: FONT_MONO }}>{total} total</div>
-        </>
-      )}
-    </div>
-  );
-}
-
 // ── Icons ─────────────────────────────────────────────────────────────────────
 function IconGrid() {
   return <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
@@ -741,16 +577,6 @@ function IconUploadLg() {
   return <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
     <path d="M20 26V12M13 18l7-7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     <path d="M6 30v2a2 2 0 002 2h24a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-  </svg>;
-}
-function IconPipeline() {
-  return <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-    <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-  </svg>;
-}
-function IconFolder() {
-  return <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-    <path d="M1 4a1 1 0 011-1h4l2 2h6a1 1 0 011 1v6a1 1 0 01-1 1H2a1 1 0 01-1-1V4z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
   </svg>;
 }
 function IconDoc() {
@@ -776,12 +602,6 @@ function scoreColor(score: number): string {
   if (score >= 75) return C.success;
   if (score >= 50) return C.warning;
   return C.danger;
-}
-
-function fmtAmount(n: number): string {
-  if (n >= 1_000_000) return `£${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
-  if (n >= 1_000) return `£${Math.round(n / 1_000)}k`;
-  return `£${n.toLocaleString()}`;
 }
 
 const labelStyle: React.CSSProperties = {

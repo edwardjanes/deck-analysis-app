@@ -52,55 +52,6 @@ export async function POST(req: NextRequest) {
   console.log(`[whop/webhook] Received event: ${action}`);
 
   const data = event.data as Record<string, unknown> ?? {};
-  const planId = (data.plan_id ?? (data.plan as Record<string, unknown>)?.id ?? "") as string;
-  const membershipId = (data.id ?? "") as string;
-  const userId = (data.user_id ?? (data.user as Record<string, unknown>)?.id ?? "") as string;
-
-  // ---- CRM subscription activation ----
-  const crmPlanId = process.env.WHOP_CRM_PLAN_ID;
-  if (
-    crmPlanId &&
-    planId === crmPlanId &&
-    (action === "membership.went_valid" || action === "payment.completed")
-  ) {
-    if (!userId) {
-      console.warn("[whop/webhook] CRM activation: no user_id in event", data);
-      return NextResponse.json({ received: true });
-    }
-
-    const { error } = await supabaseAdmin
-      .from("profiles")
-      .update({ crm_access: true, crm_whop_membership_id: membershipId })
-      .eq("id", userId);
-
-    if (error) {
-      Sentry.captureException(new Error(error.message), {
-        tags: { context: "whop_webhook_crm" },
-        extra: { userId, membershipId, planId },
-      });
-      console.error("[whop/webhook] CRM access update failed:", error);
-      return NextResponse.json({ error: "DB update failed" }, { status: 500 });
-    }
-
-    console.log(`[whop/webhook] CRM access granted to user ${userId}`);
-    return NextResponse.json({ received: true });
-  }
-
-  // ---- CRM subscription cancelled/revoked ----
-  if (
-    crmPlanId &&
-    planId === crmPlanId &&
-    action === "membership.went_invalid"
-  ) {
-    if (userId) {
-      await supabaseAdmin
-        .from("profiles")
-        .update({ crm_access: false })
-        .eq("id", userId);
-      console.log(`[whop/webhook] CRM access revoked for user ${userId}`);
-    }
-    return NextResponse.json({ received: true });
-  }
 
   // ---- Deck analysis payment ----
   if (action === "payment.completed" || action === "membership.went_valid") {

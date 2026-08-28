@@ -12,7 +12,7 @@ export default async function ProspectDetailPage({ params }: { params: { id: str
 
   const { data: profile } = await supabaseAdmin
     .from("profiles").select("sc_admin").eq("id", user.id).single();
-  if (!profile?.sc_admin) redirect("/crm/pipeline");
+  if (!profile?.sc_admin) redirect("/dashboard");
 
   const { data: prospect } = await supabaseAdmin
     .from("sc_prospects").select("*").eq("id", params.id).single();
