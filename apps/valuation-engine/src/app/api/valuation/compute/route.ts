@@ -216,14 +216,14 @@ export async function POST(request: NextRequest) {
       paramsWithWeights
     );
 
+    // created_by is nullable as of 006_valuation_snapshots_created_by_nullable.sql --
+    // there's no auth.users row for an n8n-triggered run, so it's left unset (null)
+    // rather than pointed at a placeholder service account.
     const { data: snapshot, error: snapshotError } = await supabaseAdmin
       .from('valuation_snapshots')
       .insert([
         {
           company_id: companyId,
-          // valuation_snapshots.created_by is `not null references auth.users(id)` today --
-          // there is no service/system auth.users row yet. Left as a known follow-up rather
-          // than silently working around it: see the TODO below.
           label: 'n8n headless run',
           inputs: {
             company,
@@ -241,19 +241,8 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (snapshotError) {
-      // TODO(Track 11): valuation_snapshots.created_by is NOT NULL referencing auth.users(id).
-      // This insert will fail until either (a) created_by is made nullable (matching the
-      // owner_id change in 005_valuation_location_id.sql), or (b) a dedicated system/service
-      // auth.users row is created and its id used here. Flagging rather than guessing which
-      // Ed prefers -- (a) is more consistent with how location-owned company rows were handled.
       console.error('Snapshot insert error:', snapshotError);
-      return NextResponse.json(
-        {
-          error: snapshotError.message,
-          hint: 'valuation_snapshots.created_by is likely still NOT NULL -- see TODO in this route.',
-        },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: snapshotError.message }, { status: 500 });
     }
 
     await supabaseAdmin
