@@ -2,6 +2,7 @@
 const nextConfig = {
   experimental: {
     esmExternals: true,
+    serverComponentsExternalPackages: ['@sparticuz/chromium', 'playwright-core'],
   },
 };
 
