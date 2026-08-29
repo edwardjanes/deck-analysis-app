@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Redeployed to pick up AWS_LAMBDA_JS_RUNTIME=nodejs22.x (Vercel dashboard env var).
 const nextConfig = {
   experimental: {
     esmExternals: true,
