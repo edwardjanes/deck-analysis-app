@@ -1,1 +1,108 @@
-aW1wb3J0IGNocm9taXVtIGZyb20gJ0BzcGFydGljdXovY2hyb21pdW0nOwppbXBvcnQgeyBjaHJvbWl1bSBhcyBwbGF5d3JpZ2h0Q2hyb21pdW0gfSBmcm9tICdwbGF5d3JpZ2h0LWNvcmUnOwppbXBvcnQgeyBzdXBhYmFzZUFkbWluIH0gZnJvbSAnQC9saWIvc3VwYWJhc2VBZG1pbic7CgovLyBWZXJjZWwncyBzZXJ2ZXJsZXNzIHJ1bnRpbWUgZG9lc24ndCBzaGlwIHRoZSBncmFwaGljcyBsaWJyYXJpZXMgKGxpYm5zczMKLy8gYW1vbmcgdGhlbSkgdGhhdCBAc3BhcnRpY3V6L2Nocm9taXVtJ3MgZGVmYXVsdCAiZ3JhcGhpY3MgbW9kZSIgYnVpbGQgbmVlZHMKLy8gLS0gdGhvc2UgYXJlIG5vcm1hbGx5IHByZXNlbnQgb24gQVdTIExhbWJkYSdzIEFtYXpvbiBMaW51eCBiYXNlLiBEaXNhYmxpbmcKLy8gZ3JhcGhpY3MgbW9kZSBzd2l0Y2hlcyB0byBhIGhlYWRsZXNzLW9ubHkgQ2hyb21pdW0gYnVpbGQgdGhhdCBkb2Vzbid0IG5lZWQKLy8gdGhlbSAtLSBjb25maXJtZWQgbmVjZXNzYXJ5IGFmdGVyIGEgbGl2ZSB0ZXN0IGZhaWxlZCB3aXRoCi8vICJsaWJuc3MzLnNvOiBjYW5ub3Qgb3BlbiBzaGFyZWQgb2JqZWN0IGZpbGUiLgpjaHJvbWl1bS5zZXRHcmFwaGljc01vZGUgPSBmYWxzZTsKCmNvbnN0IFNJR05FRF9VUkxfVFRMX1NFQ09ORFMgPSA2MCAqIDYwICogMjQgKiAzMDsgLy8gMzAgZGF5cwoKLyoqCiAqIFJlbmRlcnMgdGhlIHByaW50LW9ubHkgcmVwb3J0IHBhZ2UgZm9yIGEgc25hcHNob3QgdG8gUERGIGluIGhlYWRsZXNzCiAqIENocm9taXVtLCB1cGxvYWRzIGl0IHRvIFN1cGFiYXNlIFN0b3JhZ2UsIHJlY29yZHMgdGhlIFVSTCBvbiB0aGUKICogc25hcHNob3Qgcm93LCBhbmQgcmV0dXJucyBhIHNpZ25lZCBVUkwuCiAqCiAqIFJldHVybnMgbnVsbCBvbiBhbnkgZmFpbHVyZSByYXRoZXIgdGhhbiB0aHJvd2luZyAtLSBjYWxsZXJzICh0aGUKICogY29tcHV0ZSByb3V0ZSBlc3BlY2lhbGx5KSBzaG91bGQgdHJlYXQgYSBmYWlsZWQgcmVuZGVyIGFzICJubyBQREYKICogeWV0Iiwgbm90IGFzIGEgcmVhc29uIHRvIGZhaWwgYW4gb3RoZXJ3aXNlLXN1Y2Nlc3NmdWwgdmFsdWF0aW9uLgogKi8KZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIHJlbmRlckFuZFVwbG9hZFJlcG9ydFBkZigKICBzbmFwc2hvdElkOiBzdHJpbmcsCiAgb3JpZ2luOiBzdHJpbmcKKTogUHJvbWlzZTxzdHJpbmcgfCBudWxsPiB7CiAgY29uc3Qgc2VydmljZUtleSA9IHByb2Nlc3MuZW52LlZBTFVBVElPTl9TRVJWSUNFX0tFWTsKICBpZiAoIXNlcnZpY2VLZXkpIHsKICAgIGNvbnNvbGUuZXJyb3IoJ1ZBTFVBVElPTl9TRVJWSUNFX0tFWSBpcyBub3Qgc2V0IC0tIGNhbm5vdCByZW5kZXIgUERGIGZvcicsIHNuYXBzaG90SWQpOwogICAgcmV0dXJuIG51bGw7CiAgfQoKICBsZXQgYnJvd3NlcjsKICB0cnkgewogICAgYnJvd3NlciA9IGF3YWl0IHBsYXl3cmlnaHRDaHJvbWl1bS5sYXVuY2goewogICAgICBhcmdzOiBjaHJvbWl1bS5hcmdzLAogICAgICBleGVjdXRhYmxlUGF0aDogYXdhaXQgY2hyb21pdW0uZXhlY3V0YWJsZVBhdGgoKSwKICAgICAgaGVhZGxlc3M6IHRydWUsCiAgICB9KTsKCiAgICBjb25zdCBwYWdlID0gYXdhaXQgYnJvd3Nlci5uZXdQYWdlKHsgdmlld3BvcnQ6IHsgd2lkdGg6IDEyMDAsIGhlaWdodDogMTYwMCB9IH0pOwogICAgYXdhaXQgcGFnZS5zZXRFeHRyYUhUVFBIZWFkZXJzKHsgJ3gtc2VydmljZS1rZXknOiBzZXJ2aWNlS2V5IH0pOwoKICAgIGNvbnN0IHByaW50VXJsID0gYCR7b3JpZ2lufS9wcmludC92YWx1YXRpb24vJHtzbmFwc2hvdElkfWA7CiAgICBjb25zdCByZXNwb25zZSA9IGF3YWl0IHBhZ2UuZ290byhwcmludFVybCwgeyB3YWl0VW50aWw6ICduZXR3b3JraWRsZScsIHRpbWVvdXQ6IDQ1XzAwMCB9KTsKCiAgICBpZiAoIXJlc3BvbnNlIHx8ICFyZXNwb25zZS5vaygpKSB7CiAgICAgIGNvbnNvbGUuZXJyb3IoCiAgICAgICAgYFByaW50IHBhZ2UgZm9yIHNuYXBzaG90ICR7c25hcHNob3RJZH0gcmV0dXJuZWQgJHtyZXNwb25zZT8uc3RhdHVzKCl9IC0tIGFib3J0aW5nIFBERiByZW5kZXJgCiAgICAgICk7CiAgICAgIHJldHVybiBudWxsOwogICAgfQoKICAgIGNvbnN0IHBkZkJ1ZmZlciA9IGF3YWl0IHBhZ2UucGRmKHsKICAgICAgZm9ybWF0OiAnQTQnLAogICAgICBwcmludEJhY2tncm91bmQ6IHRydWUsCiAgICAgIG1hcmdpbjogeyB0b3A6ICcwJywgYm90dG9tOiAnMCcsIGxlZnQ6ICcwJywgcmlnaHQ6ICcwJyB9LAogICAgfSk7CgogICAgLy8gUGF0aCBpcyBjb21wYW55LXNjb3BlZCBzbyBhbiBhZG1pbiBicm93c2luZyBzdG9yYWdlIGNhbiBmaW5kIGV2ZXJ5CiAgICAvLyByZXBvcnQgZm9yIGEgY2xpZW50IHdpdGhvdXQgY3Jvc3MtcmVmZXJlbmNpbmcgc25hcHNob3QgSURzLgogICAgY29uc3QgeyBkYXRhOiBzbmFwc2hvdCB9ID0gYXdhaXQgc3VwYWJhc2VBZG1pbgogICAgICAuZnJvbSgndmFsdWF0aW9uX3NuYXBzaG90cycpCiAgICAgIC5zZWxlY3QoJ2NvbXBhbnlfaWQnKQogICAgICAuZXEoJ2lkJywgc25hcHNob3RJZCkKICAgICAgLnNpbmdsZSgpOwoKICAgIGNvbnN0IHN0b3JhZ2VQYXRoID0gYCR7c25hcHNob3Q/LmNvbXBhbnlfaWQgfHwgJ3Vua25vd24nfS8ke3NuYXBzaG90SWR9LnBkZmA7CgogICAgY29uc3QgeyBlcnJvcjogdXBsb2FkRXJyb3IgfSA9IGF3YWl0IHN1cGFiYXNlQWRtaW4uc3RvcmFnZQogICAgICAuZnJvbSgndmFsdWF0aW9uLXJlcG9ydHMnKQogICAgICAudXBsb2FkKHN0b3JhZ2VQYXRoLCBwZGZCdWZmZXIsIHsgY29udGVudFR5cGU6ICdhcHBsaWNhdGlvbi9wZGYnLCB1cHNlcnQ6IHRydWUgfSk7CgogICAgaWYgKHVwbG9hZEVycm9yKSB7CiAgICAgIGNvbnNvbGUuZXJyb3IoJ1BERiB1cGxvYWQgZXJyb3IgZm9yIHNuYXBzaG90Jywgc25hcHNob3RJZCwgdXBsb2FkRXJyb3IpOwogICAgICByZXR1cm4gbnVsbDsKICAgIH0KCiAgICBjb25zdCB7IGRhdGE6IHNpZ25lZFVybERhdGEsIGVycm9yOiBzaWduZWRVcmxFcnJvciB9ID0gYXdhaXQgc3VwYWJhc2VBZG1pbi5zdG9yYWdlCiAgICAgIC5mcm9tKCd2YWx1YXRpb24tcmVwb3J0cycpCiAgICAgIC5jcmVhdGVTaWduZWRVcmwoc3RvcmFnZVBhdGgsIFNJR05FRF9VUkxfVFRMX1NFQ09ORFMpOwoKICAgIGlmIChzaWduZWRVcmxFcnJvciB8fCAhc2lnbmVkVXJsRGF0YSkgewogICAgICBjb25zb2xlLmVycm9yKCdTaWduZWQgVVJMIGVycm9yIGZvciBzbmFwc2hvdCcsIHNuYXBzaG90SWQsIHNpZ25lZFVybEVycm9yKTsKICAgICAgcmV0dXJuIG51bGw7CiAgICB9CgogICAgYXdhaXQgc3VwYWJhc2VBZG1pbgogICAgICAuZnJvbSgndmFsdWF0aW9uX3NuYXBzaG90cycpCiAgICAgIC51cGRhdGUoewogICAgICAgIHJlcG9ydF91cmw6IHNpZ25lZFVybERhdGEuc2lnbmVkVXJsLAogICAgICAgIHJlcG9ydF9nZW5lcmF0ZWRfYXQ6IG5ldyBEYXRlKCkudG9JU09TdHJpbmcoKSwKICAgICAgfSkKICAgICAgLmVxKCdpZCcsIHNuYXBzaG90SWQpOwoKICAgIHJldHVybiBzaWduZWRVcmxEYXRhLnNpZ25lZFVybDsKICB9IGNhdGNoIChlcnJvcikgewogICAgY29uc29sZS5lcnJvcignUERGIHJlbmRlciBlcnJvciBmb3Igc25hcHNob3QnLCBzbmFwc2hvdElkLCBlcnJvcik7CiAgICByZXR1cm4gbnVsbDsKICB9IGZpbmFsbHkgewogICAgaWYgKGJyb3dzZXIpIHsKICAgICAgYXdhaXQgYnJvd3Nlci5jbG9zZSgpLmNhdGNoKCgpID0+IHsKICAgICAgICAvLyBCZXN0LWVmZm9ydCBjbGVhbnVwIC0tIGEgY2xvc2UgZmFpbHVyZSBzaG91bGRuJ3QgbWFzayB0aGUgcmVhbCBlcnJvciBhYm92ZS4KICAgICAgfSk7CiAgICB9CiAgfQp9Cg==
+import chromium from '@sparticuz/chromium';
+import { chromium as playwrightChromium } from 'playwright-core';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
+
+// Vercel's serverless runtime doesn't ship the graphics libraries (libnss3
+// among them) that @sparticuz/chromium's default "graphics mode" build
+// needs -- those are normally present on AWS Lambda's Amazon Linux base.
+// Disabling graphics mode switches to a headless-only Chromium build that
+// doesn't need them -- confirmed necessary after a live test failed with
+// "libnss3.so: cannot open shared object file".
+chromium.setGraphicsMode = false;
+
+const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
+
+/**
+ * Renders the print-only report page for a snapshot to PDF in headless
+ * Chromium, uploads it to Supabase Storage, records the URL on the
+ * snapshot row, and returns a signed URL.
+ *
+ * Returns null on any failure rather than throwing -- callers (the
+ * compute route especially) should treat a failed render as "no PDF
+ * yet", not as a reason to fail an otherwise-successful valuation.
+ */
+export async function renderAndUploadReportPdf(
+  snapshotId: string,
+  origin: string
+): Promise<string | null> {
+  const serviceKey = process.env.VALUATION_SERVICE_KEY;
+  if (!serviceKey) {
+    console.error('VALUATION_SERVICE_KEY is not set -- cannot render PDF for', snapshotId);
+    return null;
+  }
+
+  let browser;
+  try {
+    browser = await playwrightChromium.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+
+    const page = await browser.newPage({ viewport: { width: 1200, height: 1600 } });
+    await page.setExtraHTTPHeaders({ 'x-service-key': serviceKey });
+
+    const printUrl = `${origin}/print/valuation/${snapshotId}`;
+    const response = await page.goto(printUrl, { waitUntil: 'networkidle', timeout: 45_000 });
+
+    if (!response || !response.ok()) {
+      console.error(
+        `Print page for snapshot ${snapshotId} returned ${response?.status()} -- aborting PDF render`
+      );
+      return null;
+    }
+
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '0', bottom: '0', left: '0', right: '0' },
+    });
+
+    // Path is company-scoped so an admin browsing storage can find every
+    // report for a client without cross-referencing snapshot IDs.
+    const { data: snapshot } = await supabaseAdmin
+      .from('valuation_snapshots')
+      .select('company_id')
+      .eq('id', snapshotId)
+      .single();
+
+    const storagePath = `${snapshot?.company_id || 'unknown'}/${snapshotId}.pdf`;
+
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('valuation-reports')
+      .upload(storagePath, pdfBuffer, { contentType: 'application/pdf', upsert: true });
+
+    if (uploadError) {
+      console.error('PDF upload error for snapshot', snapshotId, uploadError);
+      return null;
+    }
+
+    const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
+      .from('valuation-reports')
+      .createSignedUrl(storagePath, SIGNED_URL_TTL_SECONDS);
+
+    if (signedUrlError || !signedUrlData) {
+      console.error('Signed URL error for snapshot', snapshotId, signedUrlError);
+      return null;
+    }
+
+    await supabaseAdmin
+      .from('valuation_snapshots')
+      .update({
+        report_url: signedUrlData.signedUrl,
+        report_generated_at: new Date().toISOString(),
+      })
+      .eq('id', snapshotId);
+
+    return signedUrlData.signedUrl;
+  } catch (error) {
+    console.error('PDF render error for snapshot', snapshotId, error);
+    return null;
+  } finally {
+    if (browser) {
+      await browser.close().catch(() => {
+        // Best-effort cleanup -- a close failure shouldn't mask the real error above.
+      });
+    }
+  }
+}
