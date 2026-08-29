@@ -1,3 +1,4 @@
+import path from 'path';
 import chromium from '@sparticuz/chromium';
 import { chromium as playwrightChromium } from 'playwright-core';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
@@ -6,8 +7,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 // among them) that @sparticuz/chromium's default "graphics mode" build
 // needs -- those are normally present on AWS Lambda's Amazon Linux base.
 // Disabling graphics mode switches to a headless-only Chromium build that
-// doesn't need them -- confirmed necessary after a live test failed with
-// "libnss3.so: cannot open shared object file".
+// doesn't need them.
 chromium.setGraphicsMode = false;
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
@@ -33,9 +33,20 @@ export async function renderAndUploadReportPdf(
 
   let browser;
   try {
+    const executablePath = await chromium.executablePath();
+
+    // chromium.executablePath() extracts the Chromium binary and its
+    // bundled shared libraries (libnss3.so etc.) to /tmp at cold start,
+    // but the dynamic linker won't look there unless told to -- Vercel's
+    // Node 22.x runtime (Amazon Linux 2023) doesn't have these libs on its
+    // default search path the way AWS Lambda's Amazon Linux 2 base does.
+    // Pointing LD_LIBRARY_PATH at the extracted binary's own directory
+    // fixes exactly that.
+    process.env.LD_LIBRARY_PATH = path.dirname(executablePath);
+
     browser = await playwrightChromium.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath(),
+      executablePath,
       headless: true,
     });
 
