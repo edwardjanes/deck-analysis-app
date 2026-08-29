@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { computeValuation } from '@/lib/valuation/compute';
 import { buildDefaultParameters } from '@/lib/valuation/defaults';
 import { validateWizardData, hasBlockingIssues } from '@/lib/valuation/validation';
+import { renderAndUploadReportPdf } from '@/lib/valuation/pdf';
 import type { CompanyStage } from '@/lib/valuation/types';
 
 // Headless, service-key-protected compute + report route for n8n.
@@ -16,11 +17,11 @@ import type { CompanyStage } from '@/lib/valuation/types';
 // was no locationId-keyed or service-key-protected route anywhere in this
 // monorepo before this file.
 //
-// PDF rendering is NOT part of this route yet -- see that same scope doc,
-// section 4, for why (the existing report is a client-side browser-print
-// flow with no server-side renderer today) and the three options being put
-// to Ed before that gets built. `reportUrl` is always null for now; a
-// follow-up route will fill it in once the rendering approach is decided.
+// PDF rendering: headless Chromium renders the print-only report page
+// (see /print/valuation/[snapshotId]) and uploads the result to Supabase
+// Storage -- see lib/valuation/pdf.ts and scope doc section 4 for why.
+
+export const maxDuration = 90;
 
 interface ComputeRequestBody {
   locationId?: string;
@@ -251,13 +252,17 @@ export async function POST(request: NextRequest) {
       .eq('company_id', companyId)
       .neq('id', snapshot.id);
 
+    // Best-effort: a render failure here does not fail the request -- the
+    // valuation numbers below are correct and complete regardless.
+    const reportUrl = await renderAndUploadReportPdf(snapshot.id, request.nextUrl.origin);
+
     return NextResponse.json({
       companyId,
       snapshotId: snapshot.id,
       weightedValuation: report.weightedValuation,
       lowBound: report.lowBound,
       highBound: report.highBound,
-      reportUrl: null, // PDF rendering not built yet -- see scope doc section 4
+      reportUrl,
     });
   } catch (error) {
     console.error('Headless valuation compute error:', error);
