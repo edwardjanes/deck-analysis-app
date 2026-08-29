@@ -1,14 +1,15 @@
-import path from 'path';
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
 import { chromium as playwrightChromium } from 'playwright-core';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-// Vercel's serverless runtime doesn't ship the graphics libraries (libnss3
-// among them) that @sparticuz/chromium's default "graphics mode" build
-// needs -- those are normally present on AWS Lambda's Amazon Linux base.
-// Disabling graphics mode switches to a headless-only Chromium build that
-// doesn't need them.
-chromium.setGraphicsMode = false;
+// @sparticuz/chromium-min ships no Chromium binary of its own -- it
+// downloads and extracts a known-good prebuilt build from Sparticuz's own
+// GitHub release pack at cold start. This sidesteps the local bundling /
+// output-tracing path that was silently producing an incomplete Chromium
+// install on Vercel (missing libnss3.so etc.) no matter which Node runtime
+// version was configured.
+const CHROMIUM_PACK_URL =
+  'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar';
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
@@ -33,16 +34,7 @@ export async function renderAndUploadReportPdf(
 
   let browser;
   try {
-    const executablePath = await chromium.executablePath();
-
-    // chromium.executablePath() extracts the Chromium binary and its
-    // bundled shared libraries (libnss3.so etc.) to /tmp at cold start,
-    // but the dynamic linker won't look there unless told to -- Vercel's
-    // Node 22.x runtime (Amazon Linux 2023) doesn't have these libs on its
-    // default search path the way AWS Lambda's Amazon Linux 2 base does.
-    // Pointing LD_LIBRARY_PATH at the extracted binary's own directory
-    // fixes exactly that.
-    process.env.LD_LIBRARY_PATH = path.dirname(executablePath);
+    const executablePath = await chromium.executablePath(CHROMIUM_PACK_URL);
 
     browser = await playwrightChromium.launch({
       args: chromium.args,
