@@ -5,12 +5,13 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 // @sparticuz/chromium-min ships no Chromium binary of its own -- it
 // downloads and extracts a known-good prebuilt build from Sparticuz's own
-// GitHub release pack at cold start. This sidesteps the local bundling /
-// output-tracing path that was silently producing an incomplete Chromium
-// install on Vercel (missing libnss3.so etc.) no matter which Node runtime
-// version was configured.
+// GitHub release pack at cold start. Pinned to v119.0.2, the last version
+// known to bundle its own libnss3.so/libnspr4.so rather than assuming the
+// host OS provides them (true on AWS Lambda, not true on Vercel's function
+// base image -- the actual cause of the persistent
+// "libnss3.so: cannot open shared object file" failure on newer versions).
 const CHROMIUM_PACK_URL =
-  'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar';
+  'https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar';
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
