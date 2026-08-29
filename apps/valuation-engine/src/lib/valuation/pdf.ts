@@ -1,3 +1,4 @@
+import path from 'path';
 import chromium from '@sparticuz/chromium-min';
 import { chromium as playwrightChromium } from 'playwright-core';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
@@ -35,6 +36,13 @@ export async function renderAndUploadReportPdf(
   let browser;
   try {
     const executablePath = await chromium.executablePath(CHROMIUM_PACK_URL);
+
+    // Whether Chromium's binary + its bundled shared libraries (libnss3.so,
+    // libnspr4.so, etc.) come from the local bundle or, as here, a remote
+    // pack fetched at cold start, they always land together in /tmp -- but
+    // Vercel's dynamic linker doesn't search /tmp by default. Point it there
+    // explicitly.
+    process.env.LD_LIBRARY_PATH = path.dirname(executablePath);
 
     browser = await playwrightChromium.launch({
       args: chromium.args,
