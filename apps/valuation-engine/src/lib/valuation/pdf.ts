@@ -1,24 +1,12 @@
-import path from 'path';
-import chromium from '@sparticuz/chromium-min';
-import { chromium as playwrightChromium } from 'playwright-core';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-// @sparticuz/chromium-min ships no Chromium binary of its own -- it
-// downloads and extracts a known-good prebuilt build from Sparticuz's own
-// GitHub release pack at cold start. Pinned to v119.0.2, the last version
-// known to bundle its own libnss3.so/libnspr4.so rather than assuming the
-// host OS provides them (true on AWS Lambda, not true on Vercel's function
-// base image -- the actual cause of the persistent
-// "libnss3.so: cannot open shared object file" failure on newer versions).
-const CHROMIUM_PACK_URL =
-  'https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar';
-
+const PDFSHIFT_ENDPOINT = 'https://api.pdfshift.io/v3/convert/pdf';
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 /**
- * Renders the print-only report page for a snapshot to PDF in headless
- * Chromium, uploads it to Supabase Storage, records the URL on the
- * snapshot row, and returns a signed URL.
+ * Renders the print-only report page for a snapshot to PDF via PDFShift
+ * (a hosted URL-to-PDF service), uploads it to Supabase Storage, records
+ * the URL on the snapshot row, and returns a signed URL.
  *
  * Returns null on any failure rather than throwing -- callers (the
  * compute route especially) should treat a failed render as "no PDF
@@ -34,41 +22,43 @@ export async function renderAndUploadReportPdf(
     return null;
   }
 
-  let browser;
+  const pdfshiftKey = process.env.PDFSHIFT_API_KEY;
+  if (!pdfshiftKey) {
+    console.error('PDFSHIFT_API_KEY is not set -- cannot render PDF for', snapshotId);
+    return null;
+  }
+
   try {
-    const executablePath = await chromium.executablePath(CHROMIUM_PACK_URL);
+    const printUrl = `${origin}/print/valuation/${snapshotId}`;
 
-    // Whether Chromium's binary + its bundled shared libraries (libnss3.so,
-    // libnspr4.so, etc.) come from the local bundle or, as here, a remote
-    // pack fetched at cold start, they always land together in /tmp -- but
-    // Vercel's dynamic linker doesn't search /tmp by default. Point it there
-    // explicitly.
-    process.env.LD_LIBRARY_PATH = path.dirname(executablePath);
-
-    browser = await playwrightChromium.launch({
-      args: chromium.args,
-      executablePath,
-      headless: true,
+    const pdfshiftResponse = await fetch(PDFSHIFT_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'X-API-Key': pdfshiftKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        source: printUrl,
+        // Auth for the print page itself -- PDFShift forwards this header
+        // when it loads the source URL.
+        http_headers: {
+          'x-service-key': serviceKey,
+        },
+        format: 'A4',
+        margin: '0',
+        use_print: true,
+      }),
     });
 
-    const page = await browser.newPage({ viewport: { width: 1200, height: 1600 } });
-    await page.setExtraHTTPHeaders({ 'x-service-key': serviceKey });
-
-    const printUrl = `${origin}/print/valuation/${snapshotId}`;
-    const response = await page.goto(printUrl, { waitUntil: 'networkidle', timeout: 45_000 });
-
-    if (!response || !response.ok()) {
+    if (!pdfshiftResponse.ok) {
+      const errorBody = await pdfshiftResponse.text().catch(() => '<unreadable>');
       console.error(
-        `Print page for snapshot ${snapshotId} returned ${response?.status()} -- aborting PDF render`
+        `PDFShift request for snapshot ${snapshotId} failed with ${pdfshiftResponse.status}: ${errorBody}`
       );
       return null;
     }
 
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '0', bottom: '0', left: '0', right: '0' },
-    });
+    const pdfBuffer = Buffer.from(await pdfshiftResponse.arrayBuffer());
 
     // Path is company-scoped so an admin browsing storage can find every
     // report for a client without cross-referencing snapshot IDs.
@@ -110,11 +100,5 @@ export async function renderAndUploadReportPdf(
   } catch (error) {
     console.error('PDF render error for snapshot', snapshotId, error);
     return null;
-  } finally {
-    if (browser) {
-      await browser.close().catch(() => {
-        // Best-effort cleanup -- a close failure shouldn't mask the real error above.
-      });
-    }
   }
 }
