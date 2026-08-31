@@ -4,6 +4,7 @@ import { computeValuation } from '@/lib/valuation/compute';
 import { buildDefaultParameters } from '@/lib/valuation/defaults';
 import { validateWizardData, hasBlockingIssues } from '@/lib/valuation/validation';
 import { renderAndUploadReportPdf } from '@/lib/valuation/pdf';
+import { getCurrencyForCountry } from '@/lib/valuation/referenceData';
 import type { CompanyStage } from '@/lib/valuation/types';
 
 // Headless, service-key-protected compute + report route for n8n.
@@ -110,6 +111,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Currency is resolved server-side from company.country and never accepted
+  // from the request body -- there is no client-supplied currency field to
+  // trust or validate. See claude/track-11-currency-localization-scope.md.
+  const currency = getCurrencyForCountry(company.country);
+
   try {
     // Upsert the canonical company row for this location -- create on the
     // first run for a locationId, update on every subsequent one. Mirrors
@@ -141,6 +147,7 @@ export async function POST(request: NextRequest) {
       incorporated_year: company.incorporated_year,
       founders_committed_capital: company.founders_committed_capital,
       report_status: 'generated',
+      currency,
     };
 
     let companyId: string;
@@ -205,7 +212,7 @@ export async function POST(request: NextRequest) {
         }
       : null;
 
-    const report = await computeValuation(
+    const reportRaw = await computeValuation(
       {
         name: company.name!,
         country: company.country!,
@@ -216,6 +223,11 @@ export async function POST(request: NextRequest) {
       enrichedQuestionnaire as never,
       paramsWithWeights
     );
+
+    // computeValuation() itself stays currency-agnostic (see referenceData.ts's
+    // CURRENCY_BY_COUNTRY comment) -- the label is attached here, once, to the
+    // report object that gets persisted and returned.
+    const report = { ...reportRaw, currency };
 
     // created_by is nullable as of 006_valuation_snapshots_created_by_nullable.sql --
     // there's no auth.users row for an n8n-triggered run, so it's left unset (null)
@@ -262,6 +274,7 @@ export async function POST(request: NextRequest) {
       weightedValuation: report.weightedValuation,
       lowBound: report.lowBound,
       highBound: report.highBound,
+      currency,
       reportUrl,
     });
   } catch (error) {
