@@ -114,7 +114,15 @@ export default function AdminUploadPage() {
         body: submitFormData,
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        const text = await response.text();
+        console.error("Failed to parse response:", text);
+        setError(`Server error: ${text.substring(0, 100)}`);
+        return;
+      }
 
       if (!response.ok) {
         setError(data.message || data.error || "Failed to upload deck");
