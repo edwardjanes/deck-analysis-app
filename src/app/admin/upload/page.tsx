@@ -114,13 +114,15 @@ export default function AdminUploadPage() {
         body: submitFormData,
       });
 
+      const text = await response.text();
+      console.log("API response:", text);
+
       let data;
       try {
-        data = await response.json();
+        data = JSON.parse(text);
       } catch (parseErr) {
-        const text = await response.text();
-        console.error("Failed to parse response:", text);
-        setError(`Server error: ${text.substring(0, 100)}`);
+        console.error("Failed to parse JSON:", parseErr, "Response was:", text);
+        setError(`Server error: ${text.substring(0, 150)}`);
         return;
       }
 
