@@ -31,6 +31,9 @@ export async function POST(req: NextRequest) {
     const { data: submission, error: dbError } = await supabaseAdmin
       .from("deck_submissions")
       .insert({
+        first_name:    "Admin",
+        last_name:     "Upload",
+        email:         "admin@sourcecapital.co.uk",
         business_name: businessName,
         country,
         status:        "pending",
