@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { classifyUploadError } from "@/lib/errorHandler";
+import { compressPdf } from "@/lib/compressPdf";
 
 export const maxDuration = 60;
 
@@ -49,9 +50,19 @@ export async function POST(req: NextRequest) {
     submissionId = submission.id;
     console.log(`[admin-submit] Created submission ${submissionId} for ${businessName}`);
 
-    // 2. Upload PDF to Supabase Storage
-    const fileBuffer = await file.arrayBuffer();
+    // 2. Compress PDF and upload to Supabase Storage
+    let fileBuffer = await file.arrayBuffer();
     const filePath   = `${submissionId}/${file.name}`;
+
+    try {
+      const compressed = await compressPdf(fileBuffer);
+      if (compressed.success && compressed.buffer) {
+        fileBuffer = compressed.buffer;
+        console.log(`[admin-submit] Compressed PDF: ${(file.size / 1024 / 1024).toFixed(1)}MB → ${(compressed.buffer.byteLength / 1024 / 1024).toFixed(1)}MB`);
+      }
+    } catch (compressErr) {
+      console.warn("[admin-submit] PDF compression failed, continuing with original:", compressErr);
+    }
 
     const { error: storageError } = await supabaseAdmin.storage
       .from("decks")
