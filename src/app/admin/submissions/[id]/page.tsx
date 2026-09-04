@@ -122,11 +122,67 @@ export default function AdminSubmissionDetailPage() {
           </div>
 
           {submission.analysis_json && (
-            <div>
-              <h2 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "16px" }}>Analysis Details</h2>
-              <pre style={{ background: "#0A0A0A", padding: "16px", borderRadius: "4px", overflow: "auto", fontSize: "12px", color: MUTED }}>
-                {JSON.stringify(submission.analysis_json, null, 2)}
-              </pre>
+            <div style={{ marginTop: "40px" }}>
+              {/* Executive Summary */}
+              <div style={{ marginBottom: "40px" }}>
+                <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "16px" }}>Executive Summary</h2>
+                <div style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: "8px", padding: "20px" }}>
+                  {submission.analysis_json.executiveSummary?.split("\n\n").map((p, i) => (
+                    <p key={i} style={{ fontSize: "15px", color: "#D1D5DB", lineHeight: 1.85, marginBottom: "14px" }}>{p}</p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Key Insights */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "40px" }}>
+                <div style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: "8px", padding: "20px" }}>
+                  <p style={{ fontSize: "10px", color: "#EF4444", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Most Damaging Issue</p>
+                  <p style={{ fontSize: "15px", color: "#D1D5DB", lineHeight: 1.7 }}>{submission.analysis_json.mostDamagingIssue}</p>
+                </div>
+                <div style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: "8px", padding: "20px" }}>
+                  <p style={{ fontSize: "10px", color: GREEN, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Best Asset</p>
+                  <p style={{ fontSize: "15px", color: "#D1D5DB", lineHeight: 1.7 }}>{submission.analysis_json.bestAsset}</p>
+                </div>
+              </div>
+
+              {/* Dimension Breakdown */}
+              <div style={{ marginBottom: "40px" }}>
+                <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "16px" }}>Dimension Breakdown</h2>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
+                  {submission.analysis_json.dimensions?.map((d) => (
+                    <div key={d.name} style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: "8px", padding: "20px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                        <p style={{ fontSize: "14px", fontWeight: 600 }}>{d.name}</p>
+                        <p style={{ fontSize: "16px", fontWeight: 700, color: d.score >= 7 ? GREEN : d.score >= 5 ? "#FBBF24" : "#EF4444" }}>{d.score}/10</p>
+                      </div>
+                      <div style={{ width: "100%", height: "6px", backgroundColor: "#1a1a1a", borderRadius: "3px", overflow: "hidden" }}>
+                        <div style={{
+                          height: "100%",
+                          width: `${(d.score / 10) * 100}%`,
+                          backgroundColor: d.score >= 7 ? GREEN : d.score >= 5 ? "#FBBF24" : "#EF4444",
+                          transition: "width 0.3s ease",
+                        }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Slide-by-Slide Assessment */}
+              {submission.analysis_json.slideAssessments && submission.analysis_json.slideAssessments.length > 0 && (
+                <div>
+                  <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "16px" }}>Slide-by-Slide Assessment</h2>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {submission.analysis_json.slideAssessments.map((slide, i) => (
+                      <div key={i} style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: "8px", padding: "20px" }}>
+                        <p style={{ fontSize: "12px", color: MUTED, fontWeight: 600, marginBottom: "8px" }}>{slide.slide}</p>
+                        <p style={{ fontSize: "12px", color: slide.verdict === "Strong" ? GREEN : slide.verdict === "Acceptable" ? "#FBBF24" : slide.verdict === "Weak" ? "#EF4444" : "#888888", fontWeight: 600, marginBottom: "8px" }}>Verdict: {slide.verdict}</p>
+                        <p style={{ fontSize: "13px", color: "#D1D5DB", lineHeight: 1.6 }}>{slide.assessment}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
