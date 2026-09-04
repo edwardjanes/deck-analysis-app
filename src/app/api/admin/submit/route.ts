@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { classifyUploadError } from "@/lib/errorHandler";
-import { createOrUpdateContact as createGHLContact } from "@/lib/ghl";
 
 export const maxDuration = 60;
 
@@ -12,15 +11,13 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
 
-    const firstName    = (formData.get("firstName") as string)?.trim();
-    const lastName     = (formData.get("lastName") as string)?.trim();
-    const email        = (formData.get("email") as string)?.trim().toLowerCase();
     const businessName = (formData.get("businessName") as string)?.trim();
+    const website      = (formData.get("website") as string)?.trim();
     const country      = (formData.get("country") as string)?.trim();
     const file         = formData.get("deck") as File | null;
 
     // Validate required fields
-    if (!firstName || !businessName || !country || !email) {
+    if (!businessName || !country) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -31,31 +28,15 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Create submission record
-    // Note: is_admin_upload column may not exist yet, so we'll update it after insert if needed
     const { data: submission, error: dbError } = await supabaseAdmin
       .from("deck_submissions")
       .insert({
-        first_name:    firstName,
-        last_name:     lastName,
-        email:         email || null,
         business_name: businessName,
         country,
         status:        "pending",
       })
       .select("id")
       .single();
-
-    // Try to set admin upload flag if the column exists
-    if (!dbError && submission?.id) {
-      try {
-        await supabaseAdmin
-          .from("deck_submissions")
-          .update({ is_admin_upload: true })
-          .eq("id", submission.id);
-      } catch {
-        // Column may not exist yet, that's ok
-      }
-    }
 
     if (dbError || !submission) {
       console.error("DB insert error:", dbError);
@@ -64,25 +45,6 @@ export async function POST(req: NextRequest) {
 
     submissionId = submission.id;
     console.log(`[admin-submit] Created submission ${submissionId} for ${businessName}`);
-
-    // Sync contact to GHL ONLY (no Loops, no emails)
-    if (email && submissionId) {
-      createGHLContact({
-        email,
-        firstName,
-        lastName: lastName ?? "",
-        customFieldValues: [
-          { id: "hQDLWShDeKgJBbTYWc9m", value: submissionId },
-        ],
-        tags: ["Admin Upload"],
-      }).catch(err => {
-        console.error("[ghl] Contact error:", err);
-        Sentry.captureException(err, {
-          tags: { type: "ghl_contact_sync_admin" },
-          extra: { email, firstName, lastName, businessName },
-        });
-      });
-    }
 
     // 2. Upload PDF to Supabase Storage
     const fileBuffer = await file.arrayBuffer();
