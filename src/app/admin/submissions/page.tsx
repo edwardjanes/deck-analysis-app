@@ -8,13 +8,11 @@ import Link from "next/link";
 interface Submission {
   id: string;
   business_name: string;
-  first_name: string;
-  last_name: string;
-  email: string;
   score: number;
-  verdict_type: "pass" | "review" | "flag";
+  verdict: string;
   created_at: string;
   status: string;
+  user_id: string;
 }
 
 const GREEN = "#03fb83";
@@ -59,7 +57,7 @@ export default function AdminSubmissionsPage() {
 
       const { data, error: queryError } = await supabase
         .from("deck_submissions")
-        .select("id, business_name, first_name, last_name, email, score, verdict_type, created_at, status")
+        .select("id, business_name, score, verdict, created_at, status, user_id")
         .order("created_at", { ascending: false });
 
       if (queryError) throw queryError;
@@ -111,10 +109,10 @@ export default function AdminSubmissionsPage() {
               <thead>
                 <tr style={{ borderBottom: `1px solid ${CARD_BORDER}`, background: "#1a1a1a" }}>
                   <th style={{ padding: "16px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: MUTED }}>Business</th>
-                  <th style={{ padding: "16px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: MUTED }}>Contact</th>
-                  <th style={{ padding: "16px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: MUTED }}>Email</th>
                   <th style={{ padding: "16px", textAlign: "center", fontSize: "12px", fontWeight: 600, color: MUTED }}>Score</th>
                   <th style={{ padding: "16px", textAlign: "center", fontSize: "12px", fontWeight: 600, color: MUTED }}>Verdict</th>
+                  <th style={{ padding: "16px", textAlign: "center", fontSize: "12px", fontWeight: 600, color: MUTED }}>Status</th>
+                  <th style={{ padding: "16px", textAlign: "center", fontSize: "12px", fontWeight: 600, color: MUTED }}>Date</th>
                   <th style={{ padding: "16px", textAlign: "center", fontSize: "12px", fontWeight: 600, color: MUTED }}>Action</th>
                 </tr>
               </thead>
@@ -122,14 +120,14 @@ export default function AdminSubmissionsPage() {
                 {submissions.map((sub) => (
                   <tr key={sub.id} style={{ borderBottom: `1px solid ${CARD_BORDER}` }}>
                     <td style={{ padding: "16px", fontWeight: 600 }}>{sub.business_name}</td>
-                    <td style={{ padding: "16px", color: MUTED }}>{sub.first_name} {sub.last_name}</td>
-                    <td style={{ padding: "16px", color: MUTED, fontSize: "13px" }}>{sub.email}</td>
                     <td style={{ padding: "16px", textAlign: "center", fontWeight: 700 }}>{Math.round(sub.score)}</td>
                     <td style={{ padding: "16px", textAlign: "center" }}>
-                      <span style={{ padding: "4px 8px", background: verdictColor(sub.verdict_type) + "20", color: verdictColor(sub.verdict_type), fontSize: "11px", fontWeight: 600, borderRadius: "4px" }}>
-                        {sub.verdict_type}
+                      <span style={{ padding: "4px 8px", background: verdictColor(sub.verdict) + "20", color: verdictColor(sub.verdict), fontSize: "11px", fontWeight: 600, borderRadius: "4px" }}>
+                        {sub.verdict}
                       </span>
                     </td>
+                    <td style={{ padding: "16px", textAlign: "center", fontSize: "13px", color: MUTED }}>{sub.status}</td>
+                    <td style={{ padding: "16px", textAlign: "center", fontSize: "13px", color: MUTED }}>{new Date(sub.created_at).toLocaleDateString()}</td>
                     <td style={{ padding: "16px", textAlign: "center" }}>
                       <Link href={`/admin/submissions/${sub.id}`} style={{ color: GREEN, textDecoration: "none", fontWeight: 600 }}>
                         View

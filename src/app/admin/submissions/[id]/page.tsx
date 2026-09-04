@@ -8,15 +8,12 @@ import { DeckAnalysis } from "@/lib/deckPrompt";
 interface SubmissionDetail {
   id: string;
   business_name: string;
-  first_name: string;
-  last_name: string;
-  email: string;
   score: number;
   verdict: string;
-  verdict_type: "pass" | "review" | "flag";
   status: string;
   created_at: string;
   analysis_json: DeckAnalysis;
+  user_id: string;
 }
 
 const GREEN = "#03fb83";
@@ -107,7 +104,7 @@ export default function AdminSubmissionDetailPage() {
 
         <div style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: "8px", padding: "24px" }}>
           <h1 style={{ fontSize: "24px", fontWeight: 700, marginBottom: "16px" }}>{submission.business_name}</h1>
-          <p style={{ color: MUTED, marginBottom: "24px" }}>{submission.first_name} {submission.last_name} • {submission.email}</p>
+          <p style={{ color: MUTED, marginBottom: "24px" }}>Submission ID: {submission.id}</p>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "32px" }}>
             <div>
@@ -116,7 +113,7 @@ export default function AdminSubmissionDetailPage() {
             </div>
             <div>
               <p style={{ color: MUTED, fontSize: "12px", marginBottom: "8px" }}>Verdict</p>
-              <p style={{ fontSize: "18px", fontWeight: 600 }}>{submission.verdict_type}</p>
+              <p style={{ fontSize: "18px", fontWeight: 600 }}>{submission.verdict}</p>
             </div>
             <div>
               <p style={{ color: MUTED, fontSize: "12px", marginBottom: "8px" }}>Status</p>
